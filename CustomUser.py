@@ -379,7 +379,7 @@ class CustomUser(User, Folder):
         """ Set the methods that will be called on the user post verification.
         
         """
-        vc = XWFUtils.generate_accesscode()
+        vc = XWFUtils.generate_accesscode(self.getId())
         self._verificationCode = vc
         
         return vc

@@ -479,6 +479,7 @@ class CustomUser(User, Folder):
                 self.manage_delProperties([property])
             except:
                 pass
+            self.set_disableDeliveryByKey(key)
                 
     security.declareProtected(Perms.manage_properties, 'set_verificationCode')
     def set_verificationCode(self):

@@ -67,8 +67,9 @@ class CustomUserFolder(UserFolderWithGroups):
         """ Get the user by email address.
         
         """
+        email = email.lower()
         for user in self.getUsers():
-            if email in user.get_emailAddresses():
+            if email in map(lambda x: x.lower(), user.get_emailAddresses()):
                 return user
         return None
 
@@ -104,8 +105,10 @@ class CustomUserFolder(UserFolderWithGroups):
         """
         user_folder = self._getUserFolder()
         users = list(user_folder.objectValues('Custom User'))
-        
-        return users
+        user_list = []
+        for user in users:
+            user_list.append(user.__of__(self))
+        return user_list
     
     security.declareProtected(Perms.manage_users, 'getUser')
     def getUser(self, name):
@@ -113,7 +116,10 @@ class CustomUserFolder(UserFolderWithGroups):
         
         """
         user_folder = self._getUserFolder()
-        return getattr(user_folder, name, None)
+        user = getattr(user_folder, name, None)
+        if user:
+            return user.__of__(self)
+        return None
     
     security.declarePrivate('_doAddUser')
     def _doAddUser(self, name, password, roles, domains, groups=(), **kw):

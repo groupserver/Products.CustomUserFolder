@@ -89,14 +89,14 @@ class CustomUser(User, Folder):
 
         """
         site_root = self.site_root()
-        presentation = self.Templates.email.notifications
+        presentation = self.Templates.email.notifications.aq_explicit
                 
         ptype_templates = getattr(presentation, n_type, None)
         if not ptype_templates:
             return None
         
-        template = (getattr(ptype_templates, n_id, None) or
-                    getattr(ptype_templates, 'default', None))
+        template = (getattr(ptype_templates.aq_explicit, n_id, None) or
+                    getattr(ptype_templates.aq_explicit, 'default', None))
         if not template:
             return None
         
@@ -114,7 +114,7 @@ class CustomUser(User, Folder):
                          to_addr=email_address,
                          n_id=n_id,
                          n_type=n_type))
-                
+         
         for email_string in email_strings:
             mailhost.send(email_string)
         

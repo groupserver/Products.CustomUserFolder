@@ -121,6 +121,14 @@ class TestCustomUserFolder(ZopeTestCase.ZopeTestCase):
         self.failUnless(self.auser.get_deliveryEmailAddressesByKey('fooGroup')\
                         == ['richard@iopen.net', 'wibble@iopen.net'])
 
+	self.auser.set_enableDigestByKey('fooGroup')
+	self.failUnless(self.auser.get_deliverySettingsByKey('fooGroup')==3)
+	self.failUnless(self.auser.get_deliveryEmailAddressesByKey('fooGroup')\
+                        == ['richard@iopen.net', 'wibble@iopen.net'])
+	self.auser.set_disableDigestByKey('fooGroup')
+	self.failUnless(self.auser.get_deliverySettingsByKey('fooGroup')==1)
+	
+
         self.failUnless(self.auser.get_preferredEmailAddresses()\
                         == ['richard@iopen.net', 'wibble@iopen.net'])
         self.failUnless(self.auser.get_emailAddresses() \

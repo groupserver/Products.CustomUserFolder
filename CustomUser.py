@@ -352,21 +352,21 @@ class CustomUser(User, Folder):
     def set_disableDeliveryByKey(self, key):
         """ Disable the email delivery for a given key.
         
-            The key could represent normally represents a group, but may
+            The key normally represents a group, but may
             represent something else in the future.
         
         """
         disabled_property = '%s_deliveryDisabled' % key
-        if not self.hasProperty(disabled_property):
-            self.manage_addProperty(disabled_property, 1, 'boolean')
-        else:
+        if self.hasProperty(disabled_property):
             self.manage_changeProperties({disabled_property: 1})
-    
+	else:
+	    self.manage_addProperty(disabled_property, 1, 'boolean')
+        
     security.declareProtected(Perms.manage_properties, 'set_enableDeliveryByKey')
     def set_enableDeliveryByKey(self, key):
         """ Enable the email delivery for a given key.
         
-            The key could represent normally represents a group, but may
+            The key normally represents a group, but may
             represent something else in the future.
             
         """
@@ -375,16 +375,47 @@ class CustomUser(User, Folder):
         if self.hasProperty(disabled_property):
             self.manage_changeProperties({disabled_property: 0})
     
+    security.declareProtected(Perms.manage_properties, 'set_enableDigestByKey')
+    def set_enableDigestByKey(self, key):
+        """ Enable the email digest for a given key.
+        
+            The key normally represents a group, but may
+            represent something else in the future.
+            
+        """
+        digest_property = '%s_digest' % key
+        if self.hasProperty(digest_property):
+            self.manage_changeProperties({digest_property: 1})
+        else:
+	    self.manage_addProperty(digest_property, 1, 'boolean')
+    
+    security.declareProtected(Perms.manage_properties, 'set_disableDigestByKey')
+    def set_disableDigestByKey(self, key):
+        """ Disable the email digest for a given key.
+        
+            The key normally represents a group, but may
+            represent something else in the future.
+            
+        """
+        digest_property = '%s_digest' % key
+        # we don't create the property if it doesn't exist
+        if self.hasProperty(digest_property):
+            self.manage_changeProperties({digest_property: 0})
+    
     security.declareProtected(Perms.manage_properties, 'get_deliverSettingsByKey')
     def get_deliverySettingsByKey(self, key):
         """ Get the settings for the given key.
         
-            returns 1 if default, 2 if non-default or 0 if disabled.
+            returns 1 if default, 2 if non-default, 3 if digest,
+	            or 0 if disabled.
         """
         disabled_property = '%s_deliveryDisabled' % key
         preferred_property = '%s_emailAddresses' % key
+	digest_property = '%s_digest' % key
         if self.getProperty(disabled_property, 0):
             return 0
+	elif self.getProperty(digest_property, 0):
+	    return 3
         elif filter(None, self.getProperty(preferred_property, [])):
             return 2
         else:

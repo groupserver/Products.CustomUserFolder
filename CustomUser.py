@@ -59,7 +59,7 @@ class CustomUser(User, Folder):
         self.restrictImage = 1
         self._p_changed = 1
                 
-    security.declareProptected(Perms.manage_properties, 'refresh_properties')
+    security.declareProtected(Perms.manage_properties, 'refresh_properties')
     def refresh_properties(self):
         """ Refresh the properties from the class definition.
 
@@ -77,6 +77,7 @@ class CustomUser(User, Folder):
 
         return None
     
+    security.declareProtected(Perms.manage_properties, 'get_emailAddresses')    
     def get_emailAddresses(self):
         """ Returns a list of all the user's email addresses.
         
@@ -84,7 +85,8 @@ class CustomUser(User, Folder):
             
         """
         return filter(None, self.emailAddresses)
-    
+
+    security.declareProtected(Perms.manage_properties, 'validate_emailAddresses')
     def validate_emailAddresses(self):
         """ Validate all the user's email addresses.
 
@@ -117,6 +119,7 @@ class CustomUser(User, Folder):
         
         return email
     
+    security.declareProtected(Perms.manage_properties, 'add_emailAddress')
     def add_emailAddress(self, email):
         """ Add an email address to the list of the user's email
         addresses.
@@ -129,7 +132,8 @@ class CustomUser(User, Folder):
         
         self.emailAddresses = email_addresses
         self._p_changed = 1
-            
+        
+    security.declareProtected(Perms.manage_properties, 'remove_emailAddress')
     def remove_emailAddress(self, email):
         """ Remove an email address from the list of user's email
         addresses.
@@ -142,6 +146,7 @@ class CustomUser(User, Folder):
             self.preferredEmailAddresses.remove(email)
         self._p_changed = 1            
 
+    security.declareProtected(Perms.manage_properties, 'get_preferredEmailAddresses')
     def get_preferredEmailAddresses(self):
         """ Get the user's preferred delivery email address. If none is
         set, it defaults to the first in the list.
@@ -157,6 +162,7 @@ class CustomUser(User, Folder):
         
         return []
     
+    security.declareProtected(Perms.manage_properties, 'add_preferredEmailAddress')
     def add_preferredEmailAddress(self, email):
         """ Set the user's preferred delivery email address.
         
@@ -168,6 +174,7 @@ class CustomUser(User, Folder):
             self.add_emailAddress(email)
         self._p_changed = 1
 
+    security.declareProtected(Perms.manage_properties, 'add_preferredEmailAddresses')
     def add_preferredEmailAddresses(self, addresses):
         """ Set all the preferred delivery email addresses.
         
@@ -178,6 +185,7 @@ class CustomUser(User, Folder):
             self.add_preferredEmailAddress(email)
         self._p_changed = 1
 
+    security.declareProtected(Perms.manage_properties, 'remove_preferredEmailAddress')
     def remove_preferredEmailAddress(self, email):
         """ Remove an email address from the list of user's 
         preferred email addresses.
@@ -188,8 +196,10 @@ class CustomUser(User, Folder):
             self.preferredEmailAddresses.remove(email)            
         self._p_changed = 1
         
+    security.declareProtected(Perms.manage_properties, 'get_password')
     def get_password(self):
-        """ Get the user's password.
+        """ Get the user's password. Note, if the password is encrypted,
+        this won't be of much use.
         
         """
         return self._getPassword()

@@ -1,0 +1,43 @@
+<html tal:omit-tag="" >
+	<h1 tal:replace="structure here/manage_page_header">Header</h1>
+	<h2
+		tal:define="manage_tabs_message options/manage_tabs_message | nothing;
+                global user_names here/user_names"
+		tal:replace="structure here/manage_tabs">Tabs</h2>
+	<form action="wf_manage_users" method="post">
+		<tal:block tal:condition="user_names" tal:omit-tag="">
+			<p class="form-help">The following users have been defined. Click
+				on the name of a user to edit that user.</p>
+			<table cellspacing="0" cellpadding="2" border="0">
+				<tr>
+					<td>
+						<select name="names:list" multiple="1">
+							<option tal:repeat="user_name user_names"
+								tal:content="user_name">AUserName</option>
+						</select>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<div class="form-element">
+							<input class="form-element" type="submit"
+								name="submit" value="Add..." />
+							<input class="form-element" type="submit"
+								name="submit" value="Delete" />
+							<input class="form-element" type="submit"
+								name="submit" value="Edit" />
+						</div>
+					</td>
+				</tr>
+			</table>
+		</tal:block>
+		<tal:block tal:condition="not:user_names" tal:omit-tag="">
+			<p class="std-text">There are no users defined.</p>
+			<div class="form-element">
+		 		<input class="form-element" type="submit" name="submit"
+						value="Add..." />
+			</div>
+		</tal:block>
+	</form>
+	<h1 tal:replace="structure here/manage_page_footer">Footer</h1>
+</html>

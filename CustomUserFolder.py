@@ -5,7 +5,7 @@ from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 from AccessControl import ClassSecurityInfo
 from AccessControl import Permissions as Perms
 from AccessControl.User import BasicUserFolder, _remote_user_mode
-from Globals import InitializeClass, PersistentMapping, DTMLFile
+from Globals import InitializeClass
 from OFS.Folder import Folder
 from Products.NuxUserGroups import UserFolderWithGroups
 
@@ -14,14 +14,17 @@ class CustomUserFolder(UserFolderWithGroups):
     interface.
     
     """
-    meta_type = "Custom User Folder"
-    id ='acl_users'
-    title = 'Custom User Folder'
-    icon ='p_/UserFolder'
+    security = ClassSecurityInfo()
     
-    security.declarePrivate('_add_User')
-    _add_User = DTMLFile('zpt/addUser', globals(),
-                         remote_user_mode__=_remote_user_mode)
+    meta_type = "Custom User Folder"
+    id = 'acl_users'
+    title = 'Custom User Folder'
+    icon = 'p_/UserFolder'
+    
+    security.declarePrivate('_mainUser')
+    _mainUser = PageTemplateFile('zpt/mainUser.zpt', globals(),
+                                 __name__='manage_main')
+    manage = manage_main = _mainUser
     
     def __init__(self, user_folder_id):
         """ Initialize the data storage.
@@ -53,7 +56,7 @@ class CustomUserFolder(UserFolderWithGroups):
         
         """
         user_folder = self._getUserFolder()
-        names = user_folder.objectIds('Custom User')
+        names = list(user_folder.objectIds('Custom User'))
         names.sort()
         
         return names
@@ -64,7 +67,7 @@ class CustomUserFolder(UserFolderWithGroups):
         
         """
         user_folder = self._getUserFolder()
-        users = user_folder.objectValues('Custom User')
+        users = list(user_folder.objectValues('Custom User'))
         
         return users
     
@@ -92,6 +95,7 @@ class CustomUserFolder(UserFolderWithGroups):
         user.init_properties()
         user.title = name
         user.shortName = name
+        user.manage_setLocalRoles(name, ['owner'])
         
         return 1
 
@@ -119,7 +123,21 @@ class CustomUserFolder(UserFolderWithGroups):
                 raise KeyError, 'User "%s" does not exist' % username
             groupnames = user.getGroups()
             self.delGroupsFromUser(groupnames, username)
+    
+    security.declareProtected(Perms.manage_users, 'wf_manage_users')
+    def wf_manage_users(self, submit=None, REQUEST=None, RESPONSE=None):
+        """ A helper submission method for the modified ZMI interface, 
+        to handle the multiple selection box.
         
+        """
+        if submit == 'Edit':
+            try:
+                REQUEST['name'] = REQUEST['names'][0]
+            except:
+                pass
+                
+        return self.manage_users(submit, REQUEST, RESPONSE)
+
     security.declarePrivate('_createInitialUser')
     def _createInitialUser(self):
         """

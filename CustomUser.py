@@ -295,6 +295,7 @@ class CustomUser(User, Folder):
         self._p_changed = 1
 
     security.declareProtected(Perms.manage_properties, 'get_preferredEmailAddresses')
+    security.declareProtected(Perms.manage_properties, 'get_defaultDeliveryEmailAddresses')
     def get_defaultDeliveryEmailAddresses(self):
         """ Get the user's default delivery email addresses.
         
@@ -406,7 +407,7 @@ class CustomUser(User, Folder):
         if self.hasProperty(digest_property):
             self.manage_changeProperties({digest_property: 0})
     
-    security.declareProtected(Perms.manage_properties, 'get_deliverSettingsByKey')
+    security.declareProtected(Perms.manage_properties, 'get_deliverySettingsByKey')
     def get_deliverySettingsByKey(self, key):
         """ Get the settings for the given key.
         

@@ -82,7 +82,45 @@ class CustomUser(User, Folder):
         self.currentDivision = ''
         self.unrestrictedImageRoles = []
         self._p_changed = 1
+
+    security.declareProtected(Perms.manage_properties, 'add_groupWithNotification')
+    def add_groupWithNotification(self, group):
+        """ Add a group to the user, and if available, send them a notification.
+        
+        """
+        presentation = self.Templates.email
+        acl_users = getattr(self, 'acl_users', None)
+        site_root = self.site_root()
+
+        if acl_users:
+            acl_users.addGroupsToUser([group], self.getId())
+        
+        template_id = '%s_notification' % group
+        
+        template = (getattr(presentation, template_id, None) or
+                    getattr(presentation, 'default_notification', None))
+        if not template:
+            return template
+
+        try:
+            mailhost = site_root.superValues('Mail Host')[0]
+        except:
+            raise AttributeError, "Can't find a Mail Host object"
+        
+        email_addresses = self.get_defaultDeliveryEmailAddresses()
+        
+        email_strings = []
+        for email_address in email_addresses:
+            email_strings.append(
+                template(self, self.REQUEST,
+                         to_addr=email_address,
+                         group=group))
                 
+        for email_string in email_strings:
+            mailhost.send(email_string)
+        
+        return 1
+            
     security.declareProtected(Perms.manage_properties, 'refresh_properties')
     def refresh_properties(self):
         """ Refresh the properties from the class definition.
@@ -280,8 +318,8 @@ class CustomUser(User, Folder):
     def set_disableDeliveryByKey(self, key):
         """ Disable the email delivery for a given key.
         
-            The key could represent normally represents a group, but may represent
-            something else in the future.
+            The key could represent normally represents a group, but may
+            represent something else in the future.
         
         """
         disabled_property = '%s_deliveryDisabled' % key
@@ -294,8 +332,8 @@ class CustomUser(User, Folder):
     def set_enableDeliveryByKey(self, key):
         """ Enable the email delivery for a given key.
         
-            The key could represent normally represents a group, but may represent
-            something else in the future.
+            The key could represent normally represents a group, but may
+            represent something else in the future.
             
         """
         disabled_property = '%s_deliveryDisabled' % key
@@ -399,13 +437,31 @@ class CustomUser(User, Folder):
         self._verificationGroups = groups
         
         return 1
-        
-    security.declareProtected(Perms.manage_properties, 'set_verificationGroups')
-    def get_verificationGroups(self, groups):
+    
+    security.declareProtected(Perms.manage_properties, 'get_verificationGroups')
+    def get_verificationGroups(self):
         """ Get the groups that the user will be assigned to post verification.
         
         """
         return getattr(self, '_verificationGroups', ())
+
+    security.declareProtected(Perms.manage_properties, 'verify_user')
+    def verify_user(self, verification_code):
+        """ Verify the user, and if they verify, set the post verification
+            groups.
+
+        """
+        acl_users = getattr(self, 'acl_users', None)
+        if acl_users:
+            acl_users.delGroupsFromUser(['unverified_member'], self.getId())
+        
+        if not verification_code == self.get_verificationCode():
+            return 0
+        
+        for group in self.get_verificationGroups():
+            self.add_groupWithNotification(group)
+
+        return 1
    
     security.declareProtected(Perms.manage_properties, 'send_userVerification')
     def send_userVerification(self):
@@ -413,9 +469,10 @@ class CustomUser(User, Folder):
         
         """
         presentation = self.Templates.email
-        
+        site_root = self.site_root()
+                
         try:
-            mailhost = self.superValues('Mail Host')[0]
+            mailhost = site_root.superValues('Mail Host')[0]
         except:
             raise AttributeError, "Can't find a Mail Host object"
         
@@ -444,6 +501,19 @@ class CustomUser(User, Folder):
         
         """
         return self._getPassword()
+
+    #
+    # Views and Workflow
+    #
+    def index_html(self):
+        """ Return the default view.
+
+        """
+        try:
+            presentation = getattr(self, 'userinfo.xml')
+        except:
+            presentation = getattr(self, 'index_html')
+        return presentation()
 
 class ValidationError(Exception):
     """ Raised if an email address is invalid.

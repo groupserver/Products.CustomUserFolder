@@ -108,6 +108,7 @@ class CustomUserFolder(UserFolderWithGroups):
             password = self._encryptPassword(password)
                     
         CustomUser.addCustomUser(user_folder, name, password, roles, domains)
+        self.setGroupsOfUser(groups, name)
         
         user = self.getUser(name)
         

@@ -429,7 +429,7 @@ class CustomUser(User, Folder):
                                                   verification_code=self.get_verificationCode(),
                                                   first_name=self.getProperty('firstName', ''),
                                                   last_name=self.getProperty('lastName', ''),
-                                                  user_id=user_id,
+                                                  user_id=self.getId(),
                                                   password=self.get_password()))
         
         for email_string in email_strings:

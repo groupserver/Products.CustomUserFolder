@@ -25,6 +25,11 @@ from Globals import InitializeClass
 from OFS.Folder import Folder
 from Products.NuxUserGroups import UserFolderWithGroups
 from Products.XWFCore import XWFUtils
+try:
+    from Products.MailBoxer import MailBoxerTools
+    HaveMailBoxer = True
+except:
+    HaveMailBoxer = False
 
 class CustomUserFolder(UserFolderWithGroups):
     """ A user folder for CampusUser users, based on the NuxUserGroup UserFolder
@@ -65,6 +70,20 @@ class CustomUserFolder(UserFolderWithGroups):
         for user in self.getUsers():
             if email in user.get_emailAddresses():
                 return user
+        return None
+
+    security.declareProtected(Perms.manage_users, 'get_userByVerificationCode')
+    def get_userByVerificationCode(self, verification_code):
+        """ Get the user by verification code.
+        
+        """
+        if not verification_code:
+            return None
+        
+        for user in self.getUsers():
+            if verification_code == user.get_verificationCode():
+                return user
+        
         return None
         
     security.declareProtected(Perms.manage_users, 'get_userByEmail')
@@ -234,6 +253,35 @@ class CustomUserFolder(UserFolderWithGroups):
                 pass
                 
         return self.manage_users(submit, REQUEST, RESPONSE)
+
+    security.declareProtected(Perms.manage_users, 'verify_userFromEmail')
+    def verify_userFromEmail(self, Mail):
+        """ Verify the user from an email.
+
+        """
+        import re
+        
+        if not HaveMailBoxer:
+            raise ImportError, ('MailBoxerTools is not available, unable to '
+                                'verify user from email')
+        
+        acl_users = getattr(self, 'acl_users', None)
+        mailHeader, mailBody = MailBoxerTools.splitMail(Mail)
+        
+        subject = MailBoxerTools.mime_decode_header(mailHeader.get('subject',
+                                                                   ''))
+        
+        try:
+            verification_code = re.findall('{(.*?)}', subject)[0]
+        except:
+            verification_code = ''
+        
+        user = self.get_userByVerificationCode(verification_code)
+        
+        if user:
+            return user.verify_user(verification_code)
+        
+        return 0
 
     security.declarePrivate('_createInitialUser')
     def _createInitialUser(self):

@@ -194,19 +194,18 @@ class CustomUserFolder(UserFolderWithGroups):
             user_id = gen_user_id.next()
         while not valid_id:
             if not self.getUser(user_id):
-                
                 for char in user_id:
                     if char not in validChars:
                         if user_id_provided:
                             raise KeyError, ('User ID %s contains an invalid character'
-                                        ' (%s). Valid characters are %s.' % validChars)
+                                        ' (%s). Valid characters are %s.' % (user_id, char, validChars))
                         else:
                             break
                 valid_id = True
             
             if valid_id:
                 break
-                    
+            
             user_id = gen_user_id.next()
             user_id_provided = False
         

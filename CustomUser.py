@@ -23,6 +23,7 @@ from AccessControl.User import User
 from ZODB import PersistentList
 from AccessControl import allow_class
 from OFS.Folder import Folder
+from Products.XWFCore import XWFUtils
 
 class CustomUser(User, Folder):
     """ A Custom user, based on the builtin user object.

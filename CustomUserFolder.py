@@ -149,7 +149,8 @@ class CustomUserFolder(UserFolderWithGroups):
         """ A method for a user to allow a user to register themselves.
         
         """
-        import string
+        import string, DateTime
+        
         validChars = string.letters+string.digits+'.'
         
         user_id_provided = False

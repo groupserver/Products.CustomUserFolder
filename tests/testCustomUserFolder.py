@@ -14,7 +14,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #
-# You MUST follow the rules in STYLE before checking in code
+# You MUST follow the rules in http://iopen.net/STYLE before checking in code
 # to the trunk. Code which does not follow the rules will be rejected.
 #
 import os, sys

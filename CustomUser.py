@@ -93,8 +93,11 @@ class CustomUser(User, Folder):
         site_root = self.site_root()
 
         if acl_users:
-            acl_users.addGroupsToUser([group], self.getId())
-        
+            try:
+                acl_users.addGroupsToUser([group], self.getId())
+            except:
+                return 0                
+  
         template_id = '%s_notification' % group
         
         template = (getattr(presentation, template_id, None) or

@@ -190,8 +190,21 @@ class CustomUserFolder(UserFolderWithGroups):
         self._doAddUser(user_id, password, roles, [], groups)
         user = self.getUser(user_id)
         if user:
+            try:
+                lhs = email.split('@')[0]
+            except:
+                lhs = ''
+            first_name = first_name or lhs or last_name
+            last_name = last_name or lhs or first_name 
+            preferred_name = first_name
+            
             user.manage_changeProperties(firstName=first_name,
-                                         lastName=last_name)
+                                         lastName=last_name,
+                                         preferredName=preferred_name)
+            
+            user.manage_addProperty('creation_date', DateTime.DateTime(),
+                                    'date')
+                             
             user.add_defaultDeliveryEmailAddress(email)
             
             verification_code = user.set_verificationCode()

@@ -412,7 +412,7 @@ class CustomUser(User, Folder):
         """ Send the user a verification email.
         
         """
-        presentation = self.Presentation.Tofu.Registration.email
+        presentation = self.Templates.email
         
         try:
             mailhost = self.superValues('Mail Host')[0]
@@ -423,8 +423,13 @@ class CustomUser(User, Folder):
         email_strings = []
         for email_address in email_addresses:
             email_strings.append(
-                presentation.confirm_registration(to_addr=email_address,
-                                                  verification_code=self.get_verificationCode()))
+                presentation.confirm_registration(self,
+                                                  to_addr=email_address,
+                                                  verification_code=self.get_verificationCode(),
+                                                  first_name=self.getProperty('firstName', ''),
+                                                  last_name=self.getProperty('lastName', ''),
+                                                  user_id=user_id,
+                                                  password=self.get_password()))
         
         for email_string in email_strings:
             mailhost.send(email_string)

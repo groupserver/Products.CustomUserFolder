@@ -153,6 +153,10 @@ class CustomUserFolder(UserFolderWithGroups):
         
         validChars = string.letters+string.digits+'.'
         
+        # unverified members always get this placeholder group till verified
+        groups = list(groups)
+        groups.append('unverified_member')
+        
         user_id_provided = False
         if user_id:
             user_id_provided = True

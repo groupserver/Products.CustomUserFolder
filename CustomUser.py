@@ -107,7 +107,7 @@ class CustomUser(User, Folder):
             A helper method to purify the list of addresses.
             
         """
-        return filter(None, self.emailAddresses)
+        return list(filter(None, self.emailAddresses))
 
     security.declareProtected(Perms.manage_properties, 'validate_emailAddresses')
     def validate_emailAddresses(self):
@@ -149,7 +149,7 @@ class CustomUser(User, Folder):
         
         """
         email = self._validateAndNormalizeEmail(email)
-        email_addresses = list(self.emailAddresses)
+        email_addresses = self.get_emailAddresses()
         if email not in email_addresses:
             email_addresses.append(email)
         
@@ -163,10 +163,14 @@ class CustomUser(User, Folder):
         
         """
         email = self._validateAndNormalizeEmail(email)
-        if email in self.get_emailAddresses():
-            self.emailAddresses.remove(email)
-        if email in self.get_preferredEmailAddresses():
-            self.preferredEmailAddresses.remove(email)
+        emailAddresses = self.get_emailAddresses()
+        if email in emailAddresses:
+            emailAddresses.remove(email)
+            self.emailAddresses = emailAddresses
+        preferredEmailAddresses = self.get_preferredEmailAddresses()
+        if email in preferredEmailAddresses:
+            preferredEmailAddresses.remove(email)
+            self.preferredEmailAddresses = preferredEmailAddresses
         self._p_changed = 1            
 
     security.declareProtected(Perms.manage_properties, 'get_preferredEmailAddresses')
@@ -175,15 +179,7 @@ class CustomUser(User, Folder):
         set, it defaults to the first in the list.
         
         """
-        if self.preferredEmailAddresses:
-            return filter(None, self.preferredEmailAddresses)
-        
-        #email_addresses = self.get_emailAddresses()
-        #if email_addresses:
-        #    self.add_preferredEmailAddress(email_addresses[0])
-        #    return filter(None, self.preferredEmailAddresses)
-        
-        return []
+        return list(filter(None, self.preferredEmailAddresses))
     
     security.declareProtected(Perms.manage_properties, 'add_preferredEmailAddress')
     def add_preferredEmailAddress(self, email):
@@ -215,8 +211,10 @@ class CustomUser(User, Folder):
         
         """
         email = self._validateAndNormalizeEmail(email)
-        if email in self.get_preferredEmailAddresses():
-            self.preferredEmailAddresses.remove(email)            
+        preferredEmailAddresses = self.get_preferredEmailAddresses()
+        if email in preferredEmailAddresses:
+            preferredEmailAddresses.remove(email)
+            self.preferredEmailAddresses = preferredEmailAddresses
         self._p_changed = 1
         
     security.declareProtected(Perms.manage_properties, 'get_password')

@@ -110,7 +110,7 @@ class CustomUserFolder(UserFolderWithGroups):
         user.domains = domains
         
         if groups is not None:
-            self.setGroupsofUser(groups, name)
+            self.setGroupsOfUser(groups, name)
 
     security.declarePrivate('_doDelUsers')
     def _doDelUsers(self, names):

@@ -95,7 +95,7 @@ class CustomUserFolder(UserFolderWithGroups):
         user.init_properties()
         user.title = name
         user.shortName = name
-        user.manage_setLocalRoles(name, ['owner'])
+        user.manage_setLocalRoles(name, ['Owner'])
         
         return 1
 

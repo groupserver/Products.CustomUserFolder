@@ -24,6 +24,7 @@ from AccessControl.User import BasicUserFolder, _remote_user_mode
 from Globals import InitializeClass
 from OFS.Folder import Folder
 from Products.NuxUserGroups import UserFolderWithGroups
+from Products.XWFCore import XWFUtils
 
 class CustomUserFolder(UserFolderWithGroups):
     """ A user folder for CampusUser users, based on the NuxUserGroup UserFolder
@@ -142,6 +143,43 @@ class CustomUserFolder(UserFolderWithGroups):
             groupnames = user.getGroups()
             self.delGroupsFromUser(groupnames, username)
     
+    security.declareProtected(Perms.manage_users, 'wf_register_user')
+    def wf_register_user(self, user_id='', email='', first_name='', last_name=''):
+        """ A method for a user to allow a user to register themselves.
+        
+        """
+        import string
+        validChars = string.letters+string.digits+'.'
+        
+        if user_id:
+            user_id_provided = True
+        
+        if user_id_provided and user_id:
+            if self.getUser(user_id):
+                raise KeyError, 'User ID %s already exists' % user_id
+        
+        valid_id = False
+        gen_user_id = XWFUtils.generate_user_id(user_id, first_name, last_name, email)
+        if not user_id:
+            user_id = gen_user_id.next()
+        while not valid_id:
+            if not self.getUser(user_id):
+                
+                for char in user_id:
+                    if char not in validChars:
+                        if user_id_provided:
+                            raise KeyError, ('User ID %s contains an invalid character'
+                                        ' (%s). Valid characters are %s.' % validChars)
+                        else:
+                            break
+                valid_id = True
+            
+            if valid_id:
+                break
+                    
+            user_id = gen_user_id.next()
+            user_id_provided = False
+            
     security.declareProtected(Perms.manage_users, 'wf_manage_users')
     def wf_manage_users(self, submit=None, REQUEST=None, RESPONSE=None):
         """ A helper submission method for the modified ZMI interface, 

@@ -28,6 +28,8 @@ class CustomUser(User, Folder):
     """ A Custom user, based on the builtin user object.
     
     """
+    version = 1.9
+    
     security = ClassSecurityInfo()
     
     meta_type = "Custom User"
@@ -86,7 +88,7 @@ class CustomUser(User, Folder):
 
         """
         self._properties = self._properties_def
-    
+        
     security.declareProtected(Perms.view, 'get_image')
     def get_image(self):
         """ Get the URL of the user's image.
@@ -139,10 +141,9 @@ class CustomUser(User, Folder):
         if self.restrictImage and (not allowbyrole) and \
            user.getId() != self.getId():
             return imageurl
- 
+            
         return imageurl
-
-    
+        
     security.declareProtected(Perms.manage_properties, 'get_emailAddresses')    
     def get_emailAddresses(self):
         """ Returns a list of all the user's email addresses.
@@ -155,7 +156,7 @@ class CustomUser(User, Folder):
     security.declareProtected(Perms.manage_properties, 'validate_emailAddresses')
     def validate_emailAddresses(self):
         """ Validate all the user's email addresses.
-
+            
         """
         for email in self.get_emailAddresses():
             self._validateAndNormalizeEmail(email)
@@ -163,7 +164,7 @@ class CustomUser(User, Folder):
     security.declarePrivate('_validateAndNormalizeEmail')
     def _validateAndNormalizeEmail(self, email):
         """ Validates and normalizes an email address.
-        
+            
         """
         import rfc822
         email = email.strip()
@@ -187,7 +188,7 @@ class CustomUser(User, Folder):
     
     security.declareProtected(Perms.manage_properties, 'add_emailAddress')
     def add_emailAddress(self, email):
-        """ Add an email address to the list of the user's email
+        """ Add an email address to the list of the user's known email
         addresses.
         
         """
@@ -214,31 +215,41 @@ class CustomUser(User, Folder):
         if email in preferredEmailAddresses:
             preferredEmailAddresses.remove(email)
             self.preferredEmailAddresses = preferredEmailAddresses
-        self._p_changed = 1            
+        self._p_changed = 1
 
     security.declareProtected(Perms.manage_properties, 'get_preferredEmailAddresses')
-    def get_preferredEmailAddresses(self):
-        """ Get the user's preferred delivery email address. If none is
-        set, it defaults to the first in the list.
+    def get_defaultDeliveryEmailAddresses(self):
+        """ Get the user's default delivery email addresses.
         
         """
         return list(filter(None, self.preferredEmailAddresses))
     
-    security.declareProtected(Perms.manage_properties, 'add_preferredEmailAddress')
-    def add_preferredEmailAddress(self, email):
-        """ Set the user's preferred delivery email address.
+    get_preferredEmailAddresses = get_defaultDeliveryEmailAddresses
+    
+    security.declareProtected(Perms.manage_properties, 'add_defaultDeliveryEmailAddress')
+    def add_defaultDeliveryEmailAddress(self, email):
+        """ Add an address to the list of addresses to which email will be delivered
+            by default.
         
         """
         email = self._validateAndNormalizeEmail(email)
-        if email not in self.preferredEmailAddresses:
-            self.preferredEmailAddresses.append(email)
+        
+        email_addresses = self.get_preferredEmailAddresses()
+        if email not in email_addresses:
+            email_addresses.append(email)
+            
+        self.preferredEmailAddresses = email_addresses
+        
         if email not in self.get_emailAddresses():
             self.add_emailAddress(email)
+        
         self._p_changed = 1
 
-    security.declareProtected(Perms.manage_properties, 'add_preferredEmailAddresses')
-    def add_preferredEmailAddresses(self, addresses):
-        """ Set all the preferred delivery email addresses.
+    add_preferredEmailAddress = add_defaultDeliveryEmailAddress
+        
+    security.declareProtected(Perms.manage_properties, 'add_defaultDeliveryEmailAddresses')
+    def add_defaultDeliveryEmailAddresses(self, addresses):
+        """ Set all the addresses to which email will be delivered by default.
         
         """
         # first clear all the preferredEmailAddresses
@@ -246,11 +257,13 @@ class CustomUser(User, Folder):
         for email in addresses:
             self.add_preferredEmailAddress(email)
         self._p_changed = 1
-
-    security.declareProtected(Perms.manage_properties, 'remove_preferredEmailAddress')
-    def remove_preferredEmailAddress(self, email):
-        """ Remove an email address from the list of user's 
-        preferred email addresses.
+    
+    add_preferredEmailAddresses = add_defaultDeliveryEmailAddresses
+    
+    security.declareProtected(Perms.manage_properties, 'remove_defaultDeliveryEmailAddress')
+    def remove_defaultDeliveryEmailAddress(self, email):
+        """ Remove an email address from the list of addresses to which email will
+            be delivered by default.
         
         """
         email = self._validateAndNormalizeEmail(email)
@@ -259,7 +272,107 @@ class CustomUser(User, Folder):
             preferredEmailAddresses.remove(email)
             self.preferredEmailAddresses = preferredEmailAddresses
         self._p_changed = 1
+    
+    remove_preferredEmailAddress = remove_defaultDeliveryEmailAddress
+    
+    security.declareProtected(Perms.manage_properties, 'set_disableDeliveryByKey')
+    def set_disableDeliveryByKey(self, key):
+        """ Disable the email delivery for a given key.
         
+            The key could represent normally represents a group, but may represent
+            something else in the future.
+        
+        """
+        disabled_property = '%s_deliveryDisabled' % key
+        if not self.hasProperty(disabled_property):
+            self.manage_addProperty(disabled_property, 1, 'boolean')
+        else:
+            self.manage_changeProperties({disabled_property: 1})
+    
+    security.declareProtected(Perms.manage_properties, 'set_enableDeliveryByKey')
+    def set_enableDeliveryByKey(self, key):
+        """ Enable the email delivery for a given key.
+        
+            The key could represent normally represents a group, but may represent
+            something else in the future.
+            
+        """
+        disabled_property = '%s_deliveryDisabled' % key
+        # we don't create the property if it doesn't exist
+        if self.hasProperty(disabled_property):
+            self.manage_changeProperties({disabled_property: 0})
+    
+    security.declareProtected(Perms.manage_properties, 'get_deliverSettingsByKey')
+    def get_deliverySettingsByKey(self, key):
+        """ Get the settings for the given key.
+        
+            returns 1 if default, 2 if non-default or 0 if disabled.
+        """
+        disabled_property = '%s_deliveryDisabled' % key
+        preferred_property = '%s_emailAddresses' % key
+        if self.getProperty(disabled_property, 0):
+            return 0
+        elif filter(None, self.getProperty(preferred_property, [])):
+            return 2
+        else:
+            return 1
+    
+    security.declareProtected(Perms.manage_properties, 'get_deliveryEmailAddressesByKey')
+    def get_deliveryEmailAddressesByKey(self, key):
+        """ Get the user's preferred delivery email address. If none is
+        set, it defaults to the first in the list.
+        
+        """
+        preferred_property = '%s_emailAddresses' % key
+        disabled_property = '%s_deliveryDisabled' % key
+        # first check to see if delivery has been disabled for that group
+        if self.getProperty(disabled_property, 0):
+            return []
+        
+        # next check to see if we've customised the delivery options for that group
+        group_email_addresses = list(filter(None,
+                                            self.getProperty(preferred_property, [])))
+        if group_email_addresses:
+            return group_email_addresses
+        
+        # finally, return the default settings
+        return list(filter(None, self.preferredEmailAddresses))
+    
+    security.declareProtected(Perms.manage_properties, 'add_deliveryEmailAddressByKey')
+    def add_deliveryEmailAddressByKey(self, key, email):
+        """ Add an email address as a modified delivery option for a specific
+        group.
+        
+        """
+        email = self._validateAndNormalizeEmail(email)
+        property = '%s_emailAddresses' % key
+        if not self.hasProperty(property):
+            self.manage_addProperty(property, '', 'ulines')
+        
+        email_addresses = list(self.getProperty(property, []))
+        email_addresses.append(email)
+        
+        self.manage_changeProperties({property: email_addresses})
+    
+    security.declareProtected(Perms.manage_properties, 'remove_deliveryEmailAddressByKey')
+    def remove_deliveryEmailAddressByKey(self, key, email):
+        """ Remove an email address as a modified delivery option for a specific
+        group.
+        
+        """
+        email = self._validateAndNormalizeEmail(email)
+        property = '%s_emailAddresses' % key
+        
+        email_addresses = list(self.getProperty(property, []))
+        if email in email_addresses:
+            email_addresses.remove(email)
+        # if we have email addresses still, update the property
+        if email_addresses:
+            self.manage_changeProperties({property: email_addresses})
+        # otherwise remove the property entirely
+        else:
+            self.manage_delProperties([property])
+            
     security.declareProtected(Perms.manage_properties, 'get_password')
     def get_password(self):
         """ Get the user's password. Note, if the password is encrypted,

@@ -101,6 +101,7 @@ class CustomUserFolder(UserFolderWithGroups):
         
         """
         import CustomUser
+        
         user_folder = self._getUserFolder()
         if password is not None and self.encrypt_passwords:
             password = self._encryptPassword(password)
@@ -108,6 +109,7 @@ class CustomUserFolder(UserFolderWithGroups):
         CustomUser.addCustomUser(user_folder, name, password, roles, domains)
         
         user = self.getUser(name)
+        
         user.init_properties()
         user.title = name
         user.shortName = name

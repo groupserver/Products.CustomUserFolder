@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-3.5.dtd">
 <!-- Project file for project CustomUserFolder -->
-<!-- Saved: 2004-10-14, 21:46:19 -->
+<!-- Saved: 2004-10-22, 15:14:06 -->
 <!-- Copyright (C) 2004 Richard Waid, richard@iopen.net -->
 <Project version="3.5">
   <Description></Description>
@@ -38,6 +38,9 @@
   <Interfaces>
   </Interfaces>
   <Others>
+    <Other>
+      <Name>TODO</Name>
+    </Other>
   </Others>
   <Vcs>
     <VcsType>Subversion</VcsType>

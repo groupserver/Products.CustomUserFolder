@@ -94,7 +94,11 @@ class CustomUser(User, Folder):
         ptype_templates = getattr(presentation, n_type, None)
         if not ptype_templates:
             return None
-        
+
+        ignore_ids = getattr(ptype_templates, 'ignore_ids', [])
+        if n_id in ignore_ids:
+            return None        
+
         template = (getattr(ptype_templates.aq_explicit, n_id, None) or
                     getattr(ptype_templates.aq_explicit, 'default', None))
         if not template:

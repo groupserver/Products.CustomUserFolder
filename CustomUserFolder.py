@@ -3,8 +3,9 @@
 #
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 from AccessControl import ClassSecurityInfo
-from AccessControl.User import BasicUserFolder
-from Globals import InitializeClass, PersistentMapping
+from AccessControl import Permissions as Perms
+from AccessControl.User import BasicUserFolder, _remote_user_mode
+from Globals import InitializeClass, PersistentMapping, DTMLFile
 from OFS.Folder import Folder
 from Products.NuxUserGroups import UserFolderWithGroups
 
@@ -18,6 +19,10 @@ class CustomUserFolder(UserFolderWithGroups):
     title = 'Custom User Folder'
     icon ='p_/UserFolder'
     
+    security.declarePrivate('_add_User')
+    _add_User = DTMLFile('zpt/addUser', globals(),
+                         remote_user_mode__=_remote_user_mode)
+    
     def __init__(self, user_folder_id):
         """ Initialize the data storage.
            
@@ -25,12 +30,14 @@ class CustomUserFolder(UserFolderWithGroups):
         self.user_folder_id = user_folder_id
         UserFolderWithGroups.__init__(self)
         
+    security.declarePrivate('_getUserFolder')
     def _getUserFolder(self):
         """ Return the folder object that contains the user objects,  or None.
         
         """
         return getattr(self, self.user_folder_id, None)
 
+    security.declareProtected(Perms.manage_users, 'get_userByEmail')
     def get_userByEmail(self, email):
         """ Get the user by email address.
         
@@ -40,6 +47,7 @@ class CustomUserFolder(UserFolderWithGroups):
                 return user
         return None
         
+    security.declareProtected(Perms.manage_users, 'get_userByEmail')
     def getUserNames(self):
         """ Return a list of usernames.
         
@@ -50,6 +58,7 @@ class CustomUserFolder(UserFolderWithGroups):
         
         return names
     
+    security.declareProtected(Perms.manage_users, 'getUsers')
     def getUsers(self):
         """ Return a list of user objects.
         
@@ -59,6 +68,7 @@ class CustomUserFolder(UserFolderWithGroups):
         
         return users
     
+    security.declareProtected(Perms.manage_users, 'getUser')
     def getUser(self, name):
         """ Return the named user object or None.
         
@@ -66,6 +76,7 @@ class CustomUserFolder(UserFolderWithGroups):
         user_folder = self._getUserFolder()
         return getattr(user_folder, name, None)
     
+    security.declarePrivate('_doAddUser')
     def _doAddUser(self, name, password, roles, domains, groups=(), **kw):
         """ Create a new user.
         
@@ -84,6 +95,7 @@ class CustomUserFolder(UserFolderWithGroups):
         
         return 1
 
+    security.declarePrivate('_doChangeUser')
     def _doChangeUser(self, name, password, roles, domains, groups=None, **kw):
         user = self.getUser(name)
         if password is not None:
@@ -96,6 +108,7 @@ class CustomUserFolder(UserFolderWithGroups):
         if groups is not None:
             self.setGroupsofUser(groups, name)
 
+    security.declarePrivate('_doDelUsers')
     def _doDelUsers(self, names):
         user_folder = self._getUserFolder()
         user_folder.manage_delObjects(names)
@@ -107,6 +120,7 @@ class CustomUserFolder(UserFolderWithGroups):
             groupnames = user.getGroups()
             self.delGroupsFromUser(groupnames, username)
         
+    security.declarePrivate('_createInitialUser')
     def _createInitialUser(self):
         """
         If there are no users or only one user in this user folder,

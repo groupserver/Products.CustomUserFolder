@@ -151,12 +151,17 @@ class CustomUserFolder(UserFolderWithGroups):
         import string
         validChars = string.letters+string.digits+'.'
         
+        user_id_provided = False
         if user_id:
             user_id_provided = True
         
         if user_id_provided and user_id:
             if self.getUser(user_id):
                 raise KeyError, 'User ID %s already exists' % user_id
+        
+        if email:
+            if self.get_userByEmail(email):
+                raise KeyError, 'A user already exists with email address %s' % email
         
         valid_id = False
         gen_user_id = XWFUtils.generate_user_id(user_id, first_name, last_name, email)

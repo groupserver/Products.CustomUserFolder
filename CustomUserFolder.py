@@ -75,7 +75,7 @@ class CustomUserFolder(UserFolderWithGroups):
         if password is not None and self.encrypt_passwords:
             password = self._encryptPassword(password)
                     
-        CustomUser.addCustomUser(user_folder, name, password, roles, domains, groups)
+        CustomUser.addCustomUser(user_folder, name, password, roles, domains)
         
         user = self.getUser(name)
         user.init_properties()

@@ -267,11 +267,11 @@ class ValidationError(Exception):
     
 allow_class(ValidationError)
 
-def addCustomUser(self, name, password, roles, domains, groups):
+def addCustomUser(self, name, password, roles, domains):
     """ Add a CustomUser to a folder.
 
     """
-    ob = CustomUser(name, password, roles, domains, groups)
+    ob = CustomUser(name, password, roles, domains)
     self._setObject(name, ob)
     
 #InitializeClass(CustomUser)

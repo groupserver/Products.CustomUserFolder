@@ -259,7 +259,7 @@ class CustomUserFolder(UserFolderWithGroups):
                 
         return self.manage_users(submit, REQUEST, RESPONSE)
 
-    security.declareProtected(Perms.manage_users, 'verify_userFromEmail')
+    security.declarePublic('verify_userFromEmail')
     def verify_userFromEmail(self, Mail):
         """ Verify the user from an email.
 

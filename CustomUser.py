@@ -29,9 +29,11 @@ class CustomUser(User, Folder):
     shortName = ''
     currentDivision = ''
     restrictImage = 1
+    unrestrictedImageRoles = []
     _properties_def = (
         {'id': 'emailAddresses', 'type': 'lines', 'mode': 'w'},
         {'id': 'preferredEmailAddresses', 'type': 'lines', 'mode': 'w'},
+        {'id': 'unrestrictedImageRoles', 'type': 'lines', 'mode': 'w'},
         {'id': 'firstName', 'type': 'string', 'mode': 'w'},
         {'id': 'lastName', 'type': 'string', 'mode': 'w'},
         {'id': 'preferredName', 'type': 'string', 'mode': 'w'},
@@ -60,6 +62,7 @@ class CustomUser(User, Folder):
         self.shortName = ''
         self.restrictImage = 1
         self.currentDivision = ''
+        self.unrestrictedImageRoles = []
         self._p_changed = 1
                 
     security.declareProtected(Perms.manage_properties, 'refresh_properties')

@@ -94,9 +94,9 @@ class CustomUser(User, Folder):
             newid = ''
             for char in id:
                 if char in valid_chars:
-                    new_id += char
+                    newid += char
                 else:
-                    new_id += '-'
+                    newid += '-'
             image = getattr(contactsimages, newid, None)
             
             if image:

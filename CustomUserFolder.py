@@ -144,7 +144,8 @@ class CustomUserFolder(UserFolderWithGroups):
             self.delGroupsFromUser(groupnames, username)
     
     security.declareProtected(Perms.manage_users, 'wf_register_user')
-    def wf_register_user(self, user_id='', email='', first_name='', last_name=''):
+    def wf_register_user(self, user_id='', email='', first_name='', last_name='',
+                         password_length=8):
         """ A method for a user to allow a user to register themselves.
         
         """
@@ -184,8 +185,10 @@ class CustomUserFolder(UserFolderWithGroups):
                     
             user_id = gen_user_id.next()
             user_id_provided = False
-            
-        return user_id
+       
+        password = XWFUtils.generate_password(password_length)
+        
+        return (user_id, password)
             
     security.declareProtected(Perms.manage_users, 'wf_manage_users')
     def wf_manage_users(self, submit=None, REQUEST=None, RESPONSE=None):

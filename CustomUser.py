@@ -86,7 +86,7 @@ class CustomUser(User, Folder):
         fname = self.firstName.lower()
         lname = self.lastName.lower()
         pname = self.preferredName.lower()
-        valid_chars = string.letters+string.digits
+        valid_chars = string.letters+string.digits+'_'
         imageurl = None
         for id in ['%s.jpg' % self.getId(),
                        '%s_%s_%s.jpg' % (lname, fname, self.getId()),

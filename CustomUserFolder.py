@@ -23,6 +23,7 @@ class CustomUserFolder(UserFolderWithGroups):
            
         """
         self.user_folder_id = user_folder_id
+        UserFolderWithGroups.__init__(self)
         
     def _getUserFolder(self):
         """ Return the folder object that contains the user objects,  or None.

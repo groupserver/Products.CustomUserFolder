@@ -149,7 +149,7 @@ class CustomUser(User, Folder):
         
         """
         email = self._validateAndNormalizeEmail(email)
-        email_addresses = self.emailAddresses
+        email_addresses = list(self.emailAddresses)
         if email not in email_addresses:
             email_addresses.append(email)
         

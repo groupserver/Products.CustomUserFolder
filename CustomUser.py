@@ -89,7 +89,7 @@ class CustomUser(User, Folder):
 
         """
         site_root = self.site_root()
-        presentation = self.Templates.email.notifications.aq_explicit
+        presentation = site_root.Templates.email.notifications.aq_explicit
                 
         ptype_templates = getattr(presentation, n_type, None)
         if not ptype_templates:
@@ -364,8 +364,8 @@ class CustomUser(User, Folder):
         disabled_property = '%s_deliveryDisabled' % key
         if self.hasProperty(disabled_property):
             self.manage_changeProperties({disabled_property: 1})
-	else:
-	    self.manage_addProperty(disabled_property, 1, 'boolean')
+        else:
+            self.manage_addProperty(disabled_property, 1, 'boolean')
         
     security.declareProtected(Perms.manage_properties, 'set_enableDeliveryByKey')
     def set_enableDeliveryByKey(self, key):
@@ -392,7 +392,7 @@ class CustomUser(User, Folder):
         if self.hasProperty(digest_property):
             self.manage_changeProperties({digest_property: 1})
         else:
-	    self.manage_addProperty(digest_property, 1, 'boolean')
+            self.manage_addProperty(digest_property, 1, 'boolean')
     
     security.declareProtected(Perms.manage_properties, 'set_disableDigestByKey')
     def set_disableDigestByKey(self, key):
@@ -416,11 +416,11 @@ class CustomUser(User, Folder):
         """
         disabled_property = '%s_deliveryDisabled' % key
         preferred_property = '%s_emailAddresses' % key
-	digest_property = '%s_digest' % key
+        digest_property = '%s_digest' % key
         if self.getProperty(disabled_property, 0):
             return 0
-	elif self.getProperty(digest_property, 0):
-	    return 3
+        elif self.getProperty(digest_property, 0):
+            return 3
         elif filter(None, self.getProperty(preferred_property, [])):
             return 2
         else:
@@ -538,13 +538,21 @@ class CustomUser(User, Folder):
         return 1
    
     security.declareProtected(Perms.manage_properties, 'send_userVerification')
-    def send_userVerification(self):
+    def send_userVerification(self, n_id='default'):
         """ Send the user a verification email.
         
         """
-        presentation = self.Templates.email
         site_root = self.site_root()
+        presentation = site_root.Templates.email.notifications.aq_explicit
                 
+        p_templates = getattr(presentation, 'confirm_registration', None)
+        if not p_templates:
+            raise AttributeError, "Can't find a confirm_registration template"
+
+        template = getattr(p_templates.aq_explicit, n_id, None)
+        if not template:
+            raise AttributeError, "Unable to find confirm_registration/%s" % n_id 
+            
         try:
             mailhost = site_root.superValues('Mail Host')[0]
         except:
@@ -554,14 +562,14 @@ class CustomUser(User, Folder):
         email_strings = []
         for email_address in email_addresses:
             email_strings.append(
-                presentation.confirm_registration(self,
-                                                  self.REQUEST,
-                                                  to_addr=email_address,
-                                                  verification_code=self.get_verificationCode(),
-                                                  first_name=self.getProperty('firstName', ''),
-                                                  last_name=self.getProperty('lastName', ''),
-                                                  user_id=self.getId(),
-                                                  password=self.get_password()))
+                template(self,
+                         self.REQUEST,
+                         to_addr=email_address,
+                         verification_code=self.get_verificationCode(),
+                         first_name=self.getProperty('firstName', ''),
+                         last_name=self.getProperty('lastName', ''),
+                         user_id=self.getId(),
+                         password=self.get_password()))
         
         for email_string in email_strings:
             mailhost.send(email_string)

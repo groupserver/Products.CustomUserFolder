@@ -180,6 +180,8 @@ class CustomUserFolder(UserFolderWithGroups):
             user_id = gen_user_id.next()
             user_id_provided = False
             
+        return user_id
+            
     security.declareProtected(Perms.manage_users, 'wf_manage_users')
     def wf_manage_users(self, submit=None, REQUEST=None, RESPONSE=None):
         """ A helper submission method for the modified ZMI interface, 

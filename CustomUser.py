@@ -391,22 +391,46 @@ class CustomUser(User, Folder):
         """
         return getattr(self, '_verificationCode', None)
             
-    security.declareProtected(Perms.manage_properties, 'set_verificationWF')
-    def set_verificationWF(self, wf_items):
-        """ Set the methods that will be called on the user post verification.
+    security.declareProtected(Perms.manage_properties, 'set_verificationGroups')
+    def set_verificationGroups(self, groups):
+        """ Set the groups that user will be assigned to post verification.
         
         """
-        self._verificationWF = wf_items
+        self._verificationGroups = groups
         
         return 1
         
-    security.declareProtected(Perms.manage_properties, 'set_verificationWF')
-    def get_verificationWF(self, wf_items):
-        """ Get the methods that will be called on the user post verification.
+    security.declareProtected(Perms.manage_properties, 'set_verificationGroups')
+    def get_verificationGroups(self, groups):
+        """ Get the groups that the user will be assigned to post verification.
         
         """
-        return getattr(self, '_verificationWF', ())
-                
+        return getattr(self, '_verificationGroups', ())
+   
+    security.declareProtected(Perms.manage_properties, 'send_userVerification')
+    def send_userVerification(self):
+        """ Send the user a verification email.
+        
+        """
+        presentation = self.Presentation.Tofu.Registration.email
+        
+        try:
+            mailhost = self.superValues('Mail Host')[0]
+        except:
+            raise AttributeError, "Can't find a Mail Host object"
+        
+        email_addresses = self.get_emailAddresses()
+        email_strings = []
+        for email_address in email_addresses:
+            email_strings.append(
+                presentation.confirm_registration(to_addr=email_address,
+                                                  verification_code=self.get_verificationCode()))
+        
+        for email_string in email_strings:
+            mailhost.send(email_string)
+        
+        return email_strings
+    
     security.declareProtected(Perms.manage_properties, 'get_password')
     def get_password(self):
         """ Get the user's password. Note, if the password is encrypted,

@@ -145,7 +145,7 @@ class CustomUserFolder(UserFolderWithGroups):
     
     security.declareProtected(Perms.manage_users, 'register_user')
     def register_user(self, email, user_id='', first_name='', last_name='',
-                      password_length=8, roles=[], groups=[], post_wf=[]):
+                      password_length=8, roles=[], groups=[], post_groups=[]):
         """ A method for a user to allow a user to register themselves.
         
         """
@@ -210,7 +210,7 @@ class CustomUserFolder(UserFolderWithGroups):
             
             verification_code = user.set_verificationCode()
             
-            user.set_verificationWF(post_wf)
+            user.set_verificationGroups(post_groups)
             
             return (user_id, password, verification_code)
             

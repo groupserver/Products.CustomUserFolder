@@ -79,6 +79,27 @@ class CustomUser(User, Folder):
         """
         import sys
         from AccessControl import getSecurityManager
+        
+        contactsimages = getattr(self, 'contactsimages', None)
+        if not contactsimages:
+            return None
+        
+        imageurl = None
+        for id in ['%s.jpg' % self.getId(), '%s.jpg' % self.getId()]:
+            image = getattr(contactsimages, id, None)
+            if image:
+                imageurl = image.absolute_url(1)
+                break
+        
+        # if we don't have an image, shortcut the checks
+        if not imageurl: return None
+        
+        # check to see if we have a global override
+        globalconfig = getattr(self, 'GlobalConfiguration', None)
+        if globalconfig:
+            if getattr(globalconfig, 'alwaysShowMemberPhotos'):
+                return imageurl
+        
         user = getSecurityManager().getUser()
         roles = user.getRoles()
         allowbyrole = 0
@@ -86,16 +107,11 @@ class CustomUser(User, Folder):
             if role in self.unrestrictedImageRoles:
                 allowbyrole = 1
                 break
-        contactsimages = getattr(self, 'contactsimages', None)
+                
         imageurl = None
         if self.restrictImage and (not allowbyrole) and \
            user.getId() != self.getId():
             return imageurl
-        for id in ['%s.jpg' % self.getId(), '%s.jpg' % self.getId()]:
-            image = getattr(self.contactsimages, id, None)
-            if image:
-                imageurl = image.absolute_url(1)
-                break
  
         return imageurl
 

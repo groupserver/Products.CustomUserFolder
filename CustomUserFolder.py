@@ -6,9 +6,10 @@ from AccessControl import ClassSecurityInfo
 from AccessControl.User import BasicUserFolder
 from Globals import InitializeClass, PersistentMapping
 from OFS.Folder import Folder
+from Products.NuxUserGroups import UserFolderWithGroups
 
-class CustomUserFolder(BasicUserFolder):
-    """ A user folder for CampusUser users, based on the standard UserFolder
+class CustomUserFolder(UserFolderWithGroups):
+    """ A user folder for CampusUser users, based on the NuxUserGroup UserFolder
     interface.
     
     """
@@ -64,7 +65,7 @@ class CustomUserFolder(BasicUserFolder):
         user_folder = self._getUserFolder()
         return getattr(user_folder, name, None)
     
-    def _doAddUser(self, name, password, roles, domains, **kw):
+    def _doAddUser(self, name, password, roles, domains, groups=(), **kw):
         """ Create a new user.
         
         """
@@ -82,7 +83,7 @@ class CustomUserFolder(BasicUserFolder):
         
         return 1
 
-    def _doChangeUser(self, name, password, roles, domains, **kw):
+    def _doChangeUser(self, name, password, roles, domains, groups=None, **kw):
         user = self.getUser(name)
         if password is not None:
             if self.encrypt_passwords:
@@ -91,9 +92,19 @@ class CustomUserFolder(BasicUserFolder):
         user.roles = roles
         user.domains = domains
         
+        if groups is not None:
+            self.setGroupsofUser(groups, name)
+
     def _doDelUsers(self, names):
         user_folder = self._getUserFolder()
         user_folder.manage_delObjects(names)
+        
+        for username in names:
+            user = self.getUser(username)
+            if user is None:
+                raise KeyError, 'User "%s" does not exist' % username
+            groupnames = user.getGroups()
+            self.delGroupsFromUser(groupnames, username)
         
     def _createInitialUser(self):
         """

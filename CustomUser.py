@@ -77,18 +77,28 @@ class CustomUser(User, Folder):
         """ Get the URL of the user's image.
 
         """
-        import sys
+        import sys, string
         from AccessControl import getSecurityManager
         
         contactsimages = getattr(self, 'contactsimages', None)
         if not contactsimages:
             return None
-        
+        fname = self.firstName.lower()
+        lname = self.lastName.lower()
+        pname = self.preferredName.lower()
+        valid_chars = string.letters+string.digits
         imageurl = None
         for id in ['%s.jpg' % self.getId(),
-                       '%s_%s_%s.jpg' % (self.lastName.lower(), self.firstName.lower(), self.getId()),
-                       '%s_%s_%s.jpg' % (self.lastName.lower(), self.preferredName.lower(), self.getId())]:
-            image = getattr(contactsimages, id.replace(' ', '-'), None)
+                       '%s_%s_%s.jpg' % (lname, fname, self.getId()),
+                       '%s_%s_%s.jpg' % (lname, pname, self.getId())]:
+            newid = ''
+            for char in id:
+                if char in valid_chars:
+                    new_id += char
+                else:
+                    new_id += '-'
+            image = getattr(contactsimages, newid, None)
+            
             if image:
                 imageurl = image.absolute_url(1)
                 break

@@ -144,7 +144,7 @@ class CustomUserFolder(UserFolderWithGroups):
             self.delGroupsFromUser(groupnames, username)
     
     security.declareProtected(Perms.manage_users, 'register_user')
-    def register_user(self, user_id='', email='', first_name='', last_name='',
+    def register_user(self, email, user_id='', first_name='', last_name='',
                       password_length=8, roles=[], groups=[], post_wf=[]):
         """ A method for a user to allow a user to register themselves.
         
@@ -160,9 +160,8 @@ class CustomUserFolder(UserFolderWithGroups):
             if self.getUser(user_id):
                 raise KeyError, 'User ID %s already exists' % user_id
         
-        if email:
-            if self.get_userByEmail(email):
-                raise KeyError, 'A user already exists with email address %s' % email
+        if self.get_userByEmail(email):
+            raise KeyError, 'A user already exists with email address %s' % email
         
         valid_id = False
         gen_user_id = XWFUtils.generate_user_id(user_id, first_name, last_name, email)
@@ -193,11 +192,12 @@ class CustomUserFolder(UserFolderWithGroups):
         if user:
             user.manage_changeProperties({'firstName': first_name,
                                           'lastName': last_name})
-                                          
+            user.add_defaultDeliveryEmailAddress(email)
+            
             verification_code = user.set_verificationCode()
             
             user.set_verificationWF(post_wf)
-                   
+            
             return (user_id, password, verification_code)
             
         return None

@@ -424,6 +424,7 @@ class CustomUser(User, Folder):
         for email_address in email_addresses:
             email_strings.append(
                 presentation.confirm_registration(self,
+                                                  self.REQUEST,
                                                   to_addr=email_address,
                                                   verification_code=self.get_verificationCode(),
                                                   first_name=self.getProperty('firstName', ''),

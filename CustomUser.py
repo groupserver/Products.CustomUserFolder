@@ -27,6 +27,7 @@ class CustomUser(User, Folder):
     biography = ''
     title = ''
     shortName = ''
+    currentDivision = ''
     restrictImage = 1
     _properties_def = (
         {'id': 'emailAddresses', 'type': 'lines', 'mode': 'w'},
@@ -40,6 +41,7 @@ class CustomUser(User, Folder):
         {'id': 'restrictImage', 'type': 'boolean', 'mode': 'w'},
         {'id': 'title', 'type': 'string', 'mode': 'w'},
         {'id': 'shortName', 'type': 'string', 'mode': 'w'},
+        {'id': 'currentDivision', 'type': 'string', 'mode': 'w'},    
         )
 
     _properties = _properties_def
@@ -57,6 +59,7 @@ class CustomUser(User, Folder):
         self.title = ''
         self.shortName = ''
         self.restrictImage = 1
+        self.currentDivision = ''
         self._p_changed = 1
                 
     security.declareProtected(Perms.manage_properties, 'refresh_properties')
@@ -74,8 +77,25 @@ class CustomUser(User, Folder):
         import sys
         from AccessControl import getSecurityManager
         user = getSecurityManager().getUser()
+        roles = user.getRoles()
+        allowbyrole = 0
+        for role in roles:
+            if role in self.unrestrictedImageRoles:
+                allowbyrole = 1
+                break
+        contactsimages = getattr(self, 'contactsimages', None)
+        imageurl = None
+        if self.restrictImage and (not allowbyrole) and \
+           user.getId() != self.getId():
+            return imageurl
+        for id in ['%s.jpg' % self.getId(), '%s.jpg' % self.getId()]:
+            image = getattr(self.contactsimages, id, None)
+            if image:
+                imageurl = image.absolute_url(1)
+                break
+ 
+        return imageurl
 
-        return None
     
     security.declareProtected(Perms.manage_properties, 'get_emailAddresses')    
     def get_emailAddresses(self):

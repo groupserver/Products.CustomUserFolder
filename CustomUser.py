@@ -597,6 +597,13 @@ class CustomUser(User, Folder):
             presentation = getattr(self, 'index_html')
         return presentation()
 
+    def upgrade(self):
+        """ Upgrade existing objects.
+	
+	"""
+	# originally we weren't setting the ID correctly
+	self.id = self.getId()
+
 class ValidationError(Exception):
     """ Raised if an email address is invalid.
     
@@ -609,5 +616,6 @@ def addCustomUser(self, name, password, roles, domains):
 
     """
     ob = CustomUser(name, password, roles, domains)
+    ob.id = ob.getId() # make sure we have an actual ID
     self._setObject(name, ob)
     

@@ -475,7 +475,10 @@ class CustomUser(User, Folder):
             self.manage_changeProperties({property: email_addresses})
         # otherwise remove the property entirely
         else:
-            self.manage_delProperties([property])
+            try:
+                self.manage_delProperties([property])
+            except:
+                pass
                 
     security.declareProtected(Perms.manage_properties, 'set_verificationCode')
     def set_verificationCode(self):

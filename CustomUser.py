@@ -88,7 +88,7 @@ class CustomUser(User, Folder):
         for id in ['%s.jpg' % self.getId(),
                        '%s_%s_%s.jpg' % (self.lastName, self.firstName, self.getId()),
                        '%s_%s_%s.jpg' % (self.lastName, self.preferredName, self.getId())]:
-            image = getattr(contactsimages, id, None)
+            image = getattr(contactsimages, id.replace(' ', '-'), None)
             if image:
                 imageurl = image.absolute_url(1)
                 break

@@ -143,9 +143,9 @@ class CustomUserFolder(UserFolderWithGroups):
             groupnames = user.getGroups()
             self.delGroupsFromUser(groupnames, username)
     
-    security.declareProtected(Perms.manage_users, 'wf_register_user')
-    def wf_register_user(self, user_id='', email='', first_name='', last_name='',
-                         password_length=8):
+    security.declareProtected(Perms.manage_users, 'register_user')
+    def register_user(self, user_id='', email='', first_name='', last_name='',
+                      password_length=8, roles=[], groups=[], post_wf=[]):
         """ A method for a user to allow a user to register themselves.
         
         """
@@ -185,11 +185,23 @@ class CustomUserFolder(UserFolderWithGroups):
                     
             user_id = gen_user_id.next()
             user_id_provided = False
-       
+        
         password = XWFUtils.generate_password(password_length)
         
-        return (user_id, password)
+        self._doAddUser(user_id, password, roles, [], groups)
+        user = self.getUser(user_id)
+        if user:
+            user.manage_changeProperties({'firstName': first_name,
+                                          'lastName': last_name})
+                                          
+            verification_code = user.set_verificationCode()
             
+            user.set_verificationWF(post_wf)
+                   
+            return (user_id, password, verification_code)
+            
+        return None
+        
     security.declareProtected(Perms.manage_users, 'wf_manage_users')
     def wf_manage_users(self, submit=None, REQUEST=None, RESPONSE=None):
         """ A helper submission method for the modified ZMI interface, 

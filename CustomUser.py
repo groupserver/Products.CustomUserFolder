@@ -372,7 +372,40 @@ class CustomUser(User, Folder):
         # otherwise remove the property entirely
         else:
             self.manage_delProperties([property])
+                
+    security.declareProtected(Perms.manage_properties, 'set_verificationCode')
+    def set_verificationCode(self):
+        """ Set the methods that will be called on the user post verification.
+        
+        """
+        vc = XWFUtils.generate_accesscode()
+        self._verificationCode = vc
+        
+        return vc
+        
+    security.declareProtected(Perms.manage_properties, 'get_verificationCode')
+    def get_verificationCode(self):
+        """ Get the methods that will be called on the user post verification.
+        
+        """
+        return getattr(self, '_verificationCode', None)
             
+    security.declareProtected(Perms.manage_properties, 'set_verificationWF')
+    def set_verificationWF(self, wf_items):
+        """ Set the methods that will be called on the user post verification.
+        
+        """
+        self._verificationWF = wf_items
+        
+        return 1
+        
+    security.declareProtected(Perms.manage_properties, 'set_verificationWF')
+    def get_verificationWF(self, wf_items):
+        """ Get the methods that will be called on the user post verification.
+        
+        """
+        return getattr(self, '_verificationWF', ())
+                
     security.declareProtected(Perms.manage_properties, 'get_password')
     def get_password(self):
         """ Get the user's password. Note, if the password is encrypted,

@@ -259,7 +259,7 @@ class CustomUserFolder(UserFolderWithGroups):
 
         """
         import re
-        
+
         if not HaveMailBoxer:
             raise ImportError, ('MailBoxerTools is not available, unable to '
                                 'verify user from email')
@@ -269,12 +269,12 @@ class CustomUserFolder(UserFolderWithGroups):
         
         subject = MailBoxerTools.mime_decode_header(mailHeader.get('subject',
                                                                    ''))
-        
         try:
             verification_code = re.findall('{(.*?)}', subject)[0]
+            verification_code = re.sub('\s', '', verification_code)
         except:
             verification_code = ''
-        
+
         user = self.get_userByVerificationCode(verification_code)
         
         if user:

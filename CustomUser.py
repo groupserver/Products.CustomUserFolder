@@ -83,28 +83,23 @@ class CustomUser(User, Folder):
         self.unrestrictedImageRoles = []
         self._p_changed = 1
 
-    security.declareProtected(Perms.manage_properties, 'add_groupWithNotification')
-    def add_groupWithNotification(self, group):
-        """ Add a group to the user, and if available, send them a notification.
-        
+    def send_notification(self, n_type, n_id):
+        """ Send a notification to the user based on the type and ID of the
+            notification.
+
         """
-        presentation = self.Templates.email
-        acl_users = getattr(self, 'acl_users', None)
         site_root = self.site_root()
-
-        if acl_users:
-            try:
-                acl_users.addGroupsToUser([group], self.getId())
-            except:
-                return 0                
-  
-        template_id = '%s_notification' % group
+        presentation = self.Templates.email.notifications
+                
+        ptype_templates = getattr(presentation, n_type, None)
+        if not ptype_templates:
+            return None
         
-        template = (getattr(presentation, template_id, None) or
-                    getattr(presentation, 'default_notification', None))
+        template = (getattr(ptype_templates, n_id, None) or
+                    getattr(ptype_templates, 'default', None))
         if not template:
-            return template
-
+            return None
+        
         try:
             mailhost = site_root.superValues('Mail Host')[0]
         except:
@@ -117,10 +112,46 @@ class CustomUser(User, Folder):
             email_strings.append(
                 template(self, self.REQUEST,
                          to_addr=email_address,
-                         group=group))
+                         n_id=n_id,
+                         n_type=n_type))
                 
         for email_string in email_strings:
             mailhost.send(email_string)
+        
+        return 1
+
+    security.declareProtected(Perms.manage_properties, 'add_groupWithNotification')
+    def add_groupWithNotification(self, group):
+        """ Add a group to the user, and if available, send them a notification.
+        
+        """
+        acl_users = getattr(self, 'acl_users', None)
+        
+        if acl_users:
+            try:
+                acl_users.addGroupsToUser([group], self.getId())
+            except:
+                return 0                
+  
+        self.send_notification('add_group', group)
+
+        return 1
+
+    security.declareProtected(Perms.manage_properties, 'del_groupWithNotification')
+    def del_groupWithNotification(self, group):
+        """ Add a group to the user, and if available, send them a notification.
+        
+        """
+        acl_users = getattr(self, 'acl_users', None)
+        site_root = self.site_root()
+
+        if acl_users:
+            try:
+                acl_users.delGroupsFromUser([group], self.getId())
+            except:
+                return 0                
+  
+        self.send_notification('del_group', group)
         
         return 1
             

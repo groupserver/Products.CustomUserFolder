@@ -20,10 +20,11 @@
 from AccessControl import ClassSecurityInfo
 from AccessControl import Permissions as Perms
 from AccessControl.User import User
-from ZODB import PersistentList
 from AccessControl import allow_class
 from OFS.Folder import Folder
 from Products.XWFCore import XWFUtils
+
+from Globals import InitializeClass
 
 class CustomUser(User, Folder):
     """ A Custom user, based on the builtin user object.
@@ -603,6 +604,8 @@ class CustomUser(User, Folder):
 	"""
 	# originally we weren't setting the ID correctly
 	self.id = self.getId()
+
+InitializeClass(CustomUser)
 
 class ValidationError(Exception):
     """ Raised if an email address is invalid.

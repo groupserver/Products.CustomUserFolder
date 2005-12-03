@@ -17,7 +17,7 @@
 # You MUST follow the rules in http://iopen.net/STYLE before checking in code
 # to the trunk. Code which does not follow the rules will be rejected.
 #
-import CustomUserFolder
+import CustomUserFolder, CustomUser
 def initialize(context):
     # import lazily and defer initialization to the module
     CustomUserFolder.initialize(context)

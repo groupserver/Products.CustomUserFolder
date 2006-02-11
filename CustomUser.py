@@ -84,9 +84,11 @@ class CustomUser(User, Folder):
         self.unrestrictedImageRoles = []
         self._p_changed = 1
 
-    def send_notification(self, n_type, n_id):
+    def send_notification(self, n_type, n_id, n_dict={}, email_only={}):
         """ Send a notification to the user based on the type and ID of the
             notification.
+
+            An optional dictionary of values may be passed to the template.
 
         """
         site_root = self.site_root()
@@ -109,8 +111,16 @@ class CustomUser(User, Folder):
             mailhost = site_root.superValues('Mail Host')[0]
         except:
             raise AttributeError, "Can't find a Mail Host object"
-        
-        email_addresses = self.get_defaultDeliveryEmailAddresses()
+
+        email_addresses = []
+        if email_only:
+            # make sure the email address are really addresses of our user
+            email_only = map(lambda x: x.lower(), email_only)
+            for email in self.get_emailAddresses():
+                if email.lower() in email_only:
+                    email_addresses.append(email)
+        else:
+            email_addresses = self.get_defaultDeliveryEmailAddresses()
         
         email_strings = []
         for email_address in email_addresses:
@@ -118,7 +128,8 @@ class CustomUser(User, Folder):
                 template(self, self.REQUEST,
                          to_addr=email_address,
                          n_id=n_id,
-                         n_type=n_type))
+                         n_type=n_type,
+                         n_dict=n_dict))
          
         for email_string in email_strings:
             mailhost.send(email_string)
@@ -137,9 +148,15 @@ class CustomUser(User, Folder):
                 acl_users.addGroupsToUser([group], self.getId())
             except:
                 return 0                
-  
-        self.send_notification('add_group', group)
-
+        
+        try:
+            self.send_notification('add_group', group)
+        except:
+            # we really can't do much, because if we fail here, we may
+            # cause the person to get an email over and over if they're
+            # joining more than one group
+            pass
+        
         return 1
 
     security.declareProtected(Perms.manage_properties, 'del_groupWithNotification')
@@ -155,8 +172,14 @@ class CustomUser(User, Folder):
                 acl_users.delGroupsFromUser([group], self.getId())
             except:
                 return 0                
-  
-        self.send_notification('del_group', group)
+
+        try:
+            self.send_notification('del_group', group)
+        except:
+            # we really can't do much, because if we fail here, we may
+            # cause the person to get an email over and over if they're
+            # joining more than one group
+            pass
         
         return 1
             
@@ -528,8 +551,11 @@ class CustomUser(User, Folder):
         """
         acl_users = getattr(self, 'acl_users', None)
         if acl_users:
-            acl_users.delGroupsFromUser(['unverified_member'], self.getId())
-        
+            try:
+                acl_users.delGroupsFromUser(['unverified_member'], self.getId())
+            except:
+                pass
+            
         if not verification_code == self.get_verificationCode():
             return 0
         

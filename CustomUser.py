@@ -608,9 +608,48 @@ class CustomUser(User, Folder):
         """ Get the user's password. Note, if the password is encrypted,
         this won't be of much use.
         
+        RETURNS
+          The password in clear-text.
         """
         return self._getPassword()
 
+    def reset_password(self):
+        """Resets the user password. This should be called when the
+        user forgets the password.
+
+        SIDE-EFFECTS
+           Changes the password by calling "self.set_password".
+
+        RETURNS
+           The newly created password."""
+
+        newPassword = XWFUtils.generate_password(8)
+        self.set_password(newPassword)
+
+        return newPassword
+
+    def set_password(self, newPassword):
+        """Sets the user's password to 'newPassword'.
+
+        SIDE-EFFECTS
+          Changes the user-information in 'site_root.acl_users' and
+          'site_root.cookie_authentication'.
+
+        RETURNS
+          None."""
+        
+        #security = getSecurityManager()
+        site_root = self.site_root()
+        user =  site_root.acl_users.getUser(self.getId())
+        roles = user.getRoles()
+        domains = user.getDomains()
+        userID = user.getId()
+
+        site_root.acl_users.userFolderEditUser(userID, newPassword,
+                                               roles, domains)
+
+        site_root.cookie_authentication.credentialsChanged(user, userID,
+                                                           newPassword)
     #
     # Views and Workflow
     #

@@ -637,9 +637,8 @@ class CustomUser(User, Folder):
 
         RETURNS
           None."""
-        
-        #security = getSecurityManager()
-        site_root = self.site_root()
+
+        site_root = self.site_root()	
         user =  site_root.acl_users.getUser(self.getId())
         roles = user.getRoles()
         domains = user.getDomains()
@@ -648,8 +647,11 @@ class CustomUser(User, Folder):
         site_root.acl_users.userFolderEditUser(userID, newPassword,
                                                roles, domains)
 
-        site_root.cookie_authentication.credentialsChanged(user, userID,
-                                                           newPassword)
+	logged_in_user = self.REQUEST.AUTHENTICATED_USER.getId() 
+	if (logged_in_user):
+	        site_root.cookie_authentication.credentialsChanged(user, userID,
+        	                                                   newPassword)
+		
     #
     # Views and Workflow
     #

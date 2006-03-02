@@ -155,7 +155,7 @@ class CustomUser(User, Folder):
         listManagers = site_root.objectValues('XWF Mailing List Manager')
         possible_list_match = re.search('(.*)_member', group)
         if possible_list_match:
-            possible_list_id = possible_list_match[0]
+            possible_list_id = possible_list_match.groups()[0]
             for listManager in listManagers:
                 try:
                     groupList = listManager.get_list(possible_list_id)
@@ -163,12 +163,13 @@ class CustomUser(User, Folder):
                     continue
                 if not groupList.getProperty('moderate_new_members', False):
                     continue
-                try:
-                    moderated_members = groupList.getValueFor('moderated_member$                    if self.getId() not in moderated_members:
+                if groupList.hasProperty('moderated_members'):
+                    moderated_members = list(groupList.getProperty('moderated_members', []))
+                    if self.getId() not in moderated_members:
                         moderated_members.append(self.getId())
-                        groupList.setValueFor('moderated_members',
-                                               moderated_members)
-                except:
+                        groupList.manage_changeProperties(moderated_members=moderated_members)
+                else:
+                    moderated_members = [self.getId()]
                     groupList.manage_addProperty('moderated_members',
                                                   moderated_members, 'lines')
         

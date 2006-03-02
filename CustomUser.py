@@ -141,13 +141,36 @@ class CustomUser(User, Folder):
         """ Add a group to the user, and if available, send them a notification.
         
         """
+        import re
+         
         acl_users = getattr(self, 'acl_users', None)
-        
+        site_root = self.site_root()        
+
         if acl_users:
             try:
                 acl_users.addGroupsToUser([group], self.getId())
             except:
                 return 0                
+        
+        listManagers = site_root.objectValues('XWF Mailing List Manager')
+        possible_list_match = re.search('(.*)_member', group)
+        if possible_list_match:
+            possible_list_id = possible_list_match[0]
+            for listManager in listManagers:
+                try:
+                    groupList = listManager.get_list(possible_list_id)
+                except:
+                    continue
+                if not groupList.getProperty('moderate_new_members', False):
+                    continue
+                try:
+                    moderated_members = groupList.getValueFor('moderated_member$                    if self.getId() not in moderated_members:
+                        moderated_members.append(self.getId())
+                        groupList.setValueFor('moderated_members',
+                                               moderated_members)
+                except:
+                    groupList.manage_addProperty('moderated_members',
+                                                  moderated_members, 'lines')
         
         try:
             self.send_notification('add_group', group)

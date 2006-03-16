@@ -589,7 +589,7 @@ class CustomUser(User, Folder):
         return 1
    
     security.declareProtected(Perms.manage_properties, 'send_userVerification')
-    def send_userVerification(self, n_id='default'):
+    def send_userVerification(self, site='', n_id='default'):
         """ Send the user a verification email.
         
         """
@@ -615,6 +615,7 @@ class CustomUser(User, Folder):
             email_strings.append(
                 template(self,
                          self.REQUEST,
+			 site=site,
                          to_addr=email_address,
                          verification_code=self.get_verificationCode(),
                          first_name=self.getProperty('firstName', ''),

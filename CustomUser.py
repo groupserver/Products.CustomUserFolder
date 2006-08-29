@@ -684,11 +684,7 @@ class CustomUser(User, Folder):
         """ Return the default view.
 
         """
-        try:
-            presentation = getattr(self, 'userinfo.xml')
-        except:
-            presentation = getattr(self, 'index_html')
-        return presentation()
+        return self.REQUEST.RESPONSE.redirect(self.absolute_url()+'/'+'userinfo.xml')
 
     def upgrade(self):
         """ Upgrade existing objects.

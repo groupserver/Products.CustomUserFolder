@@ -19,6 +19,7 @@
 #
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 from AccessControl import ClassSecurityInfo
+from AccessControl import AuthEncoding
 from AccessControl import Permissions as Perms
 from AccessControl.User import BasicUserFolder, _remote_user_mode
 from Globals import InitializeClass
@@ -54,6 +55,11 @@ class CustomUserFolder(UserFolderWithGroups):
         """
         self.user_folder_id = user_folder_id
         UserFolderWithGroups.__init__(self)
+
+    def _encryptPassword(self, pw):
+        # we need to override the default, because if we encrypt with SSHA
+        # we have trouble when we do the wire protocol
+        return AuthEncoding.pw_encrypt(pw, 'SHA')
         
     security.declarePrivate('_getUserFolder')
     def _getUserFolder(self):

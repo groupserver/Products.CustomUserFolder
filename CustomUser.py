@@ -132,7 +132,10 @@ class CustomUser(User, Folder):
                          n_dict=n_dict))
          
         for email_string in email_strings:
-            mailhost.send(email_string)
+            #mailhost.send(email_string)
+            mailhost._send(mfrom='support@onlinegroups.net',
+                           mto=email_addresses[email_strings.index(email_string)],
+                           messageText=emailString)
         
         return 1
 

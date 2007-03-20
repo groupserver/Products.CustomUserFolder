@@ -135,7 +135,7 @@ class CustomUser(User, Folder):
             #mailhost.send(email_string)
             mailhost._send(mfrom='support@onlinegroups.net',
                            mto=email_addresses[email_strings.index(email_string)],
-                           messageText=emailString)
+                           messageText=email_string)
         
         return 1
 

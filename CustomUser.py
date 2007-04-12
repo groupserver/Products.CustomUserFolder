@@ -25,6 +25,7 @@ from OFS.Folder import Folder
 from Products.XWFCore import XWFUtils
 
 from Globals import InitializeClass
+import string
 
 class CustomUser(User, Folder):
     """ A Custom user, based on the builtin user object.
@@ -132,8 +133,10 @@ class CustomUser(User, Folder):
                          n_dict=n_dict))
          
         for email_string in email_strings:
-            #mailhost.send(email_string)
-            mailhost._send(mfrom='support@onlinegroups.net',
+            support_email = XWFUtils.getOption(self, 'supportEmail')
+            if not support_email:
+                raise AttributeError, "supportEmail was not defined in configuration"
+            mailhost._send(mfrom=support_email,
                            mto=email_addresses[email_strings.index(email_string)],
                            messageText=email_string)
         
@@ -192,7 +195,6 @@ class CustomUser(User, Folder):
         
         """
         acl_users = getattr(self, 'acl_users', None)
-        site_root = self.site_root()
 
         if acl_users:
             try:
@@ -222,7 +224,6 @@ class CustomUser(User, Folder):
         """ Get the URL of the user's image.
 
         """
-        import sys, string
         from AccessControl import getSecurityManager
         
         contactsimages = getattr(self, 'contactsimages', None)
@@ -618,7 +619,7 @@ class CustomUser(User, Folder):
             email_strings.append(
                 template(self,
                          self.REQUEST,
-			 site=site,
+                         site=site,
                          to_addr=email_address,
                          verification_code=self.get_verificationCode(),
                          first_name=self.getProperty('firstName', ''),
@@ -627,7 +628,13 @@ class CustomUser(User, Folder):
                          password=password))
         
         for email_string in email_strings:
-            mailhost.send(email_string)
+            verification_email = XWFUtils.getOption(self, 'userVerificationEmail')
+            if not verification_email:
+                raise AttributeError, "userVerificationEmail was not defined in configuration"
+            
+            mailhost._send(mfrom=verification_email,
+                           mto=email_addresses[email_strings.index(email_string)],
+                           messageText=email_string)
         
         return email_strings
     

@@ -223,7 +223,7 @@ class CustomUserFolder(UserFolderWithGroups):
         
         password = XWFUtils.generate_password(password_length)
         
-        self._doAddUser(user_id, password, roles, [], groups)
+        self._doAddUser(str(user_id), password, roles, [], groups)
         user = self.getUser(user_id)
         if user:
             try:

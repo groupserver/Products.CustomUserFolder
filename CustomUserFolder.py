@@ -232,7 +232,7 @@ class CustomUserFolder(UserFolderWithGroups):
                 lhs = ''
             first_name = first_name or lhs or last_name
             last_name = last_name or lhs or first_name 
-            preferred_name = first_name
+            preferred_name = '%s %s' % (first_name, last_name)
             
             user.manage_changeProperties(firstName=first_name,
                                          lastName=last_name,

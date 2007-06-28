@@ -37,10 +37,12 @@ class UserQuery(object):
             table.
 
         """
+        
         assert setting in possible_settings, "Unknown setting %s" % setting
 
         est = self.emailSettingTable
-        
+        and_ = sqlalchemy.and_
+
         curr_setting = self.get_groupEmailSetting(site_id, group_id)
         if not curr_setting:
             i = est.insert()
@@ -50,8 +52,7 @@ class UserQuery(object):
                       setting=setting)
             
         else:
-            u = est.update()
-            u.append_whereclause(est.c.user_id==self.context.getUserName())
-            u.append_whereclause(est.c.site_id==site_id)
-            u.append_whereclause(est.c.group_id==group_id)
+            u = est.update(and_(est.c.user_id==self.context.getUserName(),
+                                est.c.site_id==site_id,
+                                est.c.group_id==group_id))
             u.execute(setting=setting)

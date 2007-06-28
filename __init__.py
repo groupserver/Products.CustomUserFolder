@@ -18,6 +18,15 @@
 # to the trunk. Code which does not follow the rules will be rejected.
 #
 import CustomUserFolder, CustomUser
+
+from AccessControl import ModuleSecurityInfo
+from AccessControl import allow_class, allow_module, allow_type
+
+from queries import UserQuery
+q_security = ModuleSecurityInfo('Products.CustomUserFolder.queries')
+q_security.declarePublic('UserQuery')
+allow_class(UserQuery)
+
 def initialize(context):
     # import lazily and defer initialization to the module
     CustomUserFolder.initialize(context)

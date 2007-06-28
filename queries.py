@@ -42,7 +42,7 @@ class UserQuery(object):
         est = self.emailSettingTable
         
         curr_setting = self.get_groupEmailSetting(site_id, group_id)
-        if curr_setting:
+        if not curr_setting:
             i = est.insert()
             i.execute(user_id=self.context.getUserName(),
                       site_id=site_id,
@@ -50,7 +50,8 @@ class UserQuery(object):
                       setting=setting)
             
         else:
-            u = est.update(est.c.user_id==self.context.getUserName(),
-                           est.c.site_id==site_id,
-                           est.c.group_id==group_id)
+            u = est.update()
+            u.append_whereclause(est.c.user_id==self.context.getUserName())
+            u.append_whereclause(est.c.site_id==site_id)
+            u.append_whereclause(est.c.group_id==group_id)
             u.execute(setting=setting)

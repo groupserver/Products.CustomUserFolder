@@ -41,7 +41,7 @@ class UserQuery(object):
         assert setting in possible_settings, "Unknown setting %s" % setting
 
         est = self.emailSettingTable
-        and_ = sqlalchemy.and_
+        and_ = sa.and_
 
         curr_setting = self.get_groupEmailSetting(site_id, group_id)
         if not curr_setting:

@@ -21,6 +21,9 @@ from AccessControl import ClassSecurityInfo
 from AccessControl import Permissions as Perms
 from AccessControl.User import User
 from AccessControl import allow_class
+
+from queries import UserQuery
+
 from OFS.Folder import Folder
 from Products.XWFCore import XWFUtils
 
@@ -413,6 +416,13 @@ class CustomUser(User, Folder):
             represent something else in the future.
         
         """
+        uq = UserQuery(self, self.zsqlalchemy)
+        # TODO: we don't quite support site_id yet
+        site_id = ''
+        group_id = key
+        uq.set_groupEmailSetting('', group_id, 'webonly')
+        
+        # TODO: legacy below, remove
         disabled_property = '%s_deliveryDisabled' % key
         if self.hasProperty(disabled_property):
             self.manage_changeProperties({disabled_property: 1})
@@ -427,6 +437,13 @@ class CustomUser(User, Folder):
             represent something else in the future.
             
         """
+        uq = UserQuery(self, self.zsqlalchemy)
+        # TODO: we don't quite support site_id yet
+        site_id = ''
+        group_id = key
+        uq.set_groupEmailSetting('', group_id, '')
+        
+        # TODO: legacy below, remove
         disabled_property = '%s_deliveryDisabled' % key
         # we don't create the property if it doesn't exist
         if self.hasProperty(disabled_property):
@@ -440,6 +457,13 @@ class CustomUser(User, Folder):
             represent something else in the future.
             
         """
+        uq = UserQuery(self, self.zsqlalchemy)
+        # TODO: we don't quite support site_id yet
+        site_id = ''
+        group_id = key
+        uq.set_groupEmailSetting('', group_id, 'digest')
+        
+        # TODO: legacy below, remove
         digest_property = '%s_digest' % key
         if self.hasProperty(digest_property):
             self.manage_changeProperties({digest_property: 1})
@@ -454,6 +478,13 @@ class CustomUser(User, Folder):
             represent something else in the future.
             
         """
+        uq = UserQuery(self, self.zsqlalchemy)
+        # TODO: we don't quite support site_id yet
+        site_id = ''
+        group_id = key
+        uq.set_groupEmailSetting('', group_id, '')
+        
+        # TODO: legacy below, remove
         digest_property = '%s_digest' % key
         # we don't create the property if it doesn't exist
         if self.hasProperty(digest_property):
@@ -466,12 +497,17 @@ class CustomUser(User, Folder):
             returns 1 if default, 2 if non-default, 3 if digest,
 	            or 0 if disabled.
         """
-        disabled_property = '%s_deliveryDisabled' % key
+        uq = UserQuery(self, self.zsqlalchemy)
+        # TODO: we don't quite support site_id yet
+        site_id = ''
+        group_id = key
+        setting = uq.get_groupEmailSetting('', group_id)
+        
         preferred_property = '%s_emailAddresses' % key
-        digest_property = '%s_digest' % key
-        if self.getProperty(disabled_property, 0):
+        
+        if setting == 'webonly':
             return 0
-        elif self.getProperty(digest_property, 0):
+        elif setting == 'digest':
             return 3
         elif filter(None, self.getProperty(preferred_property, [])):
             return 2
@@ -485,9 +521,15 @@ class CustomUser(User, Folder):
         
         """
         preferred_property = '%s_emailAddresses' % key
-        disabled_property = '%s_deliveryDisabled' % key
-        # first check to see if delivery has been disabled for that group
-        if self.getProperty(disabled_property, 0):
+        
+        uq = UserQuery(self, self.zsqlalchemy)
+        # TODO: we don't quite support site_id yet
+        site_id = ''
+        group_id = key
+        setting = uq.get_groupEmailSetting('', group_id)
+        
+        # first check to see if we are web only
+        if setting == 'webonly':
             return []
         
         # next check to see if we've customised the delivery options for that group

@@ -9,15 +9,9 @@ class UserQuery(object):
 
         self.user_id = context.getUserName()
 
-        session = da.getSession()
-        metadata = session.getMetaData()
-
-        self.emailSettingTable = sa.Table('email_setting',
-                                           metadata, autoload=True)
-        self.userEmailTable = sa.Table('user_email',
-                                        metadata, autoload=True)
-        self.groupUserEmailTable = sa.Table('group_user_email',
-                                             metadata, autoload=True)
+        self.emailSettingTable = da.createMapper('email_setting')[1]
+        self.userEmailTable = da.createMapper('user_email')[1]
+        self.groupUserEmailTable = da.createMapper('group_user_email')[1]
 
     def add_userEmail(self, email_address, is_preferred=False):
         uet = self.userEmailTable
@@ -44,7 +38,7 @@ class UserQuery(object):
         if preferred_only == True:
             statement.append_whereclause(uet.c.is_preferred==preferred_only)
         
-        r.statement.execute()
+        r = statement.execute()
         email_addresses = []
         for row in r.fetchall():
             email_addresses.append(row['email'])

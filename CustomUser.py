@@ -283,7 +283,9 @@ class CustomUser(User, Folder):
             A helper method to purify the list of addresses.
             
         """
-        return list(filter(None, self.emailAddresses))
+        uq = UserQuery(self, self.zsqlalchemy)
+        
+        return uq.get_userEmail(preferred_only=False)
 
     security.declareProtected(Perms.manage_properties, 'validate_emailAddresses')
     def validate_emailAddresses(self):
@@ -324,59 +326,56 @@ class CustomUser(User, Folder):
         addresses.
         
         """
+        uq = UserQuery(self, self.zsqlalchemy)
+
         email = self._validateAndNormalizeEmail(email)
-        email_addresses = self.get_emailAddresses()
-        if email not in email_addresses:
-            email_addresses.append(email)
         
-        self.emailAddresses = email_addresses
-        self._p_changed = 1
-        
+        uq.add_userEmail(email)        
+            
     security.declareProtected(Perms.manage_properties, 'remove_emailAddress')
     def remove_emailAddress(self, email):
         """ Remove an email address from the list of user's email
         addresses.
         
         """
-        email = self._validateAndNormalizeEmail(email)
-        emailAddresses = self.get_emailAddresses()
-        if email in emailAddresses:
-            emailAddresses.remove(email)
-            self.emailAddresses = emailAddresses
-        preferredEmailAddresses = self.get_preferredEmailAddresses()
-        if email in preferredEmailAddresses:
-            preferredEmailAddresses.remove(email)
-            self.preferredEmailAddresses = preferredEmailAddresses
-        self._p_changed = 1
+        uq = UserQuery(self, self.zsqlalchemy)
 
+        email = self._validateAndNormalizeEmail(email)
+
+        uq.remove_userEmail(email)        
+    
     security.declareProtected(Perms.manage_properties, 'get_preferredEmailAddresses')
     security.declareProtected(Perms.manage_properties, 'get_defaultDeliveryEmailAddresses')
     def get_defaultDeliveryEmailAddresses(self):
         """ Get the user's default delivery email addresses.
         
         """
-        return list(filter(None, self.preferredEmailAddresses))
+        uq = UserQuery(self, self.zsqlalchemy)
+        
+        return uq.get_userEmail(preferred_only=True)        
     
     get_preferredEmailAddresses = get_defaultDeliveryEmailAddresses
     
     security.declareProtected(Perms.manage_properties, 'add_defaultDeliveryEmailAddress')
     def add_defaultDeliveryEmailAddress(self, email):
-        """ Add an address to the list of addresses to which email will be delivered
-            by default.
+        """ Add an address to the list of addresses to which email will be
+            delivered by default.
         
         """
         email = self._validateAndNormalizeEmail(email)
+
+        uq = UserQuery(self, self.zsqlalchemy)
         
-        email_addresses = self.get_preferredEmailAddresses()
-        if email not in email_addresses:
-            email_addresses.append(email)
-            
-        self.preferredEmailAddresses = email_addresses
+        user_email = uq.get_userEmail(preferred_only=False)
+    
+        # if we don't have the email address in the database yet, add it
+        # and set it as preferred
+        if email not in user_email:
+            uq.add_userEmail(email, is_preferred=True)
         
-        if email not in self.get_emailAddresses():
-            self.add_emailAddress(email)
-        
-        self._p_changed = 1
+        # otherwise just set it as preferred
+        else:
+            uq.set_preferredEmail(email, is_preferred=True)
 
     add_preferredEmailAddress = add_defaultDeliveryEmailAddress
         
@@ -385,27 +384,28 @@ class CustomUser(User, Folder):
         """ Set all the addresses to which email will be delivered by default.
         
         """
+        uq = UserQuery(self, self.zsqlalchemy)
+
         # first clear all the preferredEmailAddresses
-        self.preferredEmailAddresses = []
+        uq.clear_preferredEmail()
+        
         for email in addresses:
             self.add_preferredEmailAddress(email)
-        self._p_changed = 1
-    
+            
     add_preferredEmailAddresses = add_defaultDeliveryEmailAddresses
     
     security.declareProtected(Perms.manage_properties, 'remove_defaultDeliveryEmailAddress')
     def remove_defaultDeliveryEmailAddress(self, email):
-        """ Remove an email address from the list of addresses to which email will
-            be delivered by default.
+        """ Remove an email address from the list of addresses to which
+            email will be delivered by default.
         
         """
+        uq = UserQuery(self, self.zsqlalchemy)
+
         email = self._validateAndNormalizeEmail(email)
-        preferredEmailAddresses = self.get_preferredEmailAddresses()
-        if email in preferredEmailAddresses:
-            preferredEmailAddresses.remove(email)
-            self.preferredEmailAddresses = preferredEmailAddresses
-        self._p_changed = 1
-    
+
+        uq.set_preferredEmail(email, is_preferred=False)        
+            
     remove_preferredEmailAddress = remove_defaultDeliveryEmailAddress
     
     security.declareProtected(Perms.manage_properties, 'set_disableDeliveryByKey')
@@ -420,15 +420,8 @@ class CustomUser(User, Folder):
         # TODO: we don't quite support site_id yet
         site_id = ''
         group_id = key
-        uq.set_groupEmailSetting('', group_id, 'webonly')
-        
-        # TODO: legacy below, remove
-        disabled_property = '%s_deliveryDisabled' % key
-        if self.hasProperty(disabled_property):
-            self.manage_changeProperties({disabled_property: 1})
-        else:
-            self.manage_addProperty(disabled_property, 1, 'boolean')
-        
+        uq.set_groupEmailSetting(site_id, group_id, 'webonly')
+                
     security.declareProtected(Perms.manage_properties, 'set_enableDeliveryByKey')
     def set_enableDeliveryByKey(self, key):
         """ Enable the email delivery for a given key.
@@ -441,14 +434,8 @@ class CustomUser(User, Folder):
         # TODO: we don't quite support site_id yet
         site_id = ''
         group_id = key
-        uq.set_groupEmailSetting('', group_id, '')
+        uq.set_groupEmailSetting(site_id, group_id, '')
         
-        # TODO: legacy below, remove
-        disabled_property = '%s_deliveryDisabled' % key
-        # we don't create the property if it doesn't exist
-        if self.hasProperty(disabled_property):
-            self.manage_changeProperties({disabled_property: 0})
-    
     security.declareProtected(Perms.manage_properties, 'set_enableDigestByKey')
     def set_enableDigestByKey(self, key):
         """ Enable the email digest for a given key.
@@ -461,15 +448,8 @@ class CustomUser(User, Folder):
         # TODO: we don't quite support site_id yet
         site_id = ''
         group_id = key
-        uq.set_groupEmailSetting('', group_id, 'digest')
+        uq.set_groupEmailSetting(site_id, group_id, 'digest')
         
-        # TODO: legacy below, remove
-        digest_property = '%s_digest' % key
-        if self.hasProperty(digest_property):
-            self.manage_changeProperties({digest_property: 1})
-        else:
-            self.manage_addProperty(digest_property, 1, 'boolean')
-    
     security.declareProtected(Perms.manage_properties, 'set_disableDigestByKey')
     def set_disableDigestByKey(self, key):
         """ Disable the email digest for a given key.
@@ -482,13 +462,7 @@ class CustomUser(User, Folder):
         # TODO: we don't quite support site_id yet
         site_id = ''
         group_id = key
-        uq.set_groupEmailSetting('', group_id, '')
-        
-        # TODO: legacy below, remove
-        digest_property = '%s_digest' % key
-        # we don't create the property if it doesn't exist
-        if self.hasProperty(digest_property):
-            self.manage_changeProperties({digest_property: 0})
+        uq.set_groupEmailSetting(site_id, group_id, '')
     
     security.declareProtected(Perms.manage_properties, 'get_deliverySettingsByKey')
     def get_deliverySettingsByKey(self, key):
@@ -498,18 +472,18 @@ class CustomUser(User, Folder):
 	            or 0 if disabled.
         """
         uq = UserQuery(self, self.zsqlalchemy)
+
         # TODO: we don't quite support site_id yet
         site_id = ''
         group_id = key
-        setting = uq.get_groupEmailSetting('', group_id)
-        
-        preferred_property = '%s_emailAddresses' % key
+
+        setting = uq.get_groupEmailSetting(site_id, group_id)
         
         if setting == 'webonly':
             return 0
         elif setting == 'digest':
             return 3
-        elif filter(None, self.getProperty(preferred_property, [])):
+        elif uq.get_groupUserEmail(site_id, group_id):
             return 2
         else:
             return 1
@@ -526,20 +500,19 @@ class CustomUser(User, Folder):
         # TODO: we don't quite support site_id yet
         site_id = ''
         group_id = key
-        setting = uq.get_groupEmailSetting('', group_id)
+        setting = uq.get_groupEmailSetting(site_id, group_id)
         
         # first check to see if we are web only
         if setting == 'webonly':
             return []
         
         # next check to see if we've customised the delivery options for that group
-        group_email_addresses = list(filter(None,
-                                            self.getProperty(preferred_property, [])))
+        group_email_addresses = uq.get_groupUserEmail(site_id, group_id)
         if group_email_addresses:
             return group_email_addresses
         
         # finally, return the default settings
-        return list(filter(None, self.preferredEmailAddresses))
+        return self.get_preferredEmailAddresses()
     
     security.declareProtected(Perms.manage_properties, 'add_deliveryEmailAddressByKey')
     def add_deliveryEmailAddressByKey(self, key, email):
@@ -547,37 +520,37 @@ class CustomUser(User, Folder):
         group.
         
         """
+        uq = UserQuery(self, self.zsqlalchemy)
         email = self._validateAndNormalizeEmail(email)
-        property = '%s_emailAddresses' % key
-        if not self.hasProperty(property):
-            self.manage_addProperty(property, '', 'ulines')
+
+        # TODO: we don't support site_id
+        site_id = ''
+        group_id = key
         
-        email_addresses = list(self.getProperty(property, []))
-        email_addresses.append(email)
-        
-        self.manage_changeProperties({property: email_addresses})
-    
+        if email not in uq.get_groupUserEmail(site_id, group_id):
+            uq.add_groupUserEMail(site_id, group_id, email)
+            
     security.declareProtected(Perms.manage_properties, 'remove_deliveryEmailAddressByKey')
     def remove_deliveryEmailAddressByKey(self, key, email):
         """ Remove an email address as a modified delivery option for a specific
         group.
         
         """
+        uq = UserQuery(self, self.zsqlalchemy)
         email = self._validateAndNormalizeEmail(email)
-        property = '%s_emailAddresses' % key
+
+        # TODO: we don't support site_id
+        site_id = ''
+        group_id = key
         
-        email_addresses = list(self.getProperty(property, []))
-        if email in email_addresses:
-            email_addresses.remove(email)
-        # if we have email addresses still, update the property
-        if email_addresses:
-            self.manage_changeProperties({property: email_addresses})
-        # otherwise remove the property entirely
-        else:
-            try:
-                self.manage_delProperties([property])
-            except:
-                pass
+        uq.remove_groupUserEmail(site_id, group_id, email)
+
+        email_addresses = uq.get_groupUserEmail(site_id, group_id)
+        
+        # if we have removed the last of the addresses, disable the delivery
+        # of the list entirely
+        # TODO: Is this the correct behaviour still?
+        if not email_addresses:
             self.set_disableDeliveryByKey(key)
                 
     security.declareProtected(Perms.manage_properties, 'set_verificationCode')

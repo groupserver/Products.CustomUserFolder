@@ -27,8 +27,8 @@ class UserQuery(object):
         uet = self.userEmailTable        
         and_ = sa.and_
 
-        d = uet.delete(and_(user_id==self.user_id,
-                            email==email_address)).execute()
+        d = uet.delete(and_(uet.c.user_id==self.user_id,
+                            uet.c.email==email_address)).execute()
 
     def get_userEmail(self, preferred_only=False):
         uet = self.userEmailTable
@@ -74,44 +74,25 @@ class UserQuery(object):
         uet = self.groupUserEmailTable        
         and_ = sa.and_
 
-        d = uet.delete(and_(user_id==self.user_id,
-                            site_id==site_id,
-                            group_id==group_id,
-                            email==email_address)).execute()
+        d = uet.delete(and_(uet.c.user_id==self.user_id,
+                            uet.c.site_id==site_id,
+                            uet.c.group_id==group_id,
+                            uet.c.email==email_address)).execute()
 
     def get_groupUserEmail(self, site_id, group_id):
-        uet = self.userEmailTable
+        uet = self.groupUserEmailTable
         
         statement = uet.select()
         statement.append_whereclause(uet.c.user_id==self.user_id)
         statement.append_whereclause(uet.c.site_id==site_id)
         statement.append_whereclause(uet.c.group_id==group_id)
         
-        r.statement.execute()
+        r = statement.execute()
         email_addresses = []
         for row in r.fetchall():
             email_addresses.append(row['email'])
         
         return email_addresses
-
-    def get_groupEmailSetting(self, site_id, group_id):
-        """ Given a site_id and group_id, check to see if the user
-            has any specific email settings.
-        
-        """
-        est = self.emailSettingTable
-        statement = est.select()
-        statement.append_whereclause(est.c.user_id==self.user_id)
-        statement.append_whereclause(est.c.site_id==site_id)
-        statement.append_whereclause(est.c.group_id==group_id)
-        r = statement.execute()
-        
-        setting = None
-        if r.rowcount:
-            result = r.fetchone()
-            setting = result['setting']
-        
-        return setting
 
     def set_groupEmailSetting(self, site_id, group_id, setting):
         """ Given a site_id, group_id and a setting, set the email_setting
@@ -137,3 +118,29 @@ class UserQuery(object):
                                 est.c.site_id==site_id,
                                 est.c.group_id==group_id))
             u.execute(setting=setting)
+
+    def clear_groupEmailSetting(self, site_id, group_id):
+        uet = self.emailSettingTable        
+        and_ = sa.and_
+
+        d = uet.delete(and_(uet.c.site_id==site_id,
+                            uet.c.group_id==group_id)).execute()
+        
+    def get_groupEmailSetting(self, site_id, group_id):
+        """ Given a site_id and group_id, check to see if the user
+            has any specific email settings.
+        
+        """
+        est = self.emailSettingTable
+        statement = est.select()
+        statement.append_whereclause(est.c.user_id==self.user_id)
+        statement.append_whereclause(est.c.site_id==site_id)
+        statement.append_whereclause(est.c.group_id==group_id)
+        r = statement.execute()
+        
+        setting = None
+        if r.rowcount:
+            result = r.fetchone()
+            setting = result['setting']
+        
+        return setting

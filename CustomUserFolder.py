@@ -26,6 +26,9 @@ from Globals import InitializeClass
 from OFS.Folder import Folder
 from Products.NuxUserGroups import UserFolderWithGroups
 from Products.XWFCore import XWFUtils
+
+import sqlalchemy as sa
+
 try:
     from Products.MailBoxer import MailBoxerTools
     HaveMailBoxer = True
@@ -74,9 +77,16 @@ class CustomUserFolder(UserFolderWithGroups):
         
         """
         email = email.lower()
-        for user in self.getUsers():
-            if email in map(lambda x: x.lower(), user.get_emailAddresses()):
-                return user
+        da = self.zsqlalchemy
+        userEmailTable = da.createMapper('user_email')[1]
+        text = sa.text("""select user_id from user_email
+                          where email ilike '%(email)s'""" % locals(),
+                       engine=userEmailTable.engine)
+        
+        r = text.execute().fetchone()
+        if r:
+            return self.getUser(r['user_id'])
+
         return None
 
     security.declareProtected(Perms.manage_users, 'get_userByVerificationCode')

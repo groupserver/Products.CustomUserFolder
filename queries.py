@@ -1,7 +1,7 @@
 from sqlalchemy.exceptions import NoSuchTableError
 import sqlalchemy as sa
 
-possible_settings = ['webonly', 'digest']
+possible_settings = ['webonly', 'digest', '']
 
 class UserQuery(object):
     def __init__(self, context, da):

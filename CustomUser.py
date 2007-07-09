@@ -434,7 +434,8 @@ class CustomUser(User, Folder):
         # TODO: we don't quite support site_id yet
         site_id = ''
         group_id = key
-        uq.set_groupEmailSetting(site_id, group_id, '')
+        uq.clear_groupEmailSetting(site_id, group_id)
+        #uq.set_groupEmailSetting(site_id, group_id, '')
         
     security.declareProtected(Perms.manage_properties, 'set_enableDigestByKey')
     def set_enableDigestByKey(self, key):

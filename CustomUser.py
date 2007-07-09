@@ -530,7 +530,7 @@ class CustomUser(User, Folder):
         group_id = key
         
         if email not in uq.get_groupUserEmail(site_id, group_id):
-            uq.add_groupUserEMail(site_id, group_id, email)
+            uq.add_groupUserEmail(site_id, group_id, email)
             
     security.declareProtected(Perms.manage_properties, 'remove_deliveryEmailAddressByKey')
     def remove_deliveryEmailAddressByKey(self, key, email):

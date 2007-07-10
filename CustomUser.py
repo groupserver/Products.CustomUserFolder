@@ -490,32 +490,55 @@ class CustomUser(User, Folder):
         else:
             return 1
     
-    security.declareProtected(Perms.manage_properties, 'get_deliveryEmailAddressesByKey')
+    security.declareProtected(Perms.manage_properties, 
+      'get_deliveryEmailAddressesByKey')
     def get_deliveryEmailAddressesByKey(self, key):
         """ Get the user's preferred delivery email address. If none is
         set, it defaults to the first in the list.
         
         """
-        preferred_property = '%s_emailAddresses' % key
+        retval = []
         
-        uq = UserQuery(self, self.zsqlalchemy)
+        # First, check to see if we are not web only
+        groupSetting = self.get_deliverySettingsByKey(key)
+        if groupSetting != 0:
+            # Next, check to see if we've customised the delivery options 
+            #   for that group
+            group_email_addresses = self.get_specificEmailAddressesByKey(key)
+            if group_email_addresses:
+                retval = group_email_addresses
+            else:
+                # If there are no specific settings for the group, return
+                #   the default settings
+                retval = self.get_preferredEmailAddresses()
+        return retval
+
+    security.declareProtected(Perms.manage_properties, 
+      'get_specificEmailAddressesByKey')
+    def get_specificEmailAddressesByKey(self, key):
+        '''Get the specific email addresses for a group (alias "key")
+        
+        ARGUMENTS
+            "key":    The ID of the group to look up.
+            
+        RETURNS
+            A list of email addresses that the current user has set for
+            specific delivery. If no addresses are set an empty list is
+            returned.
+            
+        SIDE EFFECTS
+            None.'''
+            
         # TODO: we don't quite support site_id yet
         site_id = ''
         group_id = key
-        setting = uq.get_groupEmailSetting(site_id, group_id)
+        retval = []
         
-        # first check to see if we are web only
-        if setting == 'webonly':
-            return []
+        uq = UserQuery(self, self.zsqlalchemy)
+        retval = uq.get_groupUserEmail(site_id, group_id)
         
-        # next check to see if we've customised the delivery options for that group
-        group_email_addresses = uq.get_groupUserEmail(site_id, group_id)
-        if group_email_addresses:
-            return group_email_addresses
+        return retval
         
-        # finally, return the default settings
-        return self.get_preferredEmailAddresses()
-    
     security.declareProtected(Perms.manage_properties, 'add_deliveryEmailAddressByKey')
     def add_deliveryEmailAddressByKey(self, key, email):
         """ Add an email address as a modified delivery option for a specific

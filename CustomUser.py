@@ -571,13 +571,7 @@ class CustomUser(User, Folder):
         uq.remove_groupUserEmail(site_id, group_id, email)
 
         email_addresses = uq.get_groupUserEmail(site_id, group_id)
-        
-        # if we have removed the last of the addresses, disable the delivery
-        # of the list entirely
-        # TODO: Is this the correct behaviour still?
-        if not email_addresses:
-            self.set_disableDeliveryByKey(key)
-                
+                        
     security.declareProtected(Perms.manage_properties, 'set_verificationCode')
     def set_verificationCode(self):
         """ Set the methods that will be called on the user post verification.

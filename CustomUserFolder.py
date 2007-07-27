@@ -80,11 +80,11 @@ class CustomUserFolder(UserFolderWithGroups):
         email = email.lower()
         da = self.zsqlalchemy
         userEmailTable = da.createMapper('user_email')[1]
-        text = sa.text("""select user_id from user_email
-                          where email ilike '%(email)s'""" % locals(),
-                       engine=userEmailTable.engine)
         
-        r = text.execute().fetchone()
+        statement = userEmailTable.select()      
+        statement.append_whereclause(userEmailTable.c.email.op('ILIKE')(email))
+        
+        r = statement.execute().fetchone()
         if r:
             return r['user_id']
 

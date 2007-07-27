@@ -97,7 +97,7 @@ class CustomUserFolder(UserFolderWithGroups):
         """
         user_id = self.get_userIdByEmail(email)
         if user_id:
-            return self.getUser(r['user_id'])
+            return self.getUser(user_id)
 
         return None
 

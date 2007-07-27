@@ -46,10 +46,10 @@ def test_userinfo():
       >>> alchemy_adaptor = manage_addZSQLAlchemy(app, 'zalchemy')
       >>> alchemy_adaptor.manage_changeProperties( hostname='localhost',
       ...                                             port=5432,
-      ...                                             username='onlinegroups.net',
+      ...                                             username='postgres',
       ...                                             password='',
       ...                                             dbtype='postgres',
-      ...                                             database='onlinegroups.net')
+      ...                                             database='gs')
 
       >>> uq = UserQuery(cu, alchemy_adaptor)
       

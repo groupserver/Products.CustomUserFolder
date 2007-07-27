@@ -71,9 +71,10 @@ class CustomUserFolder(UserFolderWithGroups):
         """
         return getattr(self, self.user_folder_id, None)
 
-    security.declareProtected(Perms.manage_users, 'get_userByEmail')
-    def get_userByEmail(self, email):
-        """ Get the user by email address.
+
+    security.declareProtected(Perms.manage_users, 'get_userIdByEmail')
+    def get_userIdByEmail(self, email):
+        """ Get a user ID by email address.
         
         """
         email = email.lower()
@@ -85,6 +86,17 @@ class CustomUserFolder(UserFolderWithGroups):
         
         r = text.execute().fetchone()
         if r:
+            return r['user_id']
+
+        return None
+
+    security.declareProtected(Perms.manage_users, 'get_userByEmail')
+    def get_userByEmail(self, email):
+        """ Get the user by email address.
+        
+        """
+        user_id = self.get_userIdByEmail(email)
+        if user_id:
             return self.getUser(r['user_id'])
 
         return None

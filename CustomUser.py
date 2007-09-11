@@ -30,10 +30,15 @@ from Products.XWFCore import XWFUtils
 from Globals import InitializeClass
 import string
 
+from zope.interface import implements
+from Products.CustomUserFolder.interfaces import ICustomUser
+
 class CustomUser(User, Folder):
     """ A Custom user, based on the builtin user object.
     
     """
+    implements(ICustomUser)
+
     version = 1.9
     
     security = ClassSecurityInfo()
@@ -754,3 +759,18 @@ def addCustomUser(self, name, password, roles, domains):
     ob.id = ob.getId() # make sure we have an actual ID
     self._setObject(name, ob)
     
+def removedCustomUser(ob, event):
+    """ A CustomUser was removed.
+
+    """
+    return
+    
+from zope.app.container.interfaces import IObjectRemovedEvent,IObjectAddedEvent
+def movedCustomUser(ob, event):
+    """A CustomUser was moved. 
+    """
+    if not IObjectRemovedEvent.providedBy(event):
+        return
+    if not IObjectAddedEvent.providedBy(event):
+        removedCustomUser(ob, event)
+

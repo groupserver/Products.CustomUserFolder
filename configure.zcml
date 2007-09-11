@@ -14,7 +14,11 @@
   <five:traversable 
     class="OFS.Folder.Folder" />
   
-  <!--View of the index-page -->
+  <subscriber
+    for="Products.CustomUserFolder.interfaces.ICustomUser
+          zope.app.container.interfaces.IObjectMovedEvent"
+    handler="Products.CustomUserFolder.CustomUser.movedCustomUser"
+    /> 
     
 </configure>
 

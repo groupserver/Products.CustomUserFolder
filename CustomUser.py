@@ -763,6 +763,8 @@ def removedCustomUser(ob, event):
     """ A CustomUser was removed.
 
     """
+    for email in ob.get_emailAddresses():
+        ob.remove_emailAddress(email)
     return
     
 from zope.app.container.interfaces import IObjectRemovedEvent,IObjectAddedEvent

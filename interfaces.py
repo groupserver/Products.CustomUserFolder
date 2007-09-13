@@ -183,7 +183,7 @@ class IGSUserInfo( Interface ):
             Get a particular property.
             
         ARGUMENTS
-            "property": The property to get, as a string.
+            "prop":    The property to get, as a string.
             "default": The default value to return.
             
         RETURNS

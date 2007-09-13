@@ -14,6 +14,12 @@
   <five:traversable 
     class="OFS.Folder.Folder" />
   
+  <interface 
+    interface=".interfaces.ICustomUser" />
+
+  <five:implements 
+    class=".CustomUser.CustomUser"
+    interface=".interfaces.ICustomUser" />
   <subscriber
     for="Products.CustomUserFolder.interfaces.ICustomUser
           zope.app.container.interfaces.IObjectMovedEvent"

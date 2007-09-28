@@ -243,8 +243,7 @@ class CustomUser(User, Folder):
         valid_chars = string.letters+string.digits+'_.'
         imageurl = None
         for id in ['%s.jpg' % self.getId(),
-                       '%s_%s_%s.jpg' % (lname, fname, self.getId()),
-                       '%s_%s_%s.jpg' % (lname, pname, self.getId())]:
+                    '%s_%s_%s.jpg' % (lname, fname, self.getId())]:
             newid = ''
             for char in id:
                 if char in valid_chars:

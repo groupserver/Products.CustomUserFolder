@@ -93,7 +93,7 @@ class CustomUser(User, Folder):
         self.unrestrictedImageRoles = []
         self._p_changed = 1
 
-    def send_notification(self, n_type, n_id, n_dict={}, email_only={}):
+    def send_notification(self, n_type, n_id, n_dict=None, email_only=()):
         """ Send a notification to the user based on the type and ID of the
             notification.
 
@@ -102,10 +102,13 @@ class CustomUser(User, Folder):
         """
         site_root = self.site_root()
         presentation = site_root.Templates.email.notifications.aq_explicit
-                
+        
         ptype_templates = getattr(presentation, n_type, None)
         if not ptype_templates:
             return None
+
+        if not n_dict:
+            n_dict = {}
 
         ignore_ids = getattr(ptype_templates, 'ignore_ids', [])
         if n_id in ignore_ids:

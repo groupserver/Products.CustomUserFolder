@@ -79,6 +79,14 @@ class UserQuery(object):
                             uet.c.group_id==group_id,
                             uet.c.email==email_address)).execute()
 
+    def remove_groupUserEmailByEmail(self, email_address):
+        """ Remove all instances of an email address
+            from the group_user_email table. """
+        uet = self.groupUserEmailTable        
+        and_ = sa.and_
+
+        d = uet.delete(and_(uet.c.email==email_address)).execute()
+
     def get_groupUserEmail(self, site_id, group_id):
         uet = self.groupUserEmailTable
         

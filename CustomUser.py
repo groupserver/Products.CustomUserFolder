@@ -110,6 +110,8 @@ class CustomUser(User, Folder):
         if not n_dict:
             n_dict = {}
 
+        # AM: This is a dreadful hack to prevent the add_group notification
+        #   from being sent when the "group" joined is a site
         ignore_ids = getattr(ptype_templates, 'ignore_ids', [])
         if n_id in ignore_ids:
             return None        
@@ -202,7 +204,7 @@ class CustomUser(User, Folder):
 
     security.declareProtected(Perms.manage_properties, 'del_groupWithNotification')
     def del_groupWithNotification(self, group):
-        """ Add a group to the user, and if available, send them a notification.
+        """ Remove a group from the user, and if available, send them a notification.
         
         """
         acl_users = getattr(self, 'acl_users', None)

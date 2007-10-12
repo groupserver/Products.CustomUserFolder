@@ -134,7 +134,7 @@ class CustomUser(User, Folder):
                 if email.lower() in email_only:
                     email_addresses.append(email)
         else:
-            email_addresses = self.get_defaultDeliveryEmailAddresses()
+            email_addresses = self.get_emailAddresses()
         
         email_strings = []
         for email_address in email_addresses:

@@ -160,7 +160,13 @@ class CustomUser(User, Folder):
         """ Add a group to the user, and if available, send them a notification.
         
         """
+        # --=AM mpj17=-- Dear God, this is an awful place!
+        # If people wonder why group-IDs must be unique across sites, this 
+        #    function is one of the reasons.
+        
         import re
+        from XWFCore.XWFUtils import getOption, get_user, get_user_realnames
+        from XWFCore.XWFUtils import get_site_by_id, get_group_by_siteId_and_groupId
          
         acl_users = getattr(self, 'acl_users', None)
         site_root = self.site_root()        
@@ -173,7 +179,7 @@ class CustomUser(User, Folder):
         
         listManagers = site_root.objectValues('XWF Mailing List Manager')
         possible_list_match = re.search('(.*)_member', group)
-        group_email = ''
+        groupList = None
         if possible_list_match:
             possible_list_id = possible_list_match.groups()[0]
             for listManager in listManagers:
@@ -181,7 +187,6 @@ class CustomUser(User, Folder):
                     groupList = listManager.get_list(possible_list_id)
                 except:
                     continue
-                group_email = groupList.getProperty('mailto', '')
                 if not groupList.getProperty('moderate_new_members', False):
                     continue
                 if groupList.hasProperty('moderated_members'):
@@ -194,17 +199,29 @@ class CustomUser(User, Folder):
                     groupList.manage_addProperty('moderated_members',
                                                   moderated_members, 'lines')
 
-        group_obj = site_root.Scripts.get.group_by_id(group.split('_member')[0])
-        ptn_coach_id = group_obj.getProperty('ptn_coach_id','')
+        assert groupList, "No mailing list for group %s" % group.split('_member')[0]
 
-        n_dict = {  'group'     : group_obj,
+        siteId = groupList.getProperty('siteId', '')
+        site_obj = get_site_by_id(groupList, siteId)
+        assert site_obj
+        
+        groupId = groupList.getId()
+        group_obj = get_group_by_siteId_and_groupId(groupList, siteId, groupId)
+        assert group_obj
+
+        group_email = groupList.getProperty('mailto', '')        
+        ptn_coach_id = group_obj.getProperty('ptn_coach_id','')
+        ptn_coach_user = get_user(context, ptn_coach_id)
+        ptnCoach = get_user_realnames(ptn_coach_user, ptn_coach_id)
+
+        n_dict = {  'groupId'   : groupId,
                     'groupName' : group_obj.title_or_id(),
-                    'groupId'   : group_obj.getId(),
-                    'siteName'  : group_obj.Scripts.get.division_object().title_or_id(),
-                    'canonical' : group_obj.Scripts.get.option('canonicalHost'),
+                    'siteId'    : siteId,
+                    'siteName'  : group_obj.title_or_id(),
+                    'canonical' : getOption(group_obj, 'canonicalHost'),
                     'grp_email' : group_email,
                     'ptnCoachId': ptn_coach_id,
-                    'ptnCoach'  : ptn_coach_id and site_root.Scripts.get.user_realnames(ptn_coach_id),
+                    'ptnCoach'  : ptnCoach,
                     'realLife'  : group_obj.getProperty('real_life_group','') or group_obj.getProperty('membership_defn','')
                   }
 

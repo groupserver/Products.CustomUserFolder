@@ -196,6 +196,7 @@ class CustomUser(User, Folder):
                                                   moderated_members, 'lines')
 
         group_obj = context.Scripts.get.group_by_id(group.split('_member')[0])
+        ptn_coach_id = group_obj.getProperty('ptn_coach_id','')
 
         n_dict = {  group     : group_obj,
                     groupName : group_obj.title_or_id(),
@@ -203,9 +204,9 @@ class CustomUser(User, Folder):
                     siteName  : group_obj.Scripts.get.division_object().title_or_id(),
                     canonical : group_obj.Scripts.get.option('canonicalHost'),
                     grp_email : group_email,
-                    ptnCoachId: group_obj.getProperty('ptn_coach_id',''),
-                    ptnCoach  : ptnCoachId and context.Scripts.get.user_realnames(ptnCoachId),
-                    realLife  : group_obj.getProperty('real_life_group','') or group.getProperty('membership_defn','')
+                    ptnCoachId: ptn_coach_id,
+                    ptnCoach  : ptn_coach_id and context.Scripts.get.user_realnames(ptn_coach_id),
+                    realLife  : group_obj.getProperty('real_life_group','') or group_obj.getProperty('membership_defn','')
                   }
 
         try:

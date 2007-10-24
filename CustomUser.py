@@ -197,15 +197,15 @@ class CustomUser(User, Folder):
         group_obj = site_root.Scripts.get.group_by_id(group.split('_member')[0])
         ptn_coach_id = group_obj.getProperty('ptn_coach_id','')
 
-        n_dict = {  group     : group_obj,
-                    groupName : group_obj.title_or_id(),
-                    groupId   : group_obj.getId(),
-                    siteName  : group_obj.Scripts.get.division_object().title_or_id(),
-                    canonical : group_obj.Scripts.get.option('canonicalHost'),
-                    grp_email : group_email,
-                    ptnCoachId: ptn_coach_id,
-                    ptnCoach  : ptn_coach_id and site_root.Scripts.get.user_realnames(ptn_coach_id),
-                    realLife  : group_obj.getProperty('real_life_group','') or group_obj.getProperty('membership_defn','')
+        n_dict = {  'group'     : group_obj,
+                    'groupName' : group_obj.title_or_id(),
+                    'groupId'   : group_obj.getId(),
+                    'siteName'  : group_obj.Scripts.get.division_object().title_or_id(),
+                    'canonical' : group_obj.Scripts.get.option('canonicalHost'),
+                    'grp_email' : group_email,
+                    'ptnCoachId': ptn_coach_id,
+                    'ptnCoach'  : ptn_coach_id and site_root.Scripts.get.user_realnames(ptn_coach_id),
+                    'realLife'  : group_obj.getProperty('real_life_group','') or group_obj.getProperty('membership_defn','')
                   }
 
         try:

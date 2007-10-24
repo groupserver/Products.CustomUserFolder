@@ -164,7 +164,6 @@ class CustomUser(User, Folder):
          
         acl_users = getattr(self, 'acl_users', None)
         site_root = self.site_root()        
-        context = self.context
 
         if acl_users:
             try:
@@ -195,7 +194,7 @@ class CustomUser(User, Folder):
                     groupList.manage_addProperty('moderated_members',
                                                   moderated_members, 'lines')
 
-        group_obj = context.Scripts.get.group_by_id(group.split('_member')[0])
+        group_obj = site_root.Scripts.get.group_by_id(group.split('_member')[0])
         ptn_coach_id = group_obj.getProperty('ptn_coach_id','')
 
         n_dict = {  group     : group_obj,
@@ -205,7 +204,7 @@ class CustomUser(User, Folder):
                     canonical : group_obj.Scripts.get.option('canonicalHost'),
                     grp_email : group_email,
                     ptnCoachId: ptn_coach_id,
-                    ptnCoach  : ptn_coach_id and context.Scripts.get.user_realnames(ptn_coach_id),
+                    ptnCoach  : ptn_coach_id and site_root.Scripts.get.user_realnames(ptn_coach_id),
                     realLife  : group_obj.getProperty('real_life_group','') or group_obj.getProperty('membership_defn','')
                   }
 

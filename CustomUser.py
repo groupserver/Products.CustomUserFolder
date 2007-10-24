@@ -164,6 +164,7 @@ class CustomUser(User, Folder):
          
         acl_users = getattr(self, 'acl_users', None)
         site_root = self.site_root()        
+        context = self.context
 
         if acl_users:
             try:

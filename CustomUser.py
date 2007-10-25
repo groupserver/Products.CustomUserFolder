@@ -199,35 +199,36 @@ class CustomUser(User, Folder):
                     groupList.manage_addProperty('moderated_members',
                                                   moderated_members, 'lines')
 
-        assert groupList, "No mailing list for group %s" % group.split('_member')[0]
+        n_dict = {}
+        if groupList:
+            siteId = groupList.getProperty('siteId', '')
+            site_obj = get_site_by_id(groupList, siteId)
+            assert site_obj
+            
+            groupId = groupList.getId()
+            group_obj = get_group_by_siteId_and_groupId(groupList, siteId, groupId)
+            assert group_obj
 
-        siteId = groupList.getProperty('siteId', '')
-        site_obj = get_site_by_id(groupList, siteId)
-        assert site_obj
-        
-        groupId = groupList.getId()
-        group_obj = get_group_by_siteId_and_groupId(groupList, siteId, groupId)
-        assert group_obj
+            group_email = groupList.getProperty('mailto', '')        
+            ptn_coach_id = group_obj.getProperty('ptn_coach_id','')
+            ptn_coach_user = get_user(group_obj, ptn_coach_id)
+            ptnCoach = get_user_realnames(ptn_coach_user, ptn_coach_id)
+            realLife = group_obj.getProperty('real_life_group','') or group_obj.getProperty('membership_defn','')
+            supportEmail = get_support_email(group_obj, siteId)
 
-        group_email = groupList.getProperty('mailto', '')        
-        ptn_coach_id = group_obj.getProperty('ptn_coach_id','')
-        ptn_coach_user = get_user(group_obj, ptn_coach_id)
-        ptnCoach = get_user_realnames(ptn_coach_user, ptn_coach_id)
-        realLife = group_obj.getProperty('real_life_group','') or group_obj.getProperty('membership_defn','')
-        supportEmail = get_support_email(group_obj, siteId)
+            n_dict = {
+                        'groupId'     : groupId,
+                        'groupName'   : group_obj.title_or_id(),
+                        'siteId'      : siteId,
+                        'siteName'    : site_obj.title_or_id(),
+                        'canonical'   : getOption(group_obj, 'canonicalHost'),
+                        'grp_email'   : group_email,
+                        'ptnCoachId'  : ptn_coach_id,
+                        'ptnCoach'    : ptnCoach,
+                        'realLife'    : realLife,
+                        'supportEmail': supportEmail
+                      }
 
-        n_dict = {
-                    'groupId'     : groupId,
-                    'groupName'   : group_obj.title_or_id(),
-                    'siteId'      : siteId,
-                    'siteName'    : site_obj.title_or_id(),
-                    'canonical'   : getOption(group_obj, 'canonicalHost'),
-                    'grp_email'   : group_email,
-                    'ptnCoachId'  : ptn_coach_id,
-                    'ptnCoach'    : ptnCoach,
-                    'realLife'    : realLife,
-                    'supportEmail': supportEmail
-                  }
 
         try:
             self.send_notification('add_group', group, n_dict)

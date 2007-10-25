@@ -165,8 +165,8 @@ class CustomUser(User, Folder):
         #    function is one of the reasons.
         
         import re
-        from XWFCore.XWFUtils import getOption, get_user, get_user_realnames, get_support_email
-        from XWFCore.XWFUtils import get_site_by_id, get_group_by_siteId_and_groupId
+        from Products.XWFCore.XWFUtils import getOption, get_user, get_user_realnames, get_support_email
+        from Products.XWFCore.XWFUtils import get_site_by_id, get_group_by_siteId_and_groupId
          
         acl_users = getattr(self, 'acl_users', None)
         site_root = self.site_root()        

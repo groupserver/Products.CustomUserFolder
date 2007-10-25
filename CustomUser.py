@@ -220,7 +220,7 @@ class CustomUser(User, Folder):
                     'groupId'     : groupId,
                     'groupName'   : group_obj.title_or_id(),
                     'siteId'      : siteId,
-                    'siteName'    : group_obj.title_or_id(),
+                    'siteName'    : site_obj.title_or_id(),
                     'canonical'   : getOption(group_obj, 'canonicalHost'),
                     'grp_email'   : group_email,
                     'ptnCoachId'  : ptn_coach_id,

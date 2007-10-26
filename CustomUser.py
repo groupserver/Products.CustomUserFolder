@@ -169,7 +169,7 @@ class CustomUser(User, Folder):
         from Products.XWFCore.XWFUtils import get_site_by_id, get_group_by_siteId_and_groupId
          
         acl_users = getattr(self, 'acl_users', None)
-        site_root = self.site_root()        
+        site_root = self.site_root()
 
         if acl_users:
             try:
@@ -229,7 +229,6 @@ class CustomUser(User, Folder):
                         'supportEmail': supportEmail
                       }
 
-
         try:
             self.send_notification('add_group', group, n_dict)
         except:
@@ -245,7 +244,14 @@ class CustomUser(User, Folder):
         """ Remove a group from the user, and if available, send them a notification.
         
         """
+        # AM: Copy and paste of horrendous code follows.
+
+        import re
+        from Products.XWFCore.XWFUtils import getOption, get_support_email
+        from Products.XWFCore.XWFUtils import get_site_by_id, get_group_by_siteId_and_groupId
+
         acl_users = getattr(self, 'acl_users', None)
+        site_root = self.site_root()
 
         if acl_users:
             try:
@@ -253,8 +259,40 @@ class CustomUser(User, Folder):
             except:
                 return 0                
 
+        listManagers = site_root.objectValues('XWF Mailing List Manager')
+        possible_list_match = re.search('(.*)_member', group)
+        groupList = None
+        if possible_list_match:
+            possible_list_id = possible_list_match.groups()[0]
+            for listManager in listManagers:
+                try:
+                    groupList = listManager.get_list(possible_list_id)
+                except:
+                    continue
+
+        n_dict = {}
+        if groupList:
+            siteId = groupList.getProperty('siteId', '')
+            site_obj = get_site_by_id(groupList, siteId)
+            assert site_obj
+            
+            groupId = groupList.getId()
+            group_obj = get_group_by_siteId_and_groupId(groupList, siteId, groupId)
+            assert group_obj
+
+            realLife = group_obj.getProperty('real_life_group','') or group_obj.getProperty('membership_defn','')
+            supportEmail = get_support_email(group_obj, siteId)
+
+            n_dict = {
+                        'groupName'   : group_obj.title_or_id(),
+                        'siteName'    : site_obj.title_or_id(),
+                        'canonical'   : getOption(group_obj, 'canonicalHost'),
+                        'realLife'    : realLife,
+                        'supportEmail': supportEmail
+                      }
+
         try:
-            self.send_notification('del_group', group)
+            self.send_notification('del_group', group, n_dict)
         except:
             # we really can't do much, because if we fail here, we may
             # cause the person to get an email over and over if they're

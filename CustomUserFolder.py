@@ -27,6 +27,8 @@ from OFS.Folder import Folder
 from Products.NuxUserGroups import UserFolderWithGroups
 from Products.XWFCore import XWFUtils
 
+import DateTime
+
 import sqlalchemy as sa
 
 try:
@@ -196,6 +198,35 @@ class CustomUserFolder(UserFolderWithGroups):
                 raise KeyError, 'User "%s" does not exist' % username
             groupnames = user.getGroups()
             self.delGroupsFromUser(groupnames, username)
+
+    security.declareProtected(Perms.manage_users, 'simple_register_user')
+    def simple_register_user(self, email, userId, displayName):
+        assert email
+        assert userId
+        assert displayName
+        assert not(self.getUser(userId))
+        assert not(self.get_userIdByEmail(email))
+
+        self._doAddUser(userId, '', [], [], [])
+        user = self.getUser(userId)
+        assert user, \
+          'Did not create the user %s with the email %s' %\
+          (displayName, userId)
+
+        user.manage_changeProperties(preferredName=displayName)
+
+        # For now
+        user.manage_addProperty('displayName', displayName, 'string')
+        user.manage_addProperty('creation_date', DateTime.DateTime(), 
+                                'date')
+
+        user.add_defaultDeliveryEmailAddress(email)
+  
+        assert user
+        assert userId == user.getId()
+        assert email in user.get_emailAddresses()
+        assert displayName == user.getProperty('displayName')
+        return user
     
     security.declareProtected(Perms.manage_users, 'register_user')
     def register_user(self, email, user_id='', first_name='', last_name='',
@@ -203,7 +234,7 @@ class CustomUserFolder(UserFolderWithGroups):
         """ A method for a user to allow a user to register themselves.
         
         """
-        import string, DateTime
+        import string
         
         validChars = string.letters+string.digits+'.'
         

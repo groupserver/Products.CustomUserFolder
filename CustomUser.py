@@ -93,6 +93,26 @@ class CustomUser(User, Folder):
         self.unrestrictedImageRoles = []
         self._p_changed = 1
 
+    def render_notification(self, n_type, n_id, n_dict, email_address):
+        """Generate a notification, returning it as a string."""
+        site_root = self.site_root()
+        presentation = site_root.Templates.email.notifications.aq_explicit
+        
+        ptype_templates = getattr(presentation, n_type, None)
+        assert ptype_templates, 'No template of type %s found' % n_type
+        # AM: This is a dreadful hack to prevent the add_group notification
+        #   from being sent when the "group" joined is a site
+        ignore_ids = getattr(ptype_templates, 'ignore_ids', [])
+        if n_id in ignore_ids:
+            return None
+        
+        template = (getattr(ptype_templates.aq_explicit, n_id, None) or
+                    getattr(ptype_templates.aq_explicit, 'default', None))
+        assert template, 'No template found'
+        retval = template(self, self.REQUEST, to_addr=email_address,
+                          n_id=n_id, n_type=n_type, n_dict=n_dict)
+        return retval
+        
     def send_notification(self, n_type, n_id, n_dict=None, email_only=()):
         """ Send a notification to the user based on the type and ID of the
             notification.

@@ -440,7 +440,9 @@ class CustomUser(User, Folder):
     def verify_emailAddress(self, verificationId):
         assert verificationId
         uq = UserQuery(self, self.zsqlalchemy)
-        uq.verify_userEmail(verificationId)
+        email = uq.verify_userEmail(verificationId)
+        assert email
+        return email
 
     security.declareProtected(Perms.manage_properties,
         'remove_emailAddress')

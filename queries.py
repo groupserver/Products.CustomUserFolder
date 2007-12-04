@@ -70,6 +70,9 @@ class UserQuery(object):
         # Remove the old verification code(s)
         s3 = evt.delete(evt.c.email == email)
         s3.execute()
+        
+        assert email
+        return email
     
     def remove_userEmail(self, email_address):
         uet = self.userEmailTable        

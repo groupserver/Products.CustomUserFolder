@@ -103,10 +103,10 @@ class CustomUserFolder(UserFolderWithGroups):
         s1 = evt.select()
         s1.append_whereclause(evt.c.verification_id == verificationId)
         r1 = s1.execute().fetchone()
-        email = r1['email']
         
         retval = ''
         if r1:
+            email = r1['email']
             s2 = uet.select()
             s2.append_whereclause(uet.c.email.op('ILIKE')(email))
             r2 = s2.execute().fetchone()

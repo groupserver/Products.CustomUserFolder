@@ -1,5 +1,6 @@
 from sqlalchemy.exceptions import NoSuchTableError
 import sqlalchemy as sa
+import pytz, datetime
 
 possible_settings = ['webonly', 'digest']
 
@@ -12,6 +13,7 @@ class UserQuery(object):
         self.emailSettingTable = da.createMapper('email_setting')[1]
         self.userEmailTable = da.createMapper('user_email')[1]
         self.groupUserEmailTable = da.createMapper('group_user_email')[1]
+        self.emailVerificationTable = da.createMapper('email_verification')[1]
 
     def add_userEmail(self, email_address, is_preferred=False):
         uet = self.userEmailTable
@@ -22,7 +24,53 @@ class UserQuery(object):
                   email=email_address,
                   is_preferred=is_preferred,
                   verified_date=None)
+    
+    def userEmail_verified(self, email):
+        assert email
+        uet = self.userEmailTable
+        s1 = uet.select(uet.c.email == email)
+        rs1 = s1.execute()
+
+        retval = False
+        if rs1.rowcount == 1:
+            retval = rs1.fetchone()['verified_date'] != None
+        assert type(retval) == bool
+        return retval
         
+    def verificationId_valid(self, verificationId):
+        assert verificationId
+        evt = self.emailVerificationTable
+
+        # Get the email address        
+        s1 = evt.select(evt.c.verification_id == verificationId)
+        rs1 = s1.execute()
+        retval = False
+        if rs1.rowcount == 1:
+            email = rs1.fetchone()['email']
+            retval = self.userEmail_verified(email)
+        assert type(retval) == bool
+        return retval
+        
+    def verify_userEmail(self, verificationId):
+        assert verificationId
+        uet = self.userEmailTable
+        evt = self.emailVerificationTable
+
+        # Get the email address        
+        s1 = evt.select(evt.c.verification_id == verificationId)
+        rs1 = s1.execute()
+        assert rs1.rowcount == 1
+        email = rs1.fetchone()['email']
+        
+        # Set the email address as verified
+        d = datetime.datetime.utcnow().replace(tzinfo=pytz.utc)
+        s2 = uet.update(uet.c.email == email)
+        s2.execute(verified_date = d  )
+          
+        # Remove the old verification code(s)
+        s3 = evt.delete(evt.c.email == email)
+        s3.execute()
+    
     def remove_userEmail(self, email_address):
         uet = self.userEmailTable        
         and_ = sa.and_

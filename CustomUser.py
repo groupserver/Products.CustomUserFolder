@@ -426,18 +426,24 @@ class CustomUser(User, Folder):
         return email
     
     security.declareProtected(Perms.manage_properties, 'add_emailAddress')
-    def add_emailAddress(self, email):
+    def add_emailAddress(self, email, is_preferred=False):
         """ Add an email address to the list of the user's known email
         addresses.
         
         """
-        uq = UserQuery(self, self.zsqlalchemy)
-
         email = self._validateAndNormalizeEmail(email)
+        uq = UserQuery(self, self.zsqlalchemy)        
+        uq.add_userEmail(email, is_preferred)
         
-        uq.add_userEmail(email)        
-            
-    security.declareProtected(Perms.manage_properties, 'remove_emailAddress')
+    security.declareProtected(Perms.manage_properties,
+        'verify_emailAddress')
+    def verify_emailAddress(self, verificationId):
+        assert verificationId
+        uq = UserQuery(self, self.zsqlalchemy)
+        uq.verify_userEmail(verificationId)
+
+    security.declareProtected(Perms.manage_properties,
+        'remove_emailAddress')
     def remove_emailAddress(self, email):
         """ Remove an email address from the list of user's email
         addresses.

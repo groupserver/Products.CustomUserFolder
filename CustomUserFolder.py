@@ -91,6 +91,39 @@ class CustomUserFolder(UserFolderWithGroups):
             return r['user_id']
 
         return None
+        
+    security.declareProtected(Perms.manage_users, 'get_userIdByVerificationId')
+    def get_userIdByVerificationId(self, verificationId):
+        """Get the user ID from a email-verification ID
+        """
+        da = self.zsqlalchemy
+        uet = da.createMapper('user_email')[1]
+        evt = da.createMapper('email_verification')[1]
+        
+        s1 = evt.select()
+        s1.append_whereclause(evt.c.verification_id == verificationId)
+        r1 = s1.execute().fetchone()
+        email = r1['email']
+        
+        retval = ''
+        if r1:
+            s2 = uet.select()
+            s2.append_whereclause(uet.c.email.op('ILIKE')(email))
+            r2 = s2.execute().fetchone()
+            if r2:
+                return r2['user_id']
+        assert type(retval) == str
+        return retval
+        
+    security.declareProtected(Perms.manage_users, ' get_userByVerificationId')
+    def get_userByVerificationId(self, verificationId):
+        """ Get the user by verification ID
+        
+        """
+        user_id = self.get_userIdByVerificationId(verificationId)
+        if user_id:
+            return self.getUser(user_id)
+        return None
 
     security.declareProtected(Perms.manage_users, 'get_userByEmail')
     def get_userByEmail(self, email):

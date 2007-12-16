@@ -769,8 +769,7 @@ class CustomUser(User, Folder):
                          site=site,
                          to_addr=email_address,
                          verification_code=self.get_verificationCode(),
-                         first_name=self.getProperty('firstName', ''),
-                         last_name=self.getProperty('lastName', ''),
+                         preferred_name=self.getProperty('preferredName', ''),
                          user_id=self.getId(),
                          password=password))
         

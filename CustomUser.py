@@ -267,7 +267,7 @@ class CustomUser(User, Folder):
         # AM: Copy and paste of horrendous code follows.
 
         import re
-        from Products.XWFCore.XWFUtils import getOption, get_support_email
+        from Products.XWFCore.XWFUtils import getOption, get_user, get_user_realnames, get_support_email
         from Products.XWFCore.XWFUtils import get_site_by_id, get_group_by_siteId_and_groupId
 
         acl_users = getattr(self, 'acl_users', None)
@@ -300,13 +300,21 @@ class CustomUser(User, Folder):
             group_obj = get_group_by_siteId_and_groupId(groupList, siteId, groupId)
             assert group_obj
 
+            group_email = groupList.getProperty('mailto', '')        
+            ptn_coach_id = group_obj.getProperty('ptn_coach_id','')
+            ptn_coach_user = get_user(group_obj, ptn_coach_id)
+            ptnCoach = get_user_realnames(ptn_coach_user, ptn_coach_id)
             realLife = group_obj.getProperty('real_life_group','') or group_obj.getProperty('membership_defn','')
             supportEmail = get_support_email(group_obj, siteId)
 
             n_dict = {
+                        'groupId'     : groupId,
                         'groupName'   : group_obj.title_or_id(),
                         'siteName'    : site_obj.title_or_id(),
                         'canonical'   : getOption(group_obj, 'canonicalHost'),
+                        'grp_email'   : group_email,
+                        'ptnCoachId'  : ptn_coach_id,
+                        'ptnCoach'    : ptnCoach,
                         'realLife'    : realLife,
                         'supportEmail': supportEmail
                       }

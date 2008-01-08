@@ -262,8 +262,9 @@ class CustomUserFolder(UserFolderWithGroups):
         return user
     
     security.declareProtected(Perms.manage_users, 'register_user')
-    def register_user(self, email, user_id='', preferred_name='',
-                      password_length=8, roles=[], groups=[], post_groups=[]):
+    def register_user(self, email, user_id='', first_name='', last_name='',
+                      preferred_name='',password_length=8, roles=[],
+                      groups=[], post_groups=[]):
         """ A method for a user to allow a user to register themselves.
         
         """
@@ -312,13 +313,24 @@ class CustomUserFolder(UserFolderWithGroups):
         self._doAddUser(str(user_id), password, roles, [], groups)
         user = self.getUser(user_id)
         if user:
-            try:
-                lhs = email.split('@')[0]
-            except:
-                lhs = ''
-            preferred_name = preferred_name or lhs
-            
+            if first_name:
+                if last_name:
+                    lhs = first_name + ' ' + last_name
+                else:
+                    lhs = first_name
+            else:
+              try:
+                  lhs = email.split('@')[0]
+              except:
+                  lhs = ''
+            preferred_name = preferred_name or lhs            
             user.manage_changeProperties(preferredName=preferred_name)
+
+            if hasattr(user, 'firstName'):
+                user.manage_changeProperties(firstName=first_name)
+
+            if hasattr(user, 'lastName'):
+                user.manage_changeProperties(lastName=last_name)
             
             user.manage_addProperty('creation_date', DateTime.DateTime(),
                                     'date')

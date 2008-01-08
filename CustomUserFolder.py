@@ -262,9 +262,9 @@ class CustomUserFolder(UserFolderWithGroups):
         return user
     
     security.declareProtected(Perms.manage_users, 'register_user')
-    def register_user(self, email, user_id='', first_name='', last_name='',
-                      preferred_name='',password_length=8, roles=[],
-                      groups=[], post_groups=[]):
+    def register_user(self, email, user_id='', preferred_name='', first_name='', 
+                      last_name='', password_length=8, roles=[], groups=[],
+                      post_groups=[]):
         """ A method for a user to allow a user to register themselves.
         
         """

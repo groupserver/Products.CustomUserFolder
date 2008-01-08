@@ -313,11 +313,8 @@ class CustomUserFolder(UserFolderWithGroups):
         self._doAddUser(str(user_id), password, roles, [], groups)
         user = self.getUser(user_id)
         if user:
-            if first_name:
-                if last_name:
-                    lhs = first_name + ' ' + last_name
-                else:
-                    lhs = first_name
+            if first_name and last_name:
+                lhs = first_name + ' ' + last_name
             else:
               try:
                   lhs = email.split('@')[0]
@@ -326,10 +323,10 @@ class CustomUserFolder(UserFolderWithGroups):
             preferred_name = preferred_name or lhs            
             user.manage_changeProperties(preferredName=preferred_name)
 
-            if hasattr(user, 'firstName'):
+            if first_name and hasattr(user, 'firstName'):
                 user.manage_changeProperties(firstName=first_name)
 
-            if hasattr(user, 'lastName'):
+            if last_name and hasattr(user, 'lastName'):
                 user.manage_changeProperties(lastName=last_name)
             
             user.manage_addProperty('creation_date', DateTime.DateTime(),

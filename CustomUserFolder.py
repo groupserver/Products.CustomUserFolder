@@ -249,7 +249,7 @@ class CustomUserFolder(UserFolderWithGroups):
         user.manage_changeProperties(preferredName=displayName)
 
         # For now
-        user.manage_addProperty('displayName', displayName, 'string')
+        user.manage_addProperty('fn', displayName, 'string')
         user.manage_addProperty('creation_date', DateTime.DateTime(), 
                                 'date')
 
@@ -258,7 +258,7 @@ class CustomUserFolder(UserFolderWithGroups):
         assert user
         assert userId == user.getId()
         assert email in user.get_emailAddresses()
-        assert displayName == user.getProperty('displayName')
+        assert displayName == user.getProperty('fn')
         return user
     
     security.declareProtected(Perms.manage_users, 'register_user')

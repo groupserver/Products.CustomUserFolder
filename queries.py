@@ -169,11 +169,12 @@ class UserQuery(object):
             u.execute(setting=setting)
 
     def clear_groupEmailSetting(self, site_id, group_id):
-        uet = self.emailSettingTable        
+        est = self.emailSettingTable        
         and_ = sa.and_
 
-        d = uet.delete(and_(uet.c.site_id==site_id,
-                            uet.c.group_id==group_id)).execute()
+        d = est.delete(and_(est.c.user_id==self.user_id,
+                            est.c.site_id==site_id,
+                            est.c.group_id==group_id)).execute()
         
     def get_groupEmailSetting(self, site_id, group_id):
         """ Given a site_id and group_id, check to see if the user

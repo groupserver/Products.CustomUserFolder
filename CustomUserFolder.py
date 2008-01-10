@@ -322,12 +322,19 @@ class CustomUserFolder(UserFolderWithGroups):
                   lhs = ''
             preferred_name = preferred_name or lhs            
             user.manage_changeProperties(preferredName=preferred_name)
+            
+            if hasattr(user, 'fn'):
+                user.manage_changeProperties(fn=preferred_name)
 
-            if first_name and hasattr(user, 'firstName'):
-                user.manage_changeProperties(firstName=first_name)
+            if first_name and hasattr(user, 'givenName'):
+                user.manage_changeProperties(givenName=first_name)
+            elif first_name:
+                user.manage_addProperty('givenName', first_name, 'string')
 
-            if last_name and hasattr(user, 'lastName'):
-                user.manage_changeProperties(lastName=last_name)
+            if last_name and hasattr(user, 'familyName'):
+                user.manage_changeProperties(familyName=last_name)
+            elif last_name:
+                user.manage_addProperty('familyName', last_name, 'string')
             
             user.manage_addProperty('creation_date', DateTime.DateTime(),
                                     'date')

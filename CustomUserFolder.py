@@ -325,7 +325,9 @@ class CustomUserFolder(UserFolderWithGroups):
             
             if hasattr(user, 'fn'):
                 user.manage_changeProperties(fn=preferred_name)
-
+            else:
+                user.manage_addProperty('fn', preferred_name, 'string')
+                
             if first_name and hasattr(user, 'givenName'):
                 user.manage_changeProperties(givenName=first_name)
             elif first_name:

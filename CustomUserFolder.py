@@ -93,7 +93,7 @@ class CustomUserFolder(UserFolderWithGroups):
         return None
         
     security.declareProtected(Perms.manage_users, 'get_userIdByVerificationId')
-    def get_userIdByVerificationId(self, verificationId):
+    def get_userIdByEmailVerificationId(self, verificationId):
         """Get the user ID from a email-verification ID
         """
         da = self.zsqlalchemy
@@ -116,11 +116,11 @@ class CustomUserFolder(UserFolderWithGroups):
         return retval
         
     security.declareProtected(Perms.manage_users, ' get_userByVerificationId')
-    def get_userByVerificationId(self, verificationId):
+    def get_userByEmailVerificationId(self, verificationId):
         """ Get the user by verification ID
         
         """
-        user_id = self.get_userIdByVerificationId(verificationId)
+        user_id = self.get_userIdByEmailVerificationId(verificationId)
         if user_id:
             return self.getUser(user_id)
         return None
@@ -148,6 +148,29 @@ class CustomUserFolder(UserFolderWithGroups):
             if verification_code == user.get_verificationCode():
                 return user
         
+        return None
+
+    security.declareProtected(Perms.manage_users, 'get_userIdByPasswordVerificationId')
+    def get_userIdByPasswordVerificationId(self, verificationId):
+        """Get the user ID from a email-verification ID
+        """
+        da = self.zsqlalchemy
+        pvt = da.createMapper('password_reset')[1]
+        
+        s1 = pvt.select()
+        s1.append_whereclause(pvt.c.verification_id == verificationId)
+        r1 = s1.execute().fetchone()
+
+        retval = r1['user_id']
+        assert type(retval) == str
+        return retval
+
+    security.declareProtected(Perms.manage_users, 'get_userByPasswordVerificationId')
+    def get_userByPasswordVerificationId(self, verificationId):
+        user_id = self.get_userIdByPasswordVerificationId(verificationId)
+        if user_id:
+            return self.getUser(user_id)
+
         return None
         
     security.declareProtected(Perms.manage_users, 'get_userByEmail')

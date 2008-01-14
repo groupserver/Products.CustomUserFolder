@@ -1,3 +1,4 @@
+# coding=utf-8
 # Copyright (C) 2003,2004 IOPEN Technologies Ltd.
 #
 # This program is free software; you can redistribute it and/or
@@ -836,10 +837,41 @@ class CustomUser(User, Folder):
         site_root.acl_users.userFolderEditUser(userID, newPassword,
                                                roles, domains)
 
-	logged_in_user = self.REQUEST.AUTHENTICATED_USER.getId() 
-	if (logged_in_user):
-	        site_root.cookie_authentication.credentialsChanged(user, userID,
-        	                                                   newPassword)
+
+      	logged_in_user = self.REQUEST.AUTHENTICATED_USER.getId() 
+      	if (logged_in_user):
+      	        site_root.cookie_authentication.credentialsChanged(user, userID,
+              	                                                   newPassword)
+    def add_password_verification(self, verificationId):
+        """Adds a verificationId to the password-reset table
+        
+        ARGUMENTS
+          verificationId: The verification ID to set.
+          
+        SIDE-EFFECTS
+          Changes the user-information in 'password-reset' table.
+
+        RETURNS
+          None."""
+
+        uq = UserQuery(self, self.zsqlalchemy)
+        uq.set_userPasswordResetVerificationId(verificationId)
+
+    def clear_userPasswordResetVerificationIds(self):
+        """Clears verification IDs, for a particular user, from the
+           password-reset table
+        
+        ARGUMENTS
+          None.
+          
+        SIDE-EFFECTS
+          Changes the user-information in 'password_reset' table.
+
+        RETURNS
+          None."""
+          
+        uq = UserQuery(self, self.zsqlalchemy)
+        uq.clear_userPasswordResetVerificationIds()
 		
     #
     # Views and Workflow

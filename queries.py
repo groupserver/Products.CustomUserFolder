@@ -1,3 +1,4 @@
+# coding=utf-8
 from sqlalchemy.exceptions import NoSuchTableError
 import sqlalchemy as sa
 import pytz, datetime
@@ -14,6 +15,7 @@ class UserQuery(object):
         self.userEmailTable = da.createMapper('user_email')[1]
         self.groupUserEmailTable = da.createMapper('group_user_email')[1]
         self.emailVerificationTable = da.createMapper('email_verification')[1]
+        self.passwordResetTable = da.createMapper('password_reset')[1]
 
     def add_userEmail(self, email_address, is_preferred=False):
         uet = self.userEmailTable
@@ -37,7 +39,7 @@ class UserQuery(object):
         assert type(retval) == bool
         return retval
         
-    def verificationId_valid(self, verificationId):
+    def userEmail_verificationId_valid(self, verificationId):
         assert verificationId
         evt = self.emailVerificationTable
 
@@ -194,3 +196,14 @@ class UserQuery(object):
             setting = result['setting']
         
         return setting
+        
+    def set_userPasswordResetVerificationId(self, verificationId):
+        prt = self.passwordResetTable
+        i = prt.insert()
+        i.execute(verification_id = verificationId, user_id = self.user_id)
+
+    def clear_userPasswordResetVerificationIds(self):
+        prt = self.passwordResetTable
+        d = prt.delete(prt.c.user_id == self.user_id)
+        d.execute()
+

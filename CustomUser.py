@@ -278,7 +278,7 @@ class CustomUser(User, Folder):
             try:
                 acl_users.delGroupsFromUser([group], self.getId())
             except:
-                return 0                
+                return 0
 
         listManagers = site_root.objectValues('XWF Mailing List Manager')
         possible_list_match = re.search('(.*)_member', group)
@@ -880,14 +880,14 @@ class CustomUser(User, Folder):
         """ Return the default view.
 
         """
-        return self.REQUEST.RESPONSE.redirect(self.absolute_url()+'/'+'userinfo.xml')
+        return self.REQUEST.RESPONSE.redirect('/')
 
     def upgrade(self):
         """ Upgrade existing objects.
 	
-	"""
-	# originally we weren't setting the ID correctly
-	self.id = self.getId()
+      	"""
+      	# originally we weren't setting the ID correctly
+      	self.id = self.getId()
 
 InitializeClass(CustomUser)
 
@@ -910,6 +910,12 @@ def removedCustomUser(ob, event):
     """ A CustomUser was removed.
 
     """
+    acl_users = getattr(ob, 'acl_users', None)
+    if acl_users:
+        try:
+            acl_users.setGroupsOfUser([], ob.getId())
+        except:
+            pass
     for email in ob.get_emailAddresses():
         ob.remove_emailAddress(email)
     return

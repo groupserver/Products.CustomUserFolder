@@ -910,12 +910,6 @@ def removedCustomUser(ob, event):
     """ A CustomUser was removed.
 
     """
-    acl_users = getattr(ob, 'acl_users', None)
-    if acl_users:
-        try:
-            acl_users.setGroupsOfUser([], ob.getId())
-        except:
-            pass
     for email in ob.get_emailAddresses():
         ob.remove_emailAddress(email)
     return

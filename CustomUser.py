@@ -397,6 +397,9 @@ class CustomUser(User, Folder):
             A helper method to purify the list of addresses.
             
         """
+        # --=mpj17=-- Note that registration requires this to be able
+        #   to return all the user's email addresses, not just the 
+        #   verified addresses.
         uq = UserQuery(self, self.zsqlalchemy)
         
         return uq.get_userEmail(preferred_only=False)
@@ -452,6 +455,16 @@ class CustomUser(User, Folder):
         email = uq.verify_userEmail(verificationId)
         assert email
         return email
+
+    def add_emailAddressVerification(self, verificationId, email):
+        assert verificationId
+        uq = UserQuery(self, self.zsqlalchemy)
+        assert not uq.userEmail_verificationId_valid(verificationId), \
+          'Email Verification ID %s exists' % verificationID
+        assert email in self.get_emailAddresses(), \
+          'User "%s" does not have the address <%s>' % (self.getId(), email)
+        
+        uq.add_userEmail_verificationId(verificationId, email)
 
     security.declareProtected(Perms.manage_properties,
         'remove_emailAddress')

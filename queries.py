@@ -38,6 +38,14 @@ class UserQuery(object):
             retval = rs1.fetchone()['verified_date'] != None
         assert type(retval) == bool
         return retval
+
+    def add_userEmail_verificationId(self, verificationId, email):
+        assert verificationId
+        assert email
+        evt = self.emailVerificationTable
+        i = evt.insert()
+        i.execute(verification_id=verificationId, email=email)
+        # Change the user_email table?
         
     def userEmail_verificationId_valid(self, verificationId):
         assert verificationId

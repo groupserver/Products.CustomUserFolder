@@ -92,7 +92,7 @@ class CustomUserFolder(UserFolderWithGroups):
 
         return None
         
-    security.declareProtected(Perms.manage_users, 'get_userIdByVerificationId')
+    security.declareProtected(Perms.manage_users, 'get_userIdByEmailVerificationId')
     def get_userIdByEmailVerificationId(self, verificationId):
         """Get the user ID from a email-verification ID
         """
@@ -115,7 +115,7 @@ class CustomUserFolder(UserFolderWithGroups):
         assert type(retval) == str
         return retval
         
-    security.declareProtected(Perms.manage_users, ' get_userByVerificationId')
+    security.declareProtected(Perms.manage_users, 'get_userByEmailVerificationId')
     def get_userByEmailVerificationId(self, verificationId):
         """ Get the user by verification ID
         

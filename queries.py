@@ -47,6 +47,13 @@ class UserQuery(object):
         i.execute(verification_id=verificationId, email=email)
         # Change the user_email table?
         
+    def remove_userEmail_verificationId(self, email):
+        assert email
+        evt = self.emailVerificationTable
+        d = evt.delete(evt.c.email == email)
+        d.execute()
+        self.remove_userEmail(email)
+
     def userEmail_verificationId_valid(self, verificationId):
         assert verificationId
         evt = self.emailVerificationTable

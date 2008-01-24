@@ -34,6 +34,9 @@ import string
 from zope.interface import implements
 from Products.CustomUserFolder.interfaces import ICustomUser
 
+import logging
+log = logging.getLogger('CustomUser')
+
 class CustomUser(User, Folder):
     """ A Custom user, based on the builtin user object.
     
@@ -447,16 +450,87 @@ class CustomUser(User, Folder):
         uq = UserQuery(self, self.zsqlalchemy)        
         uq.add_userEmail(email, is_preferred)
         
+    security.declareProtected(Perms.manage_properties, 'verify_address')
+    def verify_email(self, verificationID):
+        """Verify the email address of an existing user.
+        
+        This method is designed to be called from the user's 
+        
+        ARGUMENTS
+            verificationID: The verification code of the email address
+
+        SIDE EFFECTS
+            The email address associated with the verificationID is
+            verified, so notifications are sent to the address, and
+            messages posted to the user's groups can be sent to that
+            address.
+            
+        RETURNS
+          True if the user's email address has been verifed; False 
+          otherwise.
+        """
+        assert verificationId
+        uq = UserQuery(self, self.zsqlalchemy)
+        retval = uq.userEmail_verificationId_valid(verificationId)
+        if retval:
+            m = 'verify_email: Verifying, from email, the address '\
+              'associated with "%s" for the user "%s"' % \
+              (self.getId(), verificationID)
+            log.info(m)
+        
+            self.verify_emailAddress(verificationID)
+        else:
+            m = 'verify_email: NOT verifying, from email, the address '\
+              'associated with "%s" for the user "%s", as the '\
+              'verification ID was not found' % \
+              (self.getId(), verificationID)
+            log.info(m)
+                    
+        assert type(retval) == bool
+        return retval
+        
     security.declareProtected(Perms.manage_properties,
         'verify_emailAddress')
     def verify_emailAddress(self, verificationId):
+        """Verify the email address associated with the verification ID
+        
+        ARGUMENTS
+            verificationID: The verification code of the email address.
+            
+        RETURNS
+          The email address associated with the verification ID.
+          
+        SIDE EFFECTS
+          The email address assoicated with the verification ID is 
+          verified.
+        """
         assert verificationId
         uq = UserQuery(self, self.zsqlalchemy)
+        assert uq.userEmail_verificationId_valid(verificationId), \
+          'Invalid verification ID: "%s"' % verificationId
+          
         email = uq.verify_userEmail(verificationId)
+
+        m = 'verify_emailAddress: Verified <%s> for the user "%s"' % \
+          (email, self.getId())
+        log.info(m)
+
         assert email
         return email
 
     def add_emailAddressVerification(self, verificationId, email):
+        """Add a verification ID for a particular email address
+        
+        ARGUMENTS
+            verificationId: the verification ID for the address
+            email: The email address that is being verified
+            
+        SIDE EFFECTS
+            An entry in the email address verification table is made.
+            
+        RETURNS
+            None
+        """
         assert verificationId
         uq = UserQuery(self, self.zsqlalchemy)
         assert not uq.userEmail_verificationId_valid(verificationId), \
@@ -465,6 +539,47 @@ class CustomUser(User, Folder):
           'User "%s" does not have the address <%s>' % (self.getId(), email)
         
         uq.add_userEmail_verificationId(verificationId, email)
+
+        m = 'add_emailAddressVerification: Added the verification ID "%s" '\
+          'for the address <%s>, for the user "%s"' % \
+          (verificationId, email, self.getId())
+        log.info(m)
+
+    def remove_emailAddressVerification(self, email):
+        """Remove all entries in the email address verification table
+        associated with a particular address
+        
+        ARGUMENTS
+          email: an email address
+          
+        SIDE EFFECTS
+          All entries in the email address verification table, which
+          exist for the email address, are removed.
+          
+        RETURNS
+           None
+        """
+        assert email
+        assert email in self.get_emailAddresses(), \
+          'User "%s" does not have the address <%s>' % (self.getId(), email)
+        uq = UserQuery(self, self.zsqlalchemy)
+        uq.remove_userEmail_verificationId(email)
+        
+    def emailAddress_isVerified(self, email):
+        """Check to see if an address is verified.
+        
+        ARGUMENTS
+          email: The email address to check.
+        SIDE EFFECTS
+          None.
+        RETURNS
+          True if the email address is verified. False otherwise.
+        """
+        assert email
+        assert email in self.get_emailAddresses(), \
+          'User "%s" does not have the address <%s>' % (self.getId(), email)
+        uq = UserQuery(self, self.zsqlalchemy)
+        return uq.userEmail_verified(email)
 
     security.declareProtected(Perms.manage_properties,
         'remove_emailAddress')
@@ -479,8 +594,10 @@ class CustomUser(User, Folder):
 
         uq.remove_userEmail(email)        
     
-    security.declareProtected(Perms.manage_properties, 'get_preferredEmailAddresses')
-    security.declareProtected(Perms.manage_properties, 'get_defaultDeliveryEmailAddresses')
+    security.declareProtected(Perms.manage_properties, 
+      'get_preferredEmailAddresses')
+    security.declareProtected(Perms.manage_properties,
+      'get_defaultDeliveryEmailAddresses')
     def get_defaultDeliveryEmailAddresses(self):
         """ Get the user's default delivery email addresses.
         
@@ -491,7 +608,8 @@ class CustomUser(User, Folder):
     
     get_preferredEmailAddresses = get_defaultDeliveryEmailAddresses
     
-    security.declareProtected(Perms.manage_properties, 'add_defaultDeliveryEmailAddress')
+    security.declareProtected(Perms.manage_properties,
+      'add_defaultDeliveryEmailAddress')
     def add_defaultDeliveryEmailAddress(self, email):
         """ Add an address to the list of addresses to which email will be
             delivered by default.
@@ -514,7 +632,8 @@ class CustomUser(User, Folder):
 
     add_preferredEmailAddress = add_defaultDeliveryEmailAddress
         
-    security.declareProtected(Perms.manage_properties, 'add_defaultDeliveryEmailAddresses')
+    security.declareProtected(Perms.manage_properties,
+      'add_defaultDeliveryEmailAddresses')
     def add_defaultDeliveryEmailAddresses(self, addresses):
         """ Set all the addresses to which email will be delivered by default.
         

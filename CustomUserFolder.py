@@ -31,6 +31,9 @@ import DateTime
 
 import sqlalchemy as sa
 
+import logging
+log = logging.getLogger('CustomUserFolder')
+
 try:
     from Products.MailBoxer import MailBoxerTools
     HaveMailBoxer = True
@@ -388,6 +391,45 @@ class CustomUserFolder(UserFolderWithGroups):
                 
         return self.manage_users(submit, REQUEST, RESPONSE)
 
+    security.declarePublic('verify_address')
+    def verify_address(self, Mail):
+        """Verify the email address of an existing user.
+        
+        This method is designed to be called from the mail server.
+        
+        ARGUMENTS
+          Mail: the mail message to process.
+          
+        SIDE EFFECTS
+          The email address associated the verification ID in the subject
+          is verified.
+          
+        RETURNS
+          None.
+        """
+        assert Mail
+        if not HaveMailBoxer:
+            raise ImportError, ('MailBoxerTools is not available, unable to '
+                                'verify user from email')
+        
+        mailHeader, mailBody = MailBoxerTools.splitMail(Mail)
+        subjHdr = mailHeader.get('subject', '')
+        subject = MailBoxerTools.mime_decode_header(subjHdr)
+        assert subject, 'No subject in verification mail message'
+
+        m = 'verify_address: Processing message "%s"' % subject
+        log.info(m)
+        
+        verificationId = re.findall('{(.*?)}', subject)[0]
+        verificationId = re.sub('\s', '', verificationId)
+        assert verificationId, 'No verification ID in verification mail message'
+        
+        user = self.get_userByEmailVerificationId(verificationId)
+        assert user, 'No user for the verification ID "%s"' % verificationID
+        email = user.verify_emailAddress(verificationId)
+        # TODO: send out a notification to the user, informing him or her
+        #   that the address has been verified.
+        
     security.declarePublic('verify_userFromEmail')
     def verify_userFromEmail(self, Mail):
         """ Verify the user from an email.

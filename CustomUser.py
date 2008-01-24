@@ -450,45 +450,6 @@ class CustomUser(User, Folder):
         uq = UserQuery(self, self.zsqlalchemy)        
         uq.add_userEmail(email, is_preferred)
         
-    security.declareProtected(Perms.manage_properties, 'verify_address')
-    def verify_email(self, verificationID):
-        """Verify the email address of an existing user.
-        
-        This method is designed to be called from the user's 
-        
-        ARGUMENTS
-            verificationID: The verification code of the email address
-
-        SIDE EFFECTS
-            The email address associated with the verificationID is
-            verified, so notifications are sent to the address, and
-            messages posted to the user's groups can be sent to that
-            address.
-            
-        RETURNS
-          True if the user's email address has been verifed; False 
-          otherwise.
-        """
-        assert verificationId
-        uq = UserQuery(self, self.zsqlalchemy)
-        retval = uq.userEmail_verificationId_valid(verificationId)
-        if retval:
-            m = 'verify_email: Verifying, from email, the address '\
-              'associated with "%s" for the user "%s"' % \
-              (self.getId(), verificationID)
-            log.info(m)
-        
-            self.verify_emailAddress(verificationID)
-        else:
-            m = 'verify_email: NOT verifying, from email, the address '\
-              'associated with "%s" for the user "%s", as the '\
-              'verification ID was not found' % \
-              (self.getId(), verificationID)
-            log.info(m)
-                    
-        assert type(retval) == bool
-        return retval
-        
     security.declareProtected(Perms.manage_properties,
         'verify_emailAddress')
     def verify_emailAddress(self, verificationId):

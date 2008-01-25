@@ -204,6 +204,8 @@ class CustomUserFolder(UserFolderWithGroups):
         """ Return the named user object or None.
         
         """
+        assert name, 'User ID not set'
+        assert type(name) == str, 'User ID is not a string'
         user_folder = self._getUserFolder()
         user = getattr(user_folder, name, None)
         if user:

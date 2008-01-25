@@ -425,7 +425,7 @@ class CustomUserFolder(UserFolderWithGroups):
         assert verificationId, 'No verification ID in verification mail message'
         
         user = self.get_userByEmailVerificationId(verificationId)
-        assert user, 'No user for the verification ID "%s"' % verificationID
+        assert user, 'No user for the verification ID "%s"' % verificationId
         email = user.verify_emailAddress(verificationId)
         # TODO: send out a notification to the user, informing him or her
         #   that the address has been verified.

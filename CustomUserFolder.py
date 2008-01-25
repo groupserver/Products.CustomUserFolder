@@ -28,7 +28,7 @@ from Products.NuxUserGroups import UserFolderWithGroups
 from Products.XWFCore import XWFUtils
 
 import DateTime
-
+import re
 import sqlalchemy as sa
 
 import logging

@@ -61,7 +61,7 @@ class UserQuery(object):
         # Get the email address        
         s1 = evt.select(evt.c.verification_id == verificationId)
         rs1 = s1.execute()
-        retval = rs1.rowcount == 1:
+        retval = rs1.rowcount == 1
         assert type(retval) == bool
         return retval
         

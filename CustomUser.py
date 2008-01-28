@@ -350,12 +350,14 @@ class CustomUser(User, Folder):
         contactsimages = getattr(self, 'contactsimages', None)
         if not contactsimages:
             return None
-        fname = self.givenName.lower()
-        lname = self.familyName.lower()
-        pname = self.fn.lower()
+        given_name = self.givenName.lower()
+        family_name = self.familyName.lower()
+        fname = self.firstName.lower()
+        lname = self.lastName.lower()
         valid_chars = string.letters+string.digits+'_.'
         imageurl = None
         for id in ['%s.jpg' % self.getId(),
+                    '%s_%s_%s.jpg' % (family_name, given_name, self.getId())
                     '%s_%s_%s.jpg' % (lname, fname, self.getId())]:
             newid = ''
             for char in id:

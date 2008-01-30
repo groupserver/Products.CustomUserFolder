@@ -164,12 +164,15 @@ class CustomUserFolder(UserFolderWithGroups):
         s1.append_whereclause(pvt.c.verification_id == verificationId)
         r1 = s1.execute().fetchone()
 
-        retval = r1['user_id']
+        retval = ''
+        if r1:
+            retval = r1['user_id']
         assert type(retval) == str
         return retval
 
     security.declareProtected(Perms.manage_users, 'get_userByPasswordVerificationId')
     def get_userByPasswordVerificationId(self, verificationId):
+        assert verificationId
         user_id = self.get_userIdByPasswordVerificationId(verificationId)
         if user_id:
             return self.getUser(user_id)

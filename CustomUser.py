@@ -972,6 +972,22 @@ class CustomUser(User, Folder):
         uq = UserQuery(self, self.zsqlalchemy)
         uq.clear_userPasswordResetVerificationIds()
 		
+    def get_invitation(self, invitationId):
+        assert invitationId
+        uq = UserQuery(self, self.zsqlalchemy)
+        retval = uq.get_invitation(invitationId)
+        assert retval, 'No invitation found for the ID %s' % invitationId
+        return retval
+		
+    def add_invitation(self, invitationId, invitingUserId, siteId, groupId):
+        uq = UserQuery(self, self.zsqlalchemy)
+        uq.add_invitation(invitationId, self.getId(), invitingUserId, 
+            siteId, groupId)
+        m = 'add_invitation: Added invation (ID %s) to the group %s/%s '\
+          'for  the user %s (%s)' % (invitationId, siteId, groupId, 
+            self.getId(), self.getProperty('fn', ''))
+        log.info(m)
+		
     #
     # Views and Workflow
     #

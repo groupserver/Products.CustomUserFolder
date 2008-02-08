@@ -16,6 +16,7 @@ class UserQuery(object):
         self.groupUserEmailTable = da.createMapper('group_user_email')[1]
         self.emailVerificationTable = da.createMapper('email_verification')[1]
         self.passwordResetTable = da.createMapper('password_reset')[1]
+        self.invitationTable = da.createMapper('user_invitation')[1]
 
     def add_userEmail(self, email_address, is_preferred=False):
         uet = self.userEmailTable
@@ -218,4 +219,71 @@ class UserQuery(object):
         prt = self.passwordResetTable
         d = prt.delete(prt.c.user_id == self.user_id)
         d.execute()
+
+    def get_invitation(self, invitationId):
+        ivt = self.invitationTable
+        statement = ivt.select()
+        statement.append_whereclause(ivt.c.invitation_id == invitationId)
+        
+        r = statement.execute()
+        retval = {}
+        if r.rowcount:
+            res = r.fetchone()
+            retval = {
+              'invitation_id':    res['invitation_id'],
+              'user_id':          res['user_id'],
+              'inviting_user_id': res['inviting_user_id'],
+              'site_id':          res['site_id'],
+              'group_id':         res['group_id'],
+              'invitation_date':  res['invitation_date']
+            }
+        return retval
+
+    def get_userInvitations(self, userId):
+        ivt = self.invitationTable
+        statement = ivt.select()
+        statement.append_whereclause(ivt.c.user_id == user_id)
+        
+        r = statement.execute()
+        retval = []
+        if r.rowcount:
+            retval = [{
+                'invitation_id':    invite['invitation_id'],
+                'user_id':          invite['user_id'],
+                'inviting_user_id': invite['inviting_user_id'],
+                'site_id':          invite['site_id'],
+                'group_id':         invite['group_id'],
+                'invitation_date':  invite['invitation_date']
+              } for invite in r.fetchall()]
+        return retval
+
+    def get_userInvitationsForGroup(self, userId, groupId, siteId):
+        ivt = self.invitationTable
+        statement = ivt.select()
+        statement.append_whereclause(ivt.c.user_id == userId)
+        statement.append_whereclause(ivt.c.group_id == groupId)
+        statement.append_whereclause(ivt.c.site_id == siteId)
+        
+        r = statement.execute()
+        retval = []
+        if r.rowcount:
+            retval = [{
+                'invitation_id':    invite['invitation_id'],
+                'user_id':          invite['user_id'],
+                'inviting_user_id': invite['inviting_user_id'],
+                'site_id':          invite['site_id'],
+                'group_id':         invite['group_id'],
+                'invitation_date':  invite['invitation_date']
+              } for invite in r.fetchall()]
+        return retval
+
+    def add_invitation(self, invitationId, userId, invitingUserId, 
+        siteId, groupId):
+        
+        ivt = self.invitationTable
+        d = datetime.datetime.utcnow().replace(tzinfo=pytz.utc)
+        statement = ivt.insert()
+        statement.execute(invitation_id = invitationId, user_id = userId, 
+          inviting_user_id = invitingUserId, site_id = siteId, 
+          group_id = groupId, invitation_date = d)
 

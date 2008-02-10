@@ -257,10 +257,10 @@ class UserQuery(object):
               } for invite in r.fetchall()]
         return retval
 
-    def get_userInvitationsForGroup(self, userId, groupId, siteId):
+    def get_userInvitationsForGroup(self, groupId, siteId):
         ivt = self.invitationTable
         statement = ivt.select()
-        statement.append_whereclause(ivt.c.user_id == userId)
+        statement.append_whereclause(ivt.c.user_id == self.userId)
         statement.append_whereclause(ivt.c.group_id == groupId)
         statement.append_whereclause(ivt.c.site_id == siteId)
         
@@ -277,13 +277,17 @@ class UserQuery(object):
               } for invite in r.fetchall()]
         return retval
 
-    def add_invitation(self, invitationId, userId, invitingUserId, 
-        siteId, groupId):
+    def add_invitation(self, invitationId, invitingUserId, siteId, groupId):
         
         ivt = self.invitationTable
         d = datetime.datetime.utcnow().replace(tzinfo=pytz.utc)
         statement = ivt.insert()
-        statement.execute(invitation_id = invitationId, user_id = userId, 
-          inviting_user_id = invitingUserId, site_id = siteId, 
-          group_id = groupId, invitation_date = d)
+        statement.execute(invitation_id = invitationId, 
+          user_id = self.user_id,  inviting_user_id = invitingUserId, 
+          site_id = siteId, group_id = groupId, invitation_date = d)
+
+    def clear_invitations(self):
+        ivt = self.invitationTable
+        d = ivt.delete(ivt.c.user_id == self.user_id)
+        d.execute()
 

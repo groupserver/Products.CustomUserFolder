@@ -981,13 +981,18 @@ class CustomUser(User, Folder):
 		
     def add_invitation(self, invitationId, invitingUserId, siteId, groupId):
         uq = UserQuery(self, self.zsqlalchemy)
-        uq.add_invitation(invitationId, self.getId(), invitingUserId, 
-            siteId, groupId)
+        uq.add_invitation(invitationId, invitingUserId, siteId, groupId)
         m = 'add_invitation: Added invation (ID %s) to the group %s/%s '\
           'for  the user %s (%s)' % (invitationId, siteId, groupId, 
             self.getId(), self.getProperty('fn', ''))
         log.info(m)
-		
+    
+    def remove_invitations(self):
+        """Delete all group-membership invitations relating to a user.
+        """
+        uq = UserQuery(self, self.zsqlalchemy)
+        uq.clear_invitations()
+    
     #
     # Views and Workflow
     #
@@ -1026,7 +1031,9 @@ def removedCustomUser(ob, event):
 
     """
     for email in ob.get_emailAddresses():
+        ob.remove_emailAddressVerification(email)
         ob.remove_emailAddress(email)
+    ob.remove_invitations()
     return
     
 from zope.app.container.interfaces import IObjectRemovedEvent,IObjectAddedEvent

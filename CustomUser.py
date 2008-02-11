@@ -172,10 +172,16 @@ class CustomUser(User, Folder):
         for email_string in email_strings:
             support_email = XWFUtils.getOption(self, 'supportEmail')
             if not support_email:
-                raise AttributeError, "supportEmail was not defined in configuration"
+                raise AttributeError, \
+                  "supportEmail was not defined in configuration"
+            to_email = email_addresses[email_strings.index(email_string)]
             mailhost._send(mfrom=support_email,
-                           mto=email_addresses[email_strings.index(email_string)],
+                           mto=to_email,
                            messageText=email_string)
+            m = u'send_notification: Sent notification %s/%s to ' \
+              'the address <%s> for the user "%s"' % \
+              (n_type, n_id, to_email, self.getId())
+            log.info(m)
         
         return 1
 
@@ -532,6 +538,11 @@ class CustomUser(User, Folder):
         uq = UserQuery(self, self.zsqlalchemy)
         uq.remove_userEmail_verificationId(email)
         
+        m = 'remove_emailAddressVerification: removed email address '\
+          'verification data associated with the address <%s> '\
+          'for "%s"' % (email, self.getId())
+        log.info(m)
+        
     def emailAddress_isVerified(self, email):
         """Check to see if an address is verified.
         
@@ -560,7 +571,10 @@ class CustomUser(User, Folder):
         email = self._validateAndNormalizeEmail(email)
 
         uq.remove_userEmail(email)        
-    
+        m = 'remove_emailAddress: removed email address '\
+          '<%s> for "%s"' % (email, self.getId())
+        log.info(m)
+
     security.declareProtected(Perms.manage_properties, 
       'get_preferredEmailAddresses')
     security.declareProtected(Perms.manage_properties,
@@ -592,10 +606,15 @@ class CustomUser(User, Folder):
         # and set it as preferred
         if email not in user_email:
             uq.add_userEmail(email, is_preferred=True)
-        
+            m = u'add_defaultDeliveryEmailAddress: Added the preferred '\
+              'address <%s> to the user "%s"' % (email, self.getId())
+            log.info(m)
         # otherwise just set it as preferred
         else:
             uq.set_preferredEmail(email, is_preferred=True)
+            m = u'add_defaultDeliveryEmailAddress: Set the address <%s>' \
+              'as preferred to the user "%s"' % (email, self.getId())
+            log.info(m)
 
     add_preferredEmailAddress = add_defaultDeliveryEmailAddress
         
@@ -992,6 +1011,10 @@ class CustomUser(User, Folder):
         """
         uq = UserQuery(self, self.zsqlalchemy)
         uq.clear_invitations()
+
+        m = u'remove_invitations: Removed invitations for the user "%s"' %\
+          self.getId()
+        log.info(m)
     
     #
     # Views and Workflow
@@ -1030,10 +1053,16 @@ def removedCustomUser(ob, event):
     """ A CustomUser was removed.
 
     """
+    uid = ob.getId()
+    
     for email in ob.get_emailAddresses():
         ob.remove_emailAddressVerification(email)
         ob.remove_emailAddress(email)
     ob.remove_invitations()
+    
+    m = u'removedCustomUser: Deleted "%s"' % uid
+    log.info(m)
+    
     return
     
 from zope.app.container.interfaces import IObjectRemovedEvent,IObjectAddedEvent

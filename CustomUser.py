@@ -198,14 +198,17 @@ class CustomUser(User, Folder):
         from Products.XWFCore.XWFUtils import getOption, get_user, get_user_realnames, get_support_email
         from Products.XWFCore.XWFUtils import get_site_by_id, get_group_by_siteId_and_groupId
          
-        acl_users = getattr(self, 'acl_users', None)
         site_root = self.site_root()
-
+        acl_users = getattr(site_root, 'acl_users')
+        
+        groupNames = acl_users.getGroupNames()
+        assert group in groupNames, '%s not in %s' % (group, groupNames)
+        
         if acl_users:
             try:
                 acl_users.addGroupsToUser([group], self.getId())
             except:
-                return 0                
+                return 0
         
         listManagers = site_root.objectValues('XWF Mailing List Manager')
         possible_list_match = re.search('(.*)_member', group)
@@ -266,6 +269,10 @@ class CustomUser(User, Folder):
             # cause the person to get an email over and over if they're
             # joining more than one group
             pass
+
+        m = u'add_groupWithNotification: Added group %s to the '\
+          'user "%s"' % (group, self.getId())
+        log.info(m)
         
         return 1
 

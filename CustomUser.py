@@ -582,6 +582,27 @@ class CustomUser(User, Folder):
           '<%s> for "%s"' % (email, self.getId())
         log.info(m)
 
+
+    security.declareProtected(Perms.manage_properties, 
+      'get_verifiedEmailAddresses')
+    def get_verifiedEmailAddresses(self):
+        """Get the verified email addresses for the user
+        
+        ARGUMENTS
+          None
+        SIDE EFFECTS
+          None.
+        RETURNS
+          A list of email addresses, which have a verification date set.
+        """
+        retval = []
+        uq = UserQuery(self, self.zsqlalchemy)
+        
+        return uq.get_userEmail(verified_only=True)    
+                
+        assert type(retval) == list
+        return retval
+        
     security.declareProtected(Perms.manage_properties, 
       'get_preferredEmailAddresses')
     security.declareProtected(Perms.manage_properties,
@@ -997,6 +1018,10 @@ class CustomUser(User, Folder):
           
         uq = UserQuery(self, self.zsqlalchemy)
         uq.clear_userPasswordResetVerificationIds()
+        
+        m = u'clear_userPasswordResetVerificationIds: Clearing IDs '\
+          'for "%s"' % self.getId()
+        log.info(m)
 		
     def get_invitation(self, invitationId):
         assert invitationId
@@ -1066,7 +1091,7 @@ def removedCustomUser(ob, event):
         ob.remove_emailAddressVerification(email)
         ob.remove_emailAddress(email)
     ob.remove_invitations()
-    
+    ob.clear_userPasswordResetVerificationIds()
     m = u'removedCustomUser: Deleted "%s"' % uid
     log.info(m)
     

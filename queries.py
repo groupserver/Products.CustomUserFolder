@@ -94,14 +94,15 @@ class UserQuery(object):
         and_ = sa.and_
         d = uet.delete(and_(uet.c.email==email_address)).execute()
 
-    def get_userEmail(self, preferred_only=False):
+    def get_userEmail(self, preferred_only=False, verified_only=False):
         uet = self.userEmailTable
         
         statement = uet.select()
         statement.append_whereclause(uet.c.user_id==self.user_id)
-        if preferred_only == True:
+        if preferred_only:
             statement.append_whereclause(uet.c.is_preferred==preferred_only)
-        
+        if verified_only:
+            statement.append_whereclause(uet.c.verified_date!=None)
         r = statement.execute()
         email_addresses = []
         for row in r.fetchall():

@@ -834,7 +834,7 @@ class CustomUser(User, Folder):
         if email not in uq.get_groupUserEmail(site_id, group_id):
             uq.add_groupUserEmail(site_id, group_id, email)
 
-            m = 'Removed the address <%s> from the delivery settings for '\
+            m = 'Added the address <%s> from the delivery settings for '\
               'the %s group for %s (%s)' % \
               (email, group_id, self.getProperty('fn', ''), self.getId())
             log.info(m)

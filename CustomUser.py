@@ -469,6 +469,10 @@ class CustomUser(User, Folder):
         uq = UserQuery(self, self.zsqlalchemy)        
         uq.add_userEmail(email, is_preferred)
         
+        m = 'Added the email address <%s> to %s (%s)' %\
+          (email, self.getProperty('fn', ''), self.getId())
+        log.info(m)
+        
     security.declareProtected(Perms.manage_properties,
         'verify_emailAddress')
     def verify_emailAddress(self, verificationId):
@@ -673,6 +677,10 @@ class CustomUser(User, Folder):
         email = self._validateAndNormalizeEmail(email)
 
         uq.set_preferredEmail(email, is_preferred=False)        
+        
+        m = 'Added <%s> to the list of preferred email addresses for '\
+          '%s (%s)' % (email, self.getProperty('fn', ''), self.getId())
+        log.info(m)
             
     remove_preferredEmailAddress = remove_defaultDeliveryEmailAddress
     
@@ -749,6 +757,9 @@ class CustomUser(User, Folder):
 
         setting = uq.get_groupEmailSetting(site_id, group_id)
         
+        # --=mpj17=--
+        # TODO: we do not report if there is a specific delivery address
+        #   for web only or diget modes, only one email per post mode.
         if setting == 'webonly':
             return 0
         elif setting == 'digest':
@@ -822,6 +833,11 @@ class CustomUser(User, Folder):
         
         if email not in uq.get_groupUserEmail(site_id, group_id):
             uq.add_groupUserEmail(site_id, group_id, email)
+
+            m = 'Removed the address <%s> from the delivery settings for '\
+              'the %s group for %s (%s)' % \
+              (email, group_id, self.getProperty('fn', ''), self.getId())
+            log.log(m)
             
     security.declareProtected(Perms.manage_properties, 'remove_deliveryEmailAddressByKey')
     def remove_deliveryEmailAddressByKey(self, key, email):
@@ -837,9 +853,14 @@ class CustomUser(User, Folder):
         group_id = key
         
         uq.remove_groupUserEmail(site_id, group_id, email)
-
+        
+        m = 'Removed the address <%s> from the delivery settings for the '\
+          '%s group for %s (%s)' % \
+          (email, group_id, self.getProperty('fn', ''), self.getId())
+        log.log(m)
         email_addresses = uq.get_groupUserEmail(site_id, group_id)
-                        
+        return email_addresses
+                                
     security.declareProtected(Perms.manage_properties, 'set_verificationCode')
     def set_verificationCode(self):
         """ Set the methods that will be called on the user post verification.
@@ -988,6 +1009,10 @@ class CustomUser(User, Folder):
       	if (logged_in_user):
       	        site_root.cookie_authentication.credentialsChanged(user, userID,
               	                                                   newPassword)
+        m = 'set_password: Set password for %s (%s)' % \
+          (self.getProperty('fn', ''), self.getId())
+        log.info(m)
+        
     def add_password_verification(self, verificationId):
         """Adds a verificationId to the password-reset table
         

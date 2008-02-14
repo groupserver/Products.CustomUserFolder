@@ -837,7 +837,7 @@ class CustomUser(User, Folder):
             m = 'Removed the address <%s> from the delivery settings for '\
               'the %s group for %s (%s)' % \
               (email, group_id, self.getProperty('fn', ''), self.getId())
-            log.log(m)
+            log.info(m)
             
     security.declareProtected(Perms.manage_properties, 'remove_deliveryEmailAddressByKey')
     def remove_deliveryEmailAddressByKey(self, key, email):
@@ -857,7 +857,7 @@ class CustomUser(User, Folder):
         m = 'Removed the address <%s> from the delivery settings for the '\
           '%s group for %s (%s)' % \
           (email, group_id, self.getProperty('fn', ''), self.getId())
-        log.log(m)
+        log.info(m)
         email_addresses = uq.get_groupUserEmail(site_id, group_id)
         return email_addresses
                                 

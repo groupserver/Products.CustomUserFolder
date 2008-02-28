@@ -154,11 +154,11 @@ class CustomUser(User, Folder):
         if email_only:
             # make sure the email address are really addresses of our user
             email_only = map(lambda x: x.lower(), email_only)
-            for email in self.get_emailAddresses():
+            for email in self.get_emailAddresses(): # TODO: Check email addr
                 if email.lower() in email_only:
                     email_addresses.append(email)
         else:
-            email_addresses = self.get_emailAddresses()
+            email_addresses = self.get_emailAddresses() # TODO: Check email addr
         
         email_strings = []
         for email_address in email_addresses:
@@ -783,7 +783,7 @@ class CustomUser(User, Folder):
         if groupSetting != 0:
             # Next, check to see if we've customised the delivery options 
             #   for that group
-            group_email_addresses = self.get_specificEmailAddressesByKey(key)
+            group_email_addresses = self.get_specificEmailAddressesByKey(key)# TODO: Check email addr
             if group_email_addresses:
                 retval = group_email_addresses
             else:
@@ -936,7 +936,7 @@ class CustomUser(User, Folder):
         except:
             raise AttributeError, "Can't find a Mail Host object"
         
-        email_addresses = self.get_emailAddresses()
+        email_addresses = self.get_emailAddresses()# TODO: Check email addr
         email_strings = []
         for email_address in email_addresses:
             email_strings.append(

@@ -94,7 +94,7 @@ class UserQuery(object):
         and_ = sa.and_
         d = uet.delete(and_(uet.c.email==email_address)).execute()
 
-    def get_userEmail(self, preferred_only=False, verified_only=False):
+    def get_userEmail(self, preferred_only=False, verified_only=True):
         uet = self.userEmailTable
         
         statement = uet.select()
@@ -144,14 +144,18 @@ class UserQuery(object):
                             uet.c.group_id==group_id,
                             uet.c.email==email_address)).execute()      
 
-    def get_groupUserEmail(self, site_id, group_id):
-        uet = self.groupUserEmailTable
+    def get_groupUserEmail(self, site_id, group_id, verified_only=True):
+        guet = self.groupUserEmailTable
         
-        statement = uet.select()
-        statement.append_whereclause(uet.c.user_id==self.user_id)
-        statement.append_whereclause(uet.c.site_id==site_id)
-        statement.append_whereclause(uet.c.group_id==group_id)
-        
+        statement = guet.select()
+        statement.append_whereclause(guet.c.user_id==self.user_id)
+        statement.append_whereclause(guet.c.site_id==site_id)
+        statement.append_whereclause(guet.c.group_id==group_id)
+        if verified_only:
+            uet = self.userEmailTable
+            statement.append_whereclause(uet.c.user_id == guet.c.user_id)
+            statement.append_whereclause(uet.c.verified_date!=None)
+    
         r = statement.execute()
         email_addresses = []
         for row in r.fetchall():

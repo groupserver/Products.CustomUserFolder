@@ -152,14 +152,24 @@ class CustomUser(User, Folder):
 
         email_addresses = []
         if email_only:
-            # make sure the email address are really addresses of our user
+            # If a specific addresses are specified, then we allow the 
+            #    system to send a message to *any* of the user's addresses,
+            #     even the unverified email addresses.
             email_only = map(lambda x: x.lower(), email_only)
-            for email in self.get_emailAddresses(): # TODO: Check email addr
-                if email.lower() in email_only:
-                    email_addresses.append(email)
+            email_addresses = [e for e in self.get_emailAddresses() 
+                               if e.lower() in email_only]
+            m = u'send_notification: Using specific email addresses %s '\
+              u'for notification being sent to the user %s (%s)' % \
+                (email_addresses, self.getProperty('fn', ''), self.getId())
+            log.info(m)
         else:
-            email_addresses = self.get_emailAddresses() # TODO: Check email addr
-        
+            email_addresses = self.get_verifiedEmailAddresses()
+            m = u'send_notification: Using all the verified email '\
+              u'addresses %s for the notification being sent to the '\
+              u'user %s (%s)' % \
+                (email_addresses, self.getProperty('fn', ''), self.getId())
+            log.info(m)
+            
         email_strings = []
         for email_address in email_addresses:
             email_strings.append(
@@ -179,8 +189,9 @@ class CustomUser(User, Folder):
                            mto=to_email,
                            messageText=email_string)
             m = u'send_notification: Sent notification %s/%s to ' \
-              'the address <%s> for the user "%s"' % \
-              (n_type, n_id, to_email, self.getId())
+              u'the address <%s> for the user %s (%s)' % \
+              (n_type, n_id, to_email, self.getProperty('fn', ''), 
+                self.getId())
             log.info(m)
         
         return 1
@@ -424,7 +435,7 @@ class CustomUser(User, Folder):
         #   verified addresses.
         uq = UserQuery(self, self.zsqlalchemy)
         
-        return uq.get_userEmail(preferred_only=False)
+        return uq.get_userEmail(preferred_only=False, verified_only=False)
 
     security.declareProtected(Perms.manage_properties, 'validate_emailAddresses')
     def validate_emailAddresses(self):
@@ -495,8 +506,8 @@ class CustomUser(User, Folder):
           
         email = uq.verify_userEmail(verificationId)
 
-        m = 'verify_emailAddress: Verified <%s> for the user "%s"' % \
-          (email, self.getId())
+        m = u'verify_emailAddress: Verified <%s> for the user %s (%s)' %\
+              (email, self.getProperty('fn', ''), self.getId())
         log.info(m)
 
         assert email
@@ -524,9 +535,9 @@ class CustomUser(User, Folder):
         
         uq.add_userEmail_verificationId(verificationId, email)
 
-        m = 'add_emailAddressVerification: Added the verification ID "%s" '\
-          'for the address <%s>, for the user "%s"' % \
-          (verificationId, email, self.getId())
+        m = u'add_emailAddressVerification: Added the verification ID '\
+          u'"%s" for the address <%s> for the user %s (%s)' % \
+          (verificationId, email, self.getProperty('fn', ''), self.getId())
         log.info(m)
 
     def remove_emailAddressVerification(self, email):
@@ -551,7 +562,7 @@ class CustomUser(User, Folder):
         
         m = 'remove_emailAddressVerification: removed email address '\
           'verification data associated with the address <%s> '\
-          'for "%s"' % (email, self.getId())
+          'for %s (%s)' % (email, self.getProperty('fn', ''), self.getId())
         log.info(m)
         
     def emailAddress_isVerified(self, email):
@@ -639,13 +650,15 @@ class CustomUser(User, Folder):
         if email not in user_email:
             uq.add_userEmail(email, is_preferred=True)
             m = u'add_defaultDeliveryEmailAddress: Added the preferred '\
-              'address <%s> to the user "%s"' % (email, self.getId())
+              u'address <%s> to the user %s (%s)' %\
+              (email, self.getProperty('fn', ''), self.getId())
             log.info(m)
         # otherwise just set it as preferred
         else:
             uq.set_preferredEmail(email, is_preferred=True)
             m = u'add_defaultDeliveryEmailAddress: Set the address <%s>' \
-              'as preferred to the user "%s"' % (email, self.getId())
+              'as preferred to the user %s (%s)' %\
+              (email, self.getProperty('fn', ''), self.getId())
             log.info(m)
 
     add_preferredEmailAddress = add_defaultDeliveryEmailAddress
@@ -936,7 +949,7 @@ class CustomUser(User, Folder):
         except:
             raise AttributeError, "Can't find a Mail Host object"
         
-        email_addresses = self.get_emailAddresses()# TODO: Check email addr
+        email_addresses = self.get_emailAddresses()
         email_strings = []
         for email_address in email_addresses:
             email_strings.append(

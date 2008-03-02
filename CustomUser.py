@@ -643,7 +643,8 @@ class CustomUser(User, Folder):
 
         uq = UserQuery(self, self.zsqlalchemy)
         
-        user_email = uq.get_userEmail(preferred_only=False)
+        user_email = uq.get_userEmail(preferred_only=False, 
+                                      verified_only=False)
     
         # if we don't have the email address in the database yet, add it
         # and set it as preferred

@@ -598,7 +598,7 @@ class CustomUser(User, Folder):
         log.info(m)
 
 
-    security.declareProtected(Perms.manage_properties, 
+    security.declareProtected(Perms.view, 
       'get_verifiedEmailAddresses')
     def get_verifiedEmailAddresses(self):
         """Get the verified email addresses for the user

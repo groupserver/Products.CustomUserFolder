@@ -347,7 +347,10 @@ class CustomUserFolder(UserFolderWithGroups):
             raise KeyError, 'A user already exists with email address %s' % email
         
         valid_id = False
-        gen_user_id = XWFUtils.generate_user_id(user_id, '', '', email)
+        if first_name and last_name:
+            gen_user_id = XWFUtils.generate_user_id(user_id, first_name, last_name, email)
+        else:
+            gen_user_id = XWFUtils.generate_user_id(user_id, '', '', email)
         if not user_id:
             user_id = gen_user_id.next()
         while not valid_id:

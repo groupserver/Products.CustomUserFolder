@@ -316,7 +316,11 @@ class CustomUserFolder(UserFolderWithGroups):
   
         assert user
         assert userId == user.getId()
-        assert email in user.get_emailAddresses()
+        # --=mpj17=-- Trick for young players: the following assert 
+        # *should* work, but it does not necessarially work, as a race
+        # condidition is created between this code and the relational
+        # database.
+        # assert email in user.get_emailAddresses()
         assert displayName == user.getProperty('fn')
         return user
     

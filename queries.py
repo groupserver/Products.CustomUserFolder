@@ -17,6 +17,7 @@ class UserQuery(object):
         self.emailVerificationTable = da.createMapper('email_verification')[1]
         self.passwordResetTable = da.createMapper('password_reset')[1]
         self.invitationTable = da.createMapper('user_invitation')[1]
+        self.nicknameTable = da.createMapper('user_nickname')[1]
 
     def add_userEmail(self, email_address, is_preferred=False):
         uet = self.userEmailTable
@@ -295,4 +296,24 @@ class UserQuery(object):
         ivt = self.invitationTable
         d = ivt.delete(ivt.c.user_id == self.user_id)
         d.execute()
+        
+    def get_latestNickname(self):
+        unt = self.nicknameTable;
+        statement = unt.select([unt.c.nickname]);
+        statement.append_whereclause(user_id == self.userId)
+        statement.order_by(sa.desc(unt.c.date))
+        statement.limit = 1
+        
+        r = statement.execute()
+        if r.rowcount:
+            retval = r.fetchone()['nickname']
+        else:
+            retval = None
+        return retval
+
+    def add_nickname(self, nickname):
+        unt = serlf.nicknameTable
+        statement = unt.insert()
+        statement.execute(user_id = self.userId, nickname = nickname,
+          date = datetime.datetime.now())
 

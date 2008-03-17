@@ -26,6 +26,9 @@ from Globals import InitializeClass
 from OFS.Folder import Folder
 from Products.NuxUserGroups import UserFolderWithGroups
 from Products.XWFCore import XWFUtils
+from zope.app.traversing.interfaces import TraversalError, ITraversable
+from zope.interface import implements
+from Products.CustomUserFolder.interfaces import ICustomUserFolder
 
 import DateTime
 import re
@@ -45,6 +48,8 @@ class CustomUserFolder(UserFolderWithGroups):
     interface.
     
     """
+    implements(ICustomUserFolder, ITraversable)
+
     security = ClassSecurityInfo()
     
     meta_type = "Custom User Folder"
@@ -499,6 +504,34 @@ class CustomUserFolder(UserFolderWithGroups):
         
         return 0
 
+    security.declarePublic('get_userIdByNickname')
+    def get_userIdByNickname(self, nickname):
+        assert nickname
+        assert type(nickname) in (str, unicode)
+        
+        da = self.zsqlalchemy
+        unt = da.createMapper('user_nickname')[1]
+        
+        statement = unt.select([unt.c.user_id])
+        statement.append_whereclause(nickname == nickname)
+        
+        r = statement.execute()
+        retval = ''
+        if r.rowcount:
+            retval = r.fetchone()['user_id']
+        return retval
+
+    security.declarePublic('get_userByNickname')
+    def get_userByNickname(self, nickname):
+        assert nickname
+        assert type(nickname) in (str, unicode)
+        userId = self.get_userIdByNickname(nickname)
+        retval = None
+        if userId:
+            retval = self.get_userById(userId)
+        return retval
+        
+
     security.declarePrivate('_createInitialUser')
     def _createInitialUser(self):
         """
@@ -519,7 +552,20 @@ class CustomUserFolder(UserFolderWithGroups):
                 try:
                     os.remove(os.path.join(INSTANCE_HOME, 'inituser'))
                 except:
-                    pass               
+                    pass
+    
+    def traverse(self, name, furtherPath):
+        """Get the next item on the path
+
+        Should return the item corresponding to 'name' or raise
+        TraversalError where appropriate.
+
+        furtherPath is a list of names still to be traversed. This method is
+        allowed to change the contents of furtherPath.
+
+        """
+        print 'Looking for %s' % name
+        raise TraversalError
 
 manage_addCustomUserFolderForm = PageTemplateFile(
     'zpt/manage_addCustomUserFolderForm.zpt',

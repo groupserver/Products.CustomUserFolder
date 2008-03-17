@@ -7,6 +7,10 @@ from zope.schema import *
 class ICustomUser(Interface):
     """A CustomUser."""
 
+class ICustomUserFolder(Interface):
+    """A CustomUserFolder."""
+
+
 class IGSUserInfo( Interface ):
     """Information about a specific user. The information that is visible
     may be different for different users, depending on the privacy settings

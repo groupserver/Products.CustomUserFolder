@@ -27,6 +27,7 @@ from OFS.Folder import Folder
 from Products.NuxUserGroups import UserFolderWithGroups
 from Products.XWFCore import XWFUtils
 from zope.app.traversing.interfaces import TraversalError, ITraversable
+from Products.Five.traversable import Traversable
 from zope.interface import implements
 from Products.CustomUserFolder.interfaces import ICustomUserFolder
 
@@ -43,7 +44,7 @@ try:
 except:
     HaveMailBoxer = False
 
-class CustomUserFolder(UserFolderWithGroups):
+class CustomUserFolder(UserFolderWithGroups, Traversable):
     """ A user folder for CampusUser users, based on the NuxUserGroup UserFolder
     interface.
     
@@ -68,7 +69,8 @@ class CustomUserFolder(UserFolderWithGroups):
         """
         self.user_folder_id = user_folder_id
         UserFolderWithGroups.__init__(self)
-
+        Traversable(self)
+        
     def _encryptPassword(self, pw):
         # we need to override the default, because if we encrypt with SSHA
         # we have trouble when we do the wire protocol

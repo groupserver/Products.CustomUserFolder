@@ -1086,6 +1086,17 @@ class CustomUser(User, Folder):
         m = u'remove_invitations: Removed invitations for the user "%s"' %\
           self.getId()
         log.info(m)
+
+    def get_canonicalNickname(self):
+        uq = UserQuery(self, self.zsqlalchemy)
+        nickname = uq.get_latestNickname()
+        
+        if nickname == None:
+            nickname = self.getId()
+            
+        assert nickname
+        return nickname
+        
     
     #
     # Views and Workflow

@@ -1,3 +1,4 @@
+# coding=utf-8
 # Copyright (C) 2003,2004 IOPEN Technologies Ltd.
 #
 # This program is free software; you can redistribute it and/or
@@ -26,8 +27,6 @@ from Globals import InitializeClass
 from OFS.Folder import Folder
 from Products.NuxUserGroups import UserFolderWithGroups
 from Products.XWFCore import XWFUtils
-from zope.app.traversing.interfaces import TraversalError, ITraversable
-from Products.Five.traversable import Traversable
 from zope.interface import implements
 from Products.CustomUserFolder.interfaces import ICustomUserFolder
 
@@ -44,12 +43,12 @@ try:
 except:
     HaveMailBoxer = False
 
-class CustomUserFolder(UserFolderWithGroups, Traversable):
+class CustomUserFolder(UserFolderWithGroups):
     """ A user folder for CampusUser users, based on the NuxUserGroup UserFolder
     interface.
     
     """
-    implements(ICustomUserFolder, ITraversable)
+    implements(ICustomUserFolder)
 
     security = ClassSecurityInfo()
     
@@ -69,7 +68,6 @@ class CustomUserFolder(UserFolderWithGroups, Traversable):
         """
         self.user_folder_id = user_folder_id
         UserFolderWithGroups.__init__(self)
-        Traversable(self)
         
     def _encryptPassword(self, pw):
         # we need to override the default, because if we encrypt with SSHA
@@ -510,12 +508,12 @@ class CustomUserFolder(UserFolderWithGroups, Traversable):
     def get_userIdByNickname(self, nickname):
         assert nickname
         assert type(nickname) in (str, unicode)
-        
+
         da = self.zsqlalchemy
         unt = da.createMapper('user_nickname')[1]
         
-        statement = unt.select([unt.c.user_id])
-        statement.append_whereclause(nickname == nickname)
+        statement = unt.select()
+        statement.append_whereclause(unt.c.nickname == nickname)
         
         r = statement.execute()
         retval = ''
@@ -530,7 +528,7 @@ class CustomUserFolder(UserFolderWithGroups, Traversable):
         userId = self.get_userIdByNickname(nickname)
         retval = None
         if userId:
-            retval = self.get_userById(userId)
+            retval = self.getUser(userId)
         return retval
         
 
@@ -555,19 +553,6 @@ class CustomUserFolder(UserFolderWithGroups, Traversable):
                     os.remove(os.path.join(INSTANCE_HOME, 'inituser'))
                 except:
                     pass
-    
-    def traverse(self, name, furtherPath):
-        """Get the next item on the path
-
-        Should return the item corresponding to 'name' or raise
-        TraversalError where appropriate.
-
-        furtherPath is a list of names still to be traversed. This method is
-        allowed to change the contents of furtherPath.
-
-        """
-        print 'Looking for %s' % name
-        raise TraversalError
 
 manage_addCustomUserFolderForm = PageTemplateFile(
     'zpt/manage_addCustomUserFolderForm.zpt',
@@ -593,3 +578,4 @@ def initialize(context):
                       manage_addCustomUserFolder,),
         icon='icons/customuserfolder.gif'
         )
+

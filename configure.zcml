@@ -25,6 +25,17 @@
           zope.app.container.interfaces.IObjectMovedEvent"
     handler="Products.CustomUserFolder.CustomUser.movedCustomUser"
     /> 
+
+  <interface 
+    interface=".interfaces.IGSUserInfo" />
+  <utility factory=".userinfo.GSUserInfoFromIDFactory"
+    name="groupserver.UserFromId"
+    permission="zope.Public"/>
+  <adapter provides=".interfaces.IGSUserInfo"
+    for=".interfaces.ICustomUser"
+    permission="zope2.Public"
+    factory=".userinfo.GSUserInfo"/>
+
     
 </configure>
 

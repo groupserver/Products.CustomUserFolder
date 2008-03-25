@@ -298,9 +298,9 @@ class UserQuery(object):
         d.execute()
         
     def get_latestNickname(self):
-        unt = self.nicknameTable;
-        statement = unt.select([unt.c.nickname]);
-        statement.append_whereclause(user_id == self.userId)
+        unt = self.nicknameTable
+        statement = unt.select()
+        statement.append_whereclause(unt.c.user_id == self.user_id)
         statement.order_by(sa.desc(unt.c.date))
         statement.limit = 1
         

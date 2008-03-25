@@ -82,9 +82,10 @@ class GSAnonymousUserInfo(object):
     def __init__(self):
         self.id = ''
         self.url = '#'
-        self.name = 'Anonymous User'
+        self.name = u'Anonymous User'
         self.imageUrl = ''
         self.nickname = ''
+        self.user = None
                 
     def get_property(self, prop, default=None):
         retval = default

@@ -1,3 +1,4 @@
+# coding=utf-8
 import zope.interface 
 from zope.interface import implements, implementedBy
 from zope.component import adapts, createObject
@@ -31,6 +32,7 @@ class GSUserInfoFromIDFactory(object):
 class GSUserInfo(object):
     implements( IGSUserInfo )
     adapts( ICustomUser )
+    anonymous = False
     
     def __init__(self, user):
         self.user = user
@@ -86,6 +88,7 @@ class GSAnonymousUserInfo(object):
         self.imageUrl = ''
         self.nickname = ''
         self.user = None
+        self.anonymous = True
                 
     def get_property(self, prop, default=None):
         retval = default

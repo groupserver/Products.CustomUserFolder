@@ -15,8 +15,9 @@ class GSUserInfoFromIDFactory(object):
     def __call__(self, context, userId):
         retval = None
         acl_users = context.acl_users
-        user = acl_users.getUser(userId)
-        # assert user, 'User with the ID %s not found' % userId
+        user = None
+        if userId:
+            user = acl_users.getUser(userId)
         if user:
             try:
                 retval = GSUserInfo(user)

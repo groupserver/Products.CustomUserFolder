@@ -18,7 +18,10 @@ class GSUserInfoFromIDFactory(object):
         user = acl_users.getUser(userId)
         # assert user, 'User with the ID %s not found' % userId
         if user:
-            retval = GSUserInfo(user)
+            try:
+                retval = GSUserInfo(user)
+            except AssertionError, e:
+                retval = GSAnonymousUserInfo()
         else:
             retval = GSAnonymousUserInfo()
         assert retval

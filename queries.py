@@ -312,8 +312,8 @@ class UserQuery(object):
         return retval
 
     def add_nickname(self, nickname):
-        unt = serlf.nicknameTable
+        unt = self.nicknameTable
         statement = unt.insert()
-        statement.execute(user_id = self.userId, nickname = nickname,
+        statement.execute(user_id = self.user_id, nickname = nickname,
           date = datetime.datetime.now())
 

@@ -1074,7 +1074,7 @@ class CustomUser(User, Folder):
         uq.add_invitation(invitationId, invitingUserId, siteId, groupId)
         m = 'add_invitation: Added invation (ID %s) to the group %s/%s '\
           'for  the user %s (%s)' % (invitationId, siteId, groupId, 
-            self.getId(), self.getProperty('fn', ''))
+            self.getProperty('fn', ''), self.getId())
         log.info(m)
     
     def remove_invitations(self):
@@ -1083,8 +1083,8 @@ class CustomUser(User, Folder):
         uq = UserQuery(self, self.zsqlalchemy)
         uq.clear_invitations()
 
-        m = u'remove_invitations: Removed invitations for the user "%s"' %\
-          self.getId()
+        m = u'remove_invitations: Removed invitations for the user %s (%s)' %\
+          (self.getProperty('fn', ''), self.getId())
         log.info(m)
 
     def get_canonicalNickname(self):
@@ -1097,6 +1097,12 @@ class CustomUser(User, Folder):
         assert nickname
         return nickname
         
+    def add_nickname(self, nickname):
+        uq = UserQuery(self, self.zsqlalchemy)
+        uq.add_nickname(nickname)
+        m = 'add_nickname: Added nickname "%s" to %s (%s)' %\
+          (nickname, self.getProperty('fn', ''), self.getId())
+        log.info(m)
     
     #
     # Views and Workflow

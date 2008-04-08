@@ -298,6 +298,10 @@ class CustomUser(User, Folder):
         from Products.XWFCore.XWFUtils import getOption, get_user, get_user_realnames, get_support_email
         from Products.XWFCore.XWFUtils import get_site_by_id, get_group_by_siteId_and_groupId
 
+        m = 'del_groupWithNotification: Removing %s (%s) from %s' %\
+          (self.getProperty('fn', ''), self.getId(), group)
+        log.info(m)
+
         acl_users = getattr(self, 'acl_users', None)
         site_root = self.site_root()
 

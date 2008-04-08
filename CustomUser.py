@@ -1104,6 +1104,13 @@ class CustomUser(User, Folder):
           (nickname, self.getProperty('fn', ''), self.getId())
         log.info(m)
     
+    def clear_nicknames(self):
+        uq = UserQuery(self, self.zsqlalchemy)
+        uq.clear_nicknames()
+        m = 'clear_nicknames: Cleared nicknames from  %s (%s)' %\
+          (self.getProperty('fn', ''), self.getId())
+        log.info(m)
+
     #
     # Views and Workflow
     #
@@ -1148,6 +1155,7 @@ def removedCustomUser(ob, event):
         ob.remove_emailAddress(email)
     ob.remove_invitations()
     ob.clear_userPasswordResetVerificationIds()
+    ob.clear_nicknames()
     m = u'removedCustomUser: Deleted "%s"' % uid
     log.info(m)
     

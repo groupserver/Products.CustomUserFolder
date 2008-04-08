@@ -317,3 +317,8 @@ class UserQuery(object):
         statement.execute(user_id = self.user_id, nickname = nickname,
           date = datetime.datetime.now())
 
+    def clear_nicknames(self):
+        unt = self.nicknameTable
+        d = unt.delete(unt.c.user_id == self.user_id)
+        d.execute()
+

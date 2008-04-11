@@ -49,51 +49,33 @@ class CustomUser(User, Folder):
     
     meta_type = "Custom User"
         
-    emailAddresses = []
-    preferredEmailAddresses = []
-    firstName = ''
-    lastName = ''
-    preferredName = ''
-    honorific = ''
+    fn = ''
     nickname = ''
     biography = ''
     title = ''
     shortName = ''
-    currentDivision = ''
     restrictImage = 1
     unrestrictedImageRoles = []
     _properties_def = (
-        {'id': 'emailAddresses', 'type': 'lines', 'mode': 'w'},
-        {'id': 'preferredEmailAddresses', 'type': 'lines', 'mode': 'w'},
+        {'id': 'fn', 'type': 'ustring', 'mode': 'w'},
         {'id': 'unrestrictedImageRoles', 'type': 'lines', 'mode': 'w'},
-        {'id': 'firstName', 'type': 'string', 'mode': 'w'},
-        {'id': 'lastName', 'type': 'string', 'mode': 'w'},
-        {'id': 'preferredName', 'type': 'string', 'mode': 'w'},
-        {'id': 'honorific', 'type': 'string', 'mode': 'w'},
         {'id': 'nickname', 'type': 'string', 'mode': 'w'},
         {'id': 'biography', 'type': 'text', 'mode': 'w'},
         {'id': 'restrictImage', 'type': 'boolean', 'mode': 'w'},
         {'id': 'title', 'type': 'string', 'mode': 'w'},
         {'id': 'shortName', 'type': 'string', 'mode': 'w'},
-        {'id': 'currentDivision', 'type': 'string', 'mode': 'w'},    
         )
 
     _properties = _properties_def
     
     security.declarePrivate('init_properties')
     def init_properties(self):
-        self.emailAddresses = []
-        self.preferredEmailAddresses = []
-        self.firstName = ''
-        self.lastName = ''
-        self.preferredName = ''
-        self.honorific = ''
+        self.fn = ''
         self.nickname = ''
         self.biography = ''
         self.title = ''
         self.shortName = ''
         self.restrictImage = 1
-        self.currentDivision = ''
         self.unrestrictedImageRoles = []
         self._p_changed = 1
 
@@ -380,16 +362,10 @@ class CustomUser(User, Folder):
             return None
         given_name = self.getProperty('givenName', '').lower()
         family_name = self.getProperty('familyName', '').lower()
-        fname = self.getProperty('firstName', '').lower()
-        lname = self.getProperty('lastName', '').lower()
         valid_chars = string.letters+string.digits+'_.'
         imageurl = None
-        if given_name and family_name:
-            image_matches = ['%s.jpg' % self.getId(),
-                        '%s_%s_%s.jpg' % (family_name, given_name, self.getId())]
-        else:
-            image_matches = ['%s.jpg' % self.getId(),
-                        '%s_%s_%s.jpg' % (lname, fname, self.getId())]
+        image_matches = ['%s.jpg' % self.getId(),
+                    '%s_%s_%s.jpg' % (family_name, given_name, self.getId())]
         for id in image_matches:
             newid = ''
             for char in id:
@@ -878,106 +854,7 @@ class CustomUser(User, Folder):
         log.info(m)
         email_addresses = uq.get_groupUserEmail(site_id, group_id)
         return email_addresses
-                                
-    security.declareProtected(Perms.manage_properties, 'set_verificationCode')
-    def set_verificationCode(self):
-        """ Set the methods that will be called on the user post verification.
-        
-        """
-        vc = XWFUtils.generate_accesscode(self.getId())
-        self._verificationCode = vc
-        
-        return vc
-        
-    security.declareProtected(Perms.manage_properties, 'get_verificationCode')
-    def get_verificationCode(self):
-        """ Get the methods that will be called on the user post verification.
-        
-        """
-        return getattr(self, '_verificationCode', None)
-            
-    security.declareProtected(Perms.manage_properties, 'set_verificationGroups')
-    def set_verificationGroups(self, groups):
-        """ Set the groups that user will be assigned to post verification.
-        
-        """
-        self._verificationGroups = groups
-        
-        return 1
-    
-    security.declareProtected(Perms.manage_properties, 'get_verificationGroups')
-    def get_verificationGroups(self):
-        """ Get the groups that the user will be assigned to post verification.
-        
-        """
-        return getattr(self, '_verificationGroups', ())
-
-    security.declareProtected(Perms.manage_properties, 'verify_user')
-    def verify_user(self, verification_code):
-        """ Verify the user, and if they verify, set the post verification
-            groups.
-
-        """
-        acl_users = getattr(self, 'acl_users', None)
-        if acl_users:
-            try:
-                acl_users.delGroupsFromUser(['unverified_member'], self.getId())
-            except:
-                pass
-            
-        if not verification_code == self.get_verificationCode():
-            return 0
-        
-        for group in self.get_verificationGroups():
-            self.add_groupWithNotification(group)
-
-        return 1
-   
-    security.declareProtected(Perms.manage_properties, 'send_userVerification')
-    def send_userVerification(self, password='', site='', n_id='default'):
-        """ Send the user a verification email.
-        
-        """
-        site_root = self.site_root()
-        presentation = site_root.Templates.email.notifications.aq_explicit
-                
-        p_templates = getattr(presentation, 'confirm_registration', None)
-        if not p_templates:
-            raise AttributeError, "Can't find a confirm_registration template"
-
-        template = getattr(p_templates.aq_explicit, n_id, None)
-        if not template:
-            raise AttributeError, "Unable to find confirm_registration/%s" % n_id 
-            
-        try:
-            mailhost = site_root.superValues('Mail Host')[0]
-        except:
-            raise AttributeError, "Can't find a Mail Host object"
-        
-        email_addresses = self.get_emailAddresses()
-        email_strings = []
-        for email_address in email_addresses:
-            email_strings.append(
-                template(self,
-                         self.REQUEST,
-                         site=site,
-                         to_addr=email_address,
-                         verification_code=self.get_verificationCode(),
-                         preferred_name=self.getProperty('preferredName', ''),
-                         user_id=self.getId(),
-                         password=password))
-        
-        for email_string in email_strings:
-            verification_email = XWFUtils.getOption(self, 'userVerificationEmail')
-            if not verification_email:
-                raise AttributeError, "userVerificationEmail was not defined in configuration"
-            
-            mailhost._send(mfrom=verification_email,
-                           mto=email_addresses[email_strings.index(email_string)],
-                           messageText=email_string)
-        
-        return email_strings
-    
+                                                   
     security.declareProtected(Perms.manage_properties, 'get_password')
     def get_password(self):
         """ Get the user's password. Note, if the password is encrypted,
@@ -1076,7 +953,7 @@ class CustomUser(User, Folder):
     def add_invitation(self, invitationId, invitingUserId, siteId, groupId):
         uq = UserQuery(self, self.zsqlalchemy)
         uq.add_invitation(invitationId, invitingUserId, siteId, groupId)
-        m = 'add_invitation: Added invation (ID %s) to the group %s/%s '\
+        m = 'add_invitation: Added invitation (ID %s) to the group %s/%s '\
           'for  the user %s (%s)' % (invitationId, siteId, groupId, 
             self.getProperty('fn', ''), self.getId())
         log.info(m)
@@ -1115,6 +992,23 @@ class CustomUser(User, Folder):
           (self.getProperty('fn', ''), self.getId())
         log.info(m)
 
+    def clear_groups(self):
+        acl_users = getattr(self, 'acl_users', None)
+        assert acl_users, 'Could not get acl_users'
+        for groupname in self.getGroups():
+            group = acl_users.getGroupById(groupname)
+            group._delUsers((self.getId(),))
+        m = 'clear_groups: Cleared groups from  %s (%s)' %\
+          (self.getProperty('fn', ''), self.getId())
+        log.info(m)
+        
+    def clear_addresses(self):
+        for email in self.get_emailAddresses():
+            self.remove_emailAddressVerification(email)
+            self.remove_emailAddress(email)
+        m = 'clear_addresses: Cleared addresses from  %s (%s)' %\
+          (self.getProperty('fn', ''), self.getId())
+        log.info(m)
     #
     # Views and Workflow
     #
@@ -1152,11 +1046,10 @@ def removedCustomUser(ob, event):
     """ A CustomUser was removed.
 
     """
+    assert ob
     uid = ob.getId()
-    
-    for email in ob.get_emailAddresses():
-        ob.remove_emailAddressVerification(email)
-        ob.remove_emailAddress(email)
+    ob.clear_groups()
+    ob.clear_addresses()
     ob.remove_invitations()
     ob.clear_userPasswordResetVerificationIds()
     ob.clear_nicknames()

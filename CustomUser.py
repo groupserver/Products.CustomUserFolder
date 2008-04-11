@@ -50,20 +50,16 @@ class CustomUser(User, Folder):
     meta_type = "Custom User"
         
     fn = ''
-    nickname = ''
     biography = ''
     title = ''
-    shortName = ''
     restrictImage = 1
     unrestrictedImageRoles = []
     _properties_def = (
         {'id': 'fn', 'type': 'ustring', 'mode': 'w'},
         {'id': 'unrestrictedImageRoles', 'type': 'lines', 'mode': 'w'},
-        {'id': 'nickname', 'type': 'string', 'mode': 'w'},
         {'id': 'biography', 'type': 'text', 'mode': 'w'},
         {'id': 'restrictImage', 'type': 'boolean', 'mode': 'w'},
         {'id': 'title', 'type': 'string', 'mode': 'w'},
-        {'id': 'shortName', 'type': 'string', 'mode': 'w'},
         )
 
     _properties = _properties_def
@@ -71,10 +67,8 @@ class CustomUser(User, Folder):
     security.declarePrivate('init_properties')
     def init_properties(self):
         self.fn = ''
-        self.nickname = ''
         self.biography = ''
         self.title = ''
-        self.shortName = ''
         self.restrictImage = 1
         self.unrestrictedImageRoles = []
         self._p_changed = 1

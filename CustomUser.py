@@ -964,8 +964,11 @@ class CustomUser(User, Folder):
 
     def get_canonicalNickname(self):
         uq = UserQuery(self, self.zsqlalchemy)
-        nickname = uq.get_latestNickname()
-        
+        try:
+            nickname = uq.get_latestNickname()
+        except:
+            nickname = None
+                
         if nickname == None:
             nickname = self.getId()
             

@@ -266,7 +266,6 @@ class CustomUserFolder(UserFolderWithGroups):
         
         user.init_properties()
         user.title = name
-        user.shortName = name
         user.manage_setLocalRoles(name, ['Owner'])
         
         return 1
@@ -310,10 +309,9 @@ class CustomUserFolder(UserFolderWithGroups):
           'Did not create the user %s with the email %s' %\
           (displayName, userId)
 
-        user.manage_changeProperties(preferredName=displayName)
+        user.manage_changeProperties(fn=displayName)
 
         # For now
-        user.manage_addProperty('fn', displayName, 'string')
         user.manage_addProperty('creation_date', DateTime.DateTime(), 
                                 'date')
 
@@ -328,99 +326,6 @@ class CustomUserFolder(UserFolderWithGroups):
         # assert email in user.get_emailAddresses()
         assert displayName == user.getProperty('fn')
         return user
-    
-    security.declareProtected(Perms.manage_users, 'register_user')
-    def register_user(self, email, user_id='', preferred_name='', first_name='', 
-                      last_name='', password_length=8, roles=[], groups=[],
-                      post_groups=[]):
-        """ A method for a user to allow a user to register themselves.
-        
-        """
-        import string
-        
-        validChars = string.letters+string.digits+'.'
-        
-        # unverified members always get this placeholder group till verified
-        groups = list(groups)
-        groups.append('unverified_member')
-        
-        user_id_provided = False
-        if user_id:
-            user_id_provided = True
-        
-        if user_id_provided and user_id:
-            if self.getUser(user_id):
-                raise KeyError, 'User ID %s already exists' % user_id
-        
-        if self.get_userByEmail(email):
-            raise KeyError, 'A user already exists with email address %s' % email
-        
-        valid_id = False
-        if first_name and last_name:
-            gen_user_id = XWFUtils.generate_user_id(user_id, first_name, last_name, email)
-        else:
-            gen_user_id = XWFUtils.generate_user_id(user_id, '', '', email)
-        if not user_id:
-            user_id = gen_user_id.next()
-        while not valid_id:
-            if not self.getUser(user_id):
-                for char in user_id:
-                    if char not in validChars:
-                        if user_id_provided:
-                            raise KeyError, ('User ID %s contains an invalid character'
-                                        ' (%s). Valid characters are %s.' % (user_id, char, validChars))
-                        else:
-                            break
-                valid_id = True
-            
-            if valid_id:
-                break
-            
-            user_id = gen_user_id.next()
-            user_id_provided = False
-        
-        password = XWFUtils.generate_password(password_length)
-        
-        self._doAddUser(str(user_id), password, roles, [], groups)
-        user = self.getUser(user_id)
-        if user:
-            if first_name and last_name:
-                lhs = first_name + ' ' + last_name
-            else:
-              try:
-                  lhs = email.split('@')[0]
-              except:
-                  lhs = ''
-            preferred_name = preferred_name or lhs            
-            user.manage_changeProperties(preferredName=preferred_name)
-            
-            if hasattr(user, 'fn'):
-                user.manage_changeProperties(fn=preferred_name)
-            else:
-                user.manage_addProperty('fn', preferred_name, 'string')
-                
-            if first_name and hasattr(user, 'givenName'):
-                user.manage_changeProperties(givenName=first_name)
-            elif first_name:
-                user.manage_addProperty('givenName', first_name, 'string')
-
-            if last_name and hasattr(user, 'familyName'):
-                user.manage_changeProperties(familyName=last_name)
-            elif last_name:
-                user.manage_addProperty('familyName', last_name, 'string')
-            
-            user.manage_addProperty('creation_date', DateTime.DateTime(),
-                                    'date')
-                             
-            user.add_defaultDeliveryEmailAddress(email)
-            
-            verification_code = user.set_verificationCode()
-            
-            user.set_verificationGroups(post_groups)
-            
-            return (user_id, password, verification_code)
-            
-        return None
         
     security.declareProtected(Perms.manage_users, 'wf_manage_users')
     def wf_manage_users(self, submit=None, REQUEST=None, RESPONSE=None):
@@ -475,35 +380,6 @@ class CustomUserFolder(UserFolderWithGroups):
         # TODO: send out a notification to the user, informing him or her
         #   that the address has been verified.
         
-    security.declarePublic('verify_userFromEmail')
-    def verify_userFromEmail(self, Mail):
-        """ Verify the user from an email.
-
-        """
-        import re
-
-        if not HaveMailBoxer:
-            raise ImportError, ('MailBoxerTools is not available, unable to '
-                                'verify user from email')
-        
-        acl_users = getattr(self, 'acl_users', None)
-        mailHeader, mailBody = MailBoxerTools.splitMail(Mail)
-        
-        subject = MailBoxerTools.mime_decode_header(mailHeader.get('subject',
-                                                                   ''))
-        try:
-            verification_code = re.findall('{(.*?)}', subject)[0]
-            verification_code = re.sub('\s', '', verification_code)
-        except:
-            verification_code = ''
-
-        user = self.get_userByVerificationCode(verification_code)
-        
-        if user:
-            return user.verify_user(verification_code)
-        
-        return 0
-
     security.declarePublic('get_userIdByNickname')
     def get_userIdByNickname(self, nickname):
         assert nickname
@@ -530,7 +406,6 @@ class CustomUserFolder(UserFolderWithGroups):
         if userId:
             retval = self.getUser(userId)
         return retval
-        
 
     security.declarePrivate('_createInitialUser')
     def _createInitialUser(self):

@@ -52,6 +52,7 @@ class CustomUser(User, Folder):
     fn = ''
     biography = ''
     title = ''
+    currentDivision = ''
     restrictImage = 1
     unrestrictedImageRoles = []
     _properties_def = (
@@ -60,6 +61,7 @@ class CustomUser(User, Folder):
         {'id': 'biography', 'type': 'text', 'mode': 'w'},
         {'id': 'restrictImage', 'type': 'boolean', 'mode': 'w'},
         {'id': 'title', 'type': 'string', 'mode': 'w'},
+        {'id': 'currentDivision', 'type': 'string', 'mode': 'w'},
         )
 
     _properties = _properties_def
@@ -70,6 +72,7 @@ class CustomUser(User, Folder):
         self.biography = ''
         self.title = ''
         self.restrictImage = 1
+        self.currentDivision = ''
         self.unrestrictedImageRoles = []
         self._p_changed = 1
 

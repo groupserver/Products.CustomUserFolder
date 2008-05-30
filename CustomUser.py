@@ -33,6 +33,7 @@ import string
 
 from zope.interface import implements
 from Products.CustomUserFolder.interfaces import ICustomUser
+from zope.component import createObject
 
 import logging
 log = logging.getLogger('CustomUser')
@@ -263,6 +264,8 @@ class CustomUser(User, Folder):
                         'realLife'    : realLife,
                         'supportEmail': supportEmail
                       }
+            groupsInfo = createObject('groupserver.GroupsInfo', site_obj)
+            groupsInfo.clear_visible_groups_cache()
 
         try:
             self.send_notification('add_group', group, n_dict)
@@ -275,7 +278,7 @@ class CustomUser(User, Folder):
         m = u'add_groupWithNotification: Added group %s to the '\
           'user "%s"' % (group, self.getId())
         log.info(m)
-        
+                
         return 1
 
     security.declareProtected(Perms.manage_properties, 'del_groupWithNotification')
@@ -341,6 +344,8 @@ class CustomUser(User, Folder):
                         'realLife'    : realLife,
                         'supportEmail': supportEmail
                       }
+            groupsInfo = createObject('groupserver.GroupsInfo', site_obj)
+            groupsInfo.clear_visible_groups_cache()
 
         try:
             self.send_notification('del_group', group, n_dict)

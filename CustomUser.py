@@ -265,7 +265,7 @@ class CustomUser(User, Folder):
                         'supportEmail': supportEmail
                       }
             groupsInfo = createObject('groupserver.GroupsInfo', site_obj)
-            groupsInfo.clear_visible_groups_cache()
+            groupsInfo.clear_groups_cache()
 
         try:
             self.send_notification('add_group', group, n_dict)
@@ -345,7 +345,7 @@ class CustomUser(User, Folder):
                         'supportEmail': supportEmail
                       }
             groupsInfo = createObject('groupserver.GroupsInfo', site_obj)
-            groupsInfo.clear_visible_groups_cache()
+            groupsInfo.clear_groups_cache()
 
         try:
             self.send_notification('del_group', group, n_dict)

@@ -3,6 +3,9 @@ from sqlalchemy.exceptions import NoSuchTableError
 import sqlalchemy as sa
 import pytz, datetime
 
+import logging
+log = logging.getLogger("CustomUserFolder")
+
 possible_settings = ['webonly', 'digest']
 
 class UserQuery(object):

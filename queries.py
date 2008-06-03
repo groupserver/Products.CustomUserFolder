@@ -14,13 +14,16 @@ class UserQuery(object):
 
         self.user_id = context.getUserName()
 
-        self.emailSettingTable = da.createMapper('email_setting')[1]
-        self.userEmailTable = da.createMapper('user_email')[1]
-        self.groupUserEmailTable = da.createMapper('group_user_email')[1]
-        self.emailVerificationTable = da.createMapper('email_verification')[1]
-        self.passwordResetTable = da.createMapper('password_reset')[1]
-        self.invitationTable = da.createMapper('user_invitation')[1]
-        self.nicknameTable = da.createMapper('user_nickname')[1]
+        engine = da.engine
+        metadata = sa.BoundMetaData(engine)
+
+        self.emailSettingTable = sa.Table('email_setting', metadata, autoload=True)
+        self.userEmailTable = sa.Table('user_email', metadata, autoload=True)
+        self.groupUserEmailTable = sa.Table('group_user_email', metadata, autoload=True)
+        self.emailVerificationTable = sa.Table('email_verification', metadata, autoload=True)
+        self.passwordResetTable = sa.Table('password_reset', metadata, autoload=True)
+        self.invitationTable = sa.Table('user_invitation', metadata, autoload=True)
+        self.nicknameTable = sa.Table('user_nickname', metadata, autoload=True)
 
     def add_userEmail(self, email_address, is_preferred=False):
         uet = self.userEmailTable

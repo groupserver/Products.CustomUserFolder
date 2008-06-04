@@ -35,6 +35,8 @@ from zope.interface import implements
 from Products.CustomUserFolder.interfaces import ICustomUser
 from zope.component import createObject
 
+from Products.XWFCore.cache import LRUCache
+
 import logging
 log = logging.getLogger('CustomUser')
 
@@ -74,6 +76,9 @@ class CustomUser(User, Folder):
         )
 
     _properties = _properties_def
+    
+    userNicknameCache = LRUCache("userNickname")
+    userNicknameCache.set_max_objects(512)
     
     security.declarePrivate('init_properties')
     def init_properties(self):
@@ -984,15 +989,21 @@ class CustomUser(User, Folder):
 
     def get_canonicalNickname(self):
         uq = UserQuery(self, self.zsqlalchemy)
-        try:
-            nickname = uq.get_latestNickname()
-        except:
-            nickname = None
+        
+        if self.userNicknameCache.has_key(self.getId()):
+            nickname = self.userNicknameCache.get(self.getId())
+        else:
+            try:
+                nickname = uq.get_latestNickname()
+            except:
+                nickname = None
                 
         if nickname == None:
             nickname = self.getId()
             
         assert nickname
+        self.userNicknameCache.add(self.getId(), nickname)
+        assert self.userNicknameCache.has_key(self.getId())
         return nickname
         
     def add_nickname(self, nickname):
@@ -1001,13 +1012,17 @@ class CustomUser(User, Folder):
         m = 'add_nickname: Added nickname "%s" to %s (%s)' %\
           (nickname, self.getProperty('fn', ''), self.getId())
         log.info(m)
-    
+        
+        self.userNicknameCache.clear()
+        
     def clear_nicknames(self):
         uq = UserQuery(self, self.zsqlalchemy)
         uq.clear_nicknames()
         m = 'clear_nicknames: Cleared nicknames from  %s (%s)' %\
           (self.getProperty('fn', ''), self.getId())
         log.info(m)
+
+        self.userNicknameCache.clear()
 
     def clear_groups(self):
         acl_users = getattr(self, 'acl_users', None)

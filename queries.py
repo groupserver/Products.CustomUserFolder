@@ -95,6 +95,15 @@ class UserQuery(object):
         
         assert email
         return email
+
+    def unverify_userEmail(self, email):
+        uet = self.userEmailTable
+        
+        # Set the email address as unverified
+        s2 = uet.update(uet.c.email == email)
+        s2.execute(verified_date = None  )
+        
+        return email
     
     def remove_userEmail(self, email_address):
         uet = self.userEmailTable        

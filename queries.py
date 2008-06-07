@@ -38,7 +38,7 @@ class UserQuery(object):
     def userEmail_verified(self, email):
         assert email
         uet = self.userEmailTable
-        s1 = uet.select(uet.c.email == email)
+        s1 = uet.select(sa.func.lower(uet.c.email) == email.lower())
         rs1 = s1.execute()
 
         retval = False
@@ -52,13 +52,13 @@ class UserQuery(object):
         assert email
         evt = self.emailVerificationTable
         i = evt.insert()
-        i.execute(verification_id=verificationId, email=email)
+        i.execute(verification_id=verificationId, email=email.lower())
         # Change the user_email table?
         
     def remove_userEmail_verificationId(self, email):
         assert email
         evt = self.emailVerificationTable
-        d = evt.delete(evt.c.email == email)
+        d = evt.delete(sa.func.lower(evt.c.email) == email.lower())
         d.execute()
         self.remove_userEmail(email)
 
@@ -86,11 +86,11 @@ class UserQuery(object):
         
         # Set the email address as verified
         d = datetime.datetime.utcnow().replace(tzinfo=pytz.utc)
-        s2 = uet.update(uet.c.email == email)
+        s2 = uet.update(sa.func.lower(uet.c.email) == email.lower())
         s2.execute(verified_date = d  )
           
         # Remove the old verification code(s)
-        s3 = evt.delete(evt.c.email == email)
+        s3 = evt.delete(sa.func.lower(evt.c.email) == email.lower())
         s3.execute()
         
         assert email
@@ -100,7 +100,7 @@ class UserQuery(object):
         uet = self.userEmailTable
         
         # Set the email address as unverified
-        s2 = uet.update(uet.c.email == email)
+        s2 = uet.update(sa.func.lower(uet.c.email) == email.lower())
         s2.execute(verified_date = None  )
         
         return email
@@ -108,7 +108,7 @@ class UserQuery(object):
     def remove_userEmail(self, email_address):
         uet = self.userEmailTable        
         and_ = sa.and_
-        d = uet.delete(and_(uet.c.email==email_address)).execute()
+        d = uet.delete(and_(sa.func.lower(uet.c.email)==email_address.lower())).execute()
 
     def get_userEmail(self, preferred_only=False, verified_only=True):
         uet = self.userEmailTable
@@ -131,7 +131,7 @@ class UserQuery(object):
         and_ = sa.and_
         
         u = uet.update(and_(uet.c.user_id==self.user_id,
-                            uet.c.email==email_address))
+                            sa.func.lower(uet.c.email)==email_address.lower()))
         u.execute(is_preferred=is_preferred)
 
     def clear_preferredEmail(self):
@@ -149,16 +149,16 @@ class UserQuery(object):
         i.execute(user_id=self.user_id,
                   site_id=site_id,
                   group_id=group_id,
-                  email=email_address)      
+                  email=email_address)
         
     def remove_groupUserEmail(self, site_id, group_id, email_address):
         uet = self.groupUserEmailTable        
         and_ = sa.and_
 
         d = uet.delete(and_(uet.c.user_id==self.user_id,
-                            uet.c.site_id==site_id,
-                            uet.c.group_id==group_id,
-                            uet.c.email==email_address)).execute()      
+               uet.c.site_id==site_id,
+               uet.c.group_id==group_id,
+               sa.func.lower(uet.c.email)==email_address.lower())).execute()
 
     def get_groupUserEmail(self, site_id, group_id, verified_only=True):
         guet = self.groupUserEmailTable

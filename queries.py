@@ -52,7 +52,11 @@ class UserQuery(object):
         assert email
         evt = self.emailVerificationTable
         i = evt.insert()
-        i.execute(verification_id=verificationId, email=email.lower())
+        # --=mpj17=-- With email addresses, we try and be case-insensitive
+        # but case preserving (like NTFS). So we *add* the address, with
+        # full capitolisation, but remove it (in the function 
+        # remove_userEmail_verificationId below) by being case-insensitive.
+        i.execute(verification_id=verificationId, email=email)
         # Change the user_email table?
         
     def remove_userEmail_verificationId(self, email):

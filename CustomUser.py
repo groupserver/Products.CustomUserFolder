@@ -612,8 +612,7 @@ class CustomUser(User, Folder):
         retval = []
         uq = UserQuery(self, self.zsqlalchemy)
         
-        return uq.get_userEmail(verified_only=True)    
-                
+        retval = uq.get_userEmail(preferred_only=False, verified_only=True)    
         assert type(retval) == list
         return retval
         
@@ -997,9 +996,9 @@ class CustomUser(User, Folder):
                 nickname = uq.get_latestNickname()
             except:
                 nickname = None
-                
-        if nickname == None:
-            nickname = self.getId()
+
+            if nickname == None:
+                nickname = self.getId()
             
         assert nickname
         self.userNicknameCache.add(self.getId(), nickname)

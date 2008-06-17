@@ -116,9 +116,7 @@ class UserQuery(object):
 
     def get_userEmail(self, preferred_only=False, verified_only=True):
         uet = self.userEmailTable
-        
-        statement = uet.select()
-        statement.append_whereclause(uet.c.user_id==self.user_id)
+        statement = sa.select([uet.c.email], uet.c.user_id==self.user_id)
         if preferred_only:
             statement.append_whereclause(uet.c.is_preferred==preferred_only)
         if verified_only:
@@ -127,7 +125,6 @@ class UserQuery(object):
         email_addresses = []
         for row in r.fetchall():
             email_addresses.append(row['email'])
-        
         return email_addresses
         
     def set_preferredEmail(self, email_address, is_preferred):

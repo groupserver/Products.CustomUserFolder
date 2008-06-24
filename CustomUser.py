@@ -987,41 +987,46 @@ class CustomUser(User, Folder):
         log.info(m)
 
     def get_canonicalNickname(self):
-        uq = UserQuery(self, self.zsqlalchemy)
+        cacheKey = '%s:%s' % (self.site_root().getId(), self.getId())
         
-        if self.userNicknameCache.has_key(self.getId()):
-            nickname = self.userNicknameCache.get(self.getId())
+        if self.userNicknameCache.has_key(cacheKey):
+            nickname = self.userNicknameCache.get(cacheKey)
         else:
+            uq = UserQuery(self, self.zsqlalchemy)
             try:
                 nickname = uq.get_latestNickname()
+                self.userNicknameCache.add(cacheKey, nickname)
             except:
                 nickname = None
 
             if nickname == None:
                 nickname = self.getId()
             
-        assert nickname
-        self.userNicknameCache.add(self.getId(), nickname)
-        assert self.userNicknameCache.has_key(self.getId())
         return nickname
         
     def add_nickname(self, nickname):
+        cacheKey = '%s:%s' % (self.site_root().getId(), self.getId())
+
         uq = UserQuery(self, self.zsqlalchemy)
         uq.add_nickname(nickname)
         m = 'add_nickname: Added nickname "%s" to %s (%s)' %\
           (nickname, self.getProperty('fn', ''), self.getId())
         log.info(m)
-        
-        self.userNicknameCache.clear()
+
+        # update the nickname cache, since the latest nickname added is also
+        # canonical        
+        self.userNicknameCache.add(cacheKey, nickname)
         
     def clear_nicknames(self):
+        cacheKey = '%s:%s' % (self.site_root().getId(), self.getId())
+
         uq = UserQuery(self, self.zsqlalchemy)
         uq.clear_nicknames()
         m = 'clear_nicknames: Cleared nicknames from  %s (%s)' %\
           (self.getProperty('fn', ''), self.getId())
         log.info(m)
 
-        self.userNicknameCache.clear()
+        self.userNicknameCache.remove(cacheKey)
 
     def clear_groups(self):
         acl_users = getattr(self, 'acl_users', None)

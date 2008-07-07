@@ -999,8 +999,8 @@ class CustomUser(User, Folder):
             except:
                 nickname = None
 
-            if nickname == None:
-                nickname = self.getId()
+        if nickname == None:
+            nickname = self.getId()
             
         return nickname
         

@@ -4,6 +4,7 @@ from zope.interface import implements, implementedBy
 from zope.component import adapts, createObject
 from interfaces import IGSUserInfo, ICustomUser
 from zope.component.interfaces import IFactory
+from AccessControl.User import nobody
 
 class GSUserInfoFromIDFactory(object):
     implements(IFactory)
@@ -91,7 +92,7 @@ class GSAnonymousUserInfo(object):
         self.name = u'Anonymous User'
         self.imageUrl = ''
         self.nickname = ''
-        self.user = None
+        self.user = nobody
         self.anonymous = True
                 
     def get_property(self, prop, default=None):

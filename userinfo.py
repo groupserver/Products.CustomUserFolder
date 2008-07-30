@@ -5,6 +5,7 @@ from zope.component import adapts, createObject
 from interfaces import IGSUserInfo, ICustomUser
 from zope.component.interfaces import IFactory
 from AccessControl.User import nobody
+from AccessControl import getSecurityManager
 
 class GSUserInfoFromIDFactory(object):
     implements(IFactory)
@@ -34,6 +35,29 @@ class GSUserInfoFromIDFactory(object):
         assert retval
         return retval
 
+class GSLoggedInUserFactory(object):
+    implements(IFactory)
+    title=u'Logged in User Info Factory'
+    description=u'Create a User Info instance for the logged in user'
+    
+    #--=mpj17=-- See zope.component.__init__ for details of createObject
+    
+    def __call__(self, context):
+        retval = None
+        acl_users = context.acl_users
+        user = getSecurityManager().getUser()
+        if user:
+            retval = GSUserInfoFromIDFactory()(context, user.getId())
+        else:
+            retval = GSAnonymousUserInfo()
+        assert retval
+        return retval
+        
+    def getInterfaces(self):
+        retval = implementedBy(GSUserInfo)
+        assert retval
+        return retval
+
 class GSUserInfo(object):
     implements( IGSUserInfo )
     adapts( ICustomUser )
@@ -44,7 +68,7 @@ class GSUserInfo(object):
         self.__fn = None
         self.__url = None
         self.__nickname = None
-        
+
     @property
     def id(self):
         retval = self.user.getId()

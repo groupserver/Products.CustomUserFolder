@@ -27,6 +27,12 @@ q_security = ModuleSecurityInfo('Products.CustomUserFolder.queries')
 q_security.declarePublic('UserQuery')
 allow_class(UserQuery)
 
+from userinfo import GSUserInfo
+m_security = ModuleSecurityInfo('Products.CustomUserFolder.userinfo')
+m_security.declarePublic('GSUserInfo')
+allow_class(GSUserInfo)
+
+
 def initialize(context):
     # import lazily and defer initialization to the module
     CustomUserFolder.initialize(context)

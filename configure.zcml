@@ -35,6 +35,9 @@
     for=".interfaces.ICustomUser"
     permission="zope2.Public"
     factory=".userinfo.GSUserInfo"/>
+  <utility factory=".userinfo.GSLoggedInUserFactory"
+    name="groupserver.LoggedInUser"
+    permission="zope.Public"/>
 
     
 </configure>

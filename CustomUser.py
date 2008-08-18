@@ -726,7 +726,7 @@ class CustomUser(User, Folder):
         #uq.set_groupEmailSetting(site_id, group_id, '')
         
     security.declareProtected(Perms.manage_properties, 'set_enableDigestByKey')
-    def set_enableDigestByKey(self, key):
+    def set_enableDigestByKey(self, group_id, site_id=''):
         """ Enable the email digest for a given key.
         
             The key normally represents a group, but may
@@ -735,12 +735,14 @@ class CustomUser(User, Folder):
         """
         uq = UserQuery(self, self.zsqlalchemy)
         # TODO: we don't quite support site_id yet
-        site_id = ''
-        group_id = key
         uq.set_groupEmailSetting(site_id, group_id, 'digest')
+
+        m = '%s (%s) enabling digest mode for %s' % \
+          (self.getProperty('fn', ''), self.getId(), group_id)
+        log.info(m)
         
     security.declareProtected(Perms.manage_properties, 'set_disableDigestByKey')
-    def set_disableDigestByKey(self, key):
+    def set_disableDigestByKey(self, group_id, site_id=''):
         """ Disable the email digest for a given key.
         
             The key normally represents a group, but may
@@ -748,11 +750,11 @@ class CustomUser(User, Folder):
             
         """
         uq = UserQuery(self, self.zsqlalchemy)
-        # TODO: we don't quite support site_id yet
-        site_id = ''
-        group_id = key
         uq.clear_groupEmailSetting(site_id, group_id)
-        #uq.set_groupEmailSetting(site_id, group_id, '')
+
+        m = '%s (%s) disabling digest mode for %s' % \
+          (self.getProperty('fn', ''), self.getId(), group_id)
+        log.info(m)
     
     security.declareProtected(Perms.manage_properties, 'get_deliverySettingsByKey')
     def get_deliverySettingsByKey(self, key):

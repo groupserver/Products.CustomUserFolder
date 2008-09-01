@@ -1,7 +1,7 @@
 # coding=utf-8
 import zope.interface 
 from zope.interface import implements, implementedBy
-from zope.component import adapts, createObject
+from zope.component import adapts
 from interfaces import IGSUserInfo, ICustomUser
 from zope.component.interfaces import IFactory
 from AccessControl.User import nobody

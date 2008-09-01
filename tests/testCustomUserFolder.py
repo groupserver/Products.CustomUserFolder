@@ -26,7 +26,6 @@ from Testing import ZopeTestCase
 ZopeTestCase.installProduct('CustomUserFolder')
 
 from Products.CustomUserFolder import CustomUserFolder
-from Products.CustomUserFolder import CustomUser
 class TestCustomUserFolder(ZopeTestCase.ZopeTestCase):
     def afterSetUp(self):
         self.folder.manage_delObjects(['acl_users'])
@@ -121,13 +120,12 @@ class TestCustomUserFolder(ZopeTestCase.ZopeTestCase):
         self.failUnless(self.auser.get_deliveryEmailAddressesByKey('fooGroup')\
                         == ['richard@iopen.net', 'wibble@iopen.net'])
 
-	self.auser.set_enableDigestByKey('fooGroup')
-	self.failUnless(self.auser.get_deliverySettingsByKey('fooGroup')==3)
-	self.failUnless(self.auser.get_deliveryEmailAddressesByKey('fooGroup')\
-                        == ['richard@iopen.net', 'wibble@iopen.net'])
-	self.auser.set_disableDigestByKey('fooGroup')
-	self.failUnless(self.auser.get_deliverySettingsByKey('fooGroup')==1)
-	
+        self.auser.set_enableDigestByKey('fooGroup')
+        self.failUnless(self.auser.get_deliverySettingsByKey('fooGroup')==3)
+        self.failUnless(self.auser.get_deliveryEmailAddressesByKey('fooGroup')\
+                            == ['richard@iopen.net', 'wibble@iopen.net'])
+        self.auser.set_disableDigestByKey('fooGroup')
+        self.failUnless(self.auser.get_deliverySettingsByKey('fooGroup')==1)
 
         self.failUnless(self.auser.get_preferredEmailAddresses()\
                         == ['richard@iopen.net', 'wibble@iopen.net'])
@@ -138,7 +136,7 @@ class TestCustomUserFolder(ZopeTestCase.ZopeTestCase):
         pass    
 
 if __name__ == '__main__':
-    framework(descriptions=1, verbosity=1)
+    framework(descriptions=1, verbosity=1) #@UndefinedVariable
 else:
     import unittest
     def test_suite():

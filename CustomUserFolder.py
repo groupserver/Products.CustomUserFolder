@@ -22,13 +22,13 @@ from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 from AccessControl import ClassSecurityInfo
 from AccessControl import AuthEncoding
 from AccessControl import Permissions as Perms
-from AccessControl.User import BasicUserFolder, _remote_user_mode
-from Globals import InitializeClass
-from OFS.Folder import Folder
+from Globals import InitializeClass, INSTANCE_HOME
 from Products.NuxUserGroups import UserFolderWithGroups
-from Products.XWFCore import XWFUtils
 from zope.interface import implements
 from Products.CustomUserFolder.interfaces import ICustomUserFolder
+from AccessControl.User import readUserAccessFile
+from Products.XWFCore.XWFUtils import locateDataDirectory
+import os
 
 import DateTime
 import re
@@ -38,7 +38,8 @@ import logging
 log = logging.getLogger('CustomUserFolder')
 
 try:
-    from Products.MailBoxer import MailBoxerTools
+    # richard: mailboxer was merged into XWFMailingListManager
+    from Products.XWFMailingListManager import MailBoxerTools
     HaveMailBoxer = True
 except:
     HaveMailBoxer = False
@@ -370,7 +371,7 @@ class CustomUserFolder(UserFolderWithGroups):
             raise ImportError, ('MailBoxerTools is not available, unable to '
                                 'verify user from email')
         
-        mailHeader, mailBody = MailBoxerTools.splitMail(Mail)
+        mailHeader, mailBody = MailBoxerTools.splitMail(Mail) #@UnusedVariable
         subjHdr = mailHeader.get('subject', '')
         subject = MailBoxerTools.mime_decode_header(subjHdr)
         assert subject, 'No subject in verification mail message'
@@ -384,7 +385,7 @@ class CustomUserFolder(UserFolderWithGroups):
         
         user = self.get_userByEmailVerificationId(verificationId)
         assert user, 'No user for the verification ID "%s"' % verificationId
-        email = user.verify_emailAddress(verificationId)
+        email = user.verify_emailAddress(verificationId) #@UnusedVariable
         # TODO: send out a notification to the user, informing him or her
         #   that the address has been verified.
         
@@ -431,13 +432,28 @@ class CustomUserFolder(UserFolderWithGroups):
         if len(self.data) <= 1:
             info = readUserAccessFile('inituser')
             if info:
-                name, password, domains, remote_user_mode = info
+                name, password, domains, remote_user_mode = info #@UnusedVariable
                 self._doDelUsers(self.getUserNames())
                 self._doAddUser(name, password, ('Manager',), domains)
                 try:
                     os.remove(os.path.join(INSTANCE_HOME, 'inituser'))
                 except:
                     pass
+
+    security.declareProtected(Perms.view, 'migrate_images')
+    def migrate_images(self):
+        """ Migrate the images to disk
+        
+        """
+        site_root = self.site_root().getId()
+        contactImageDir = locateDataDirectory("groupserver.user.image",
+                                              (site_root.getId(),))
+        for image in self.contactsimages.getValues():
+            if image.meta_type == 'Image':
+                filePath = os.path.join(contactImageDir, image.getId())
+                f = file(filePath, 'a+') 
+                f.write(image.read())
+                f.close()
 
 manage_addCustomUserFolderForm = PageTemplateFile(
     'zpt/manage_addCustomUserFolderForm.zpt',

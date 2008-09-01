@@ -1,8 +1,6 @@
 '''Interface definitions for a GroupServer User'''
 from zope.interface import Interface
-import zope.component, zope.publisher.interfaces
-import zope.viewlet.interfaces, zope.contentprovider.interfaces 
-from zope.schema import *
+from zope.schema import Choice
 
 class ICustomUser(Interface):
     """A CustomUser."""
@@ -20,7 +18,7 @@ class IGSUserInfo( Interface ):
       description=u"Visibility of the user's email addresses",
       values=[u'hidden', u'request', u'visible'])
 
-    def get_id():
+    def get_id(): #@NoSelf
         """Get ID
         
         DESCRIPTION
@@ -34,7 +32,7 @@ class IGSUserInfo( Interface ):
             The ID of the GroupServer user as a string.
         """
 
-    def get_profile_url():
+    def get_profile_url(): #@NoSelf
         """Get Profile URL
         
         DESCRIPTION
@@ -48,7 +46,7 @@ class IGSUserInfo( Interface ):
             string.
         """
 
-    def get_names():
+    def get_names(): #@NoSelf
         """Get Names
         
         DESCRIPTION
@@ -62,7 +60,7 @@ class IGSUserInfo( Interface ):
             with values as strings.
         """
     
-    def get_display_name():
+    def get_display_name(): #@NoSelf
         """Get Display Name
         
         DESCRIPTION
@@ -75,7 +73,7 @@ class IGSUserInfo( Interface ):
             The user's display name as a string.
         """
     
-    def get_image_url():
+    def get_image_url(): #@NoSelf
         """Get Image URL
         
         DESCRIPTION
@@ -89,7 +87,7 @@ class IGSUserInfo( Interface ):
         """
 
     
-    def get_groups():
+    def get_groups(): #@NoSelf
         """Get Groups
         
         DESCRIPTION
@@ -107,7 +105,7 @@ class IGSUserInfo( Interface ):
             A list of instances that conform to the IGSGroupInfo interface.
         """
     
-    def get_email_address_visibility():
+    def get_email_address_visibility(): #@NoSelf
         """Get Email Address Visibility
         
         DESCRIPTION
@@ -125,7 +123,7 @@ class IGSUserInfo( Interface ):
                   members of the site.
         """
     
-    def get_all_email_addresses():
+    def get_all_email_addresses(): #@NoSelf
         """Get All Email Addresses
         
         DESCRIPTION
@@ -139,7 +137,7 @@ class IGSUserInfo( Interface ):
             A list of strings.
         """
 
-    def get_preferred_email_addresses():
+    def get_preferred_email_addresses(): #@NoSelf
         """Get Preferred Email Addresses
         
         DESCRIPTION
@@ -153,7 +151,7 @@ class IGSUserInfo( Interface ):
             A list of strings.
         """
     
-    def get_timezone():
+    def get_timezone(): #@NoSelf
         """Get Timezone
         
         DESCRIPTION
@@ -166,7 +164,7 @@ class IGSUserInfo( Interface ):
             The user's preferred timezone, as a string.
         """
     
-    def get_properties():
+    def get_properties(): #@NoSelf
         """Get Properties
         
         DESCRIPTION
@@ -180,7 +178,7 @@ class IGSUserInfo( Interface ):
             A dictionary of {'property': value}.
         """
 
-    def get_property():
+    def get_property(): #@NoSelf
         """Get Property
         
         DESCRIPTION

@@ -29,11 +29,17 @@ from OFS.Folder import Folder
 from Products.XWFCore import XWFUtils
 
 from Globals import InitializeClass
+from AccessControl import getSecurityManager
+from Products.XWFCore.XWFUtils import locateDataDirectory
+from OFS.Image import Image
+import os
 import string
 
 from zope.interface import implements
 from Products.CustomUserFolder.interfaces import ICustomUser
 from zope.component import createObject
+
+from gs.image.interfaces import IGSImage
 
 from Products.XWFCore.cache import LRUCache
 
@@ -368,44 +374,23 @@ class CustomUser(User, Folder):
 
         """
         self._properties = self._properties_def
+    
+    @property
+    def image(self):
+        """ Purely a helper method to get the image of a user.
         
-    security.declareProtected(Perms.view, 'get_image')
-    def get_image(self):
-        """ Get the URL of the user's image.
-
         """
-        from AccessControl import getSecurityManager
-        
-        contactsimages = getattr(self, 'contactsimages', None)
-        if not contactsimages:
+        imageObject = self.get_image(url_only=False)
+        if not imageObject:
             return None
-        given_name = self.getProperty('givenName', '').lower()
-        family_name = self.getProperty('familyName', '').lower()
-        valid_chars = string.letters+string.digits+'_.'
-        imageurl = None
-        image_matches = ['%s.jpg' % self.getId(),
-                    '%s_%s_%s.jpg' % (family_name, given_name, self.getId())]
-        for id in image_matches:
-            newid = ''
-            for char in id:
-                if char in valid_chars:
-                    newid += char
-                else:
-                    newid += '-'
-            image = getattr(contactsimages, newid, None)
-            
-            if image:
-                imageurl = image.absolute_url(1)
-                break
         
-        # if we don't have an image, shortcut the checks
-        if not imageurl: return None
+        # double check security
         
         # check to see if we have a global override
         globalconfig = getattr(self, 'GlobalConfiguration', None)
         if globalconfig:
             if getattr(globalconfig, 'alwaysShowMemberPhotos'):
-                return imageurl
+                return imageObject.index_html()
         
         user = getSecurityManager().getUser()
         roles = user.getRoles()
@@ -415,12 +400,65 @@ class CustomUser(User, Folder):
                 allowbyrole = 1
                 break
                 
-        imageurl = None
         if self.restrictImage and (not allowbyrole) and \
            user.getId() != self.getId():
-            return imageurl
+            return imageObject.index_html()
+
+    security.declareProtected(Perms.view, 'get_image')
+    def get_image(self, url_only=True):
+        """ Get the URL or actual image object for a user.
+
+        """
+        site_root = self.site_root().getId()
+        contactImageDir = locateDataDirectory("groupserver.user.image",
+                                              (site_root.getId(),))
+        
+        given_name = self.getProperty('givenName', '').lower()
+        family_name = self.getProperty('familyName', '').lower()
+        valid_chars = string.letters+string.digits+'_.'
+        
+        image_matches = ['%s.jpg' % self.getId(),
+                    '%s_%s_%s.jpg' % (family_name, given_name, self.getId())]
+        retval = ''
+        for id in image_matches:
+            newid = ''
+            for char in id:
+                if char in valid_chars:
+                    newid += char
+                else:
+                    newid += '-'
+                    
+            imagePath = os.path.join(contactImageDir, newid)
+            if os.path.isfile(imagePath):
+                if url_only:
+                    retval = '/p/%s/image' % self.get_canonicalNickname()
+                else:
+                    f = file(imagePath, 'rb')
+                    imageObject = Image('%s', '%s', f)
+                    IGSImage(imageObject).resize(81, 108, maintain_aspect=True)
+                    
+        # if we don't have an image, shortcut the checks
+        if not retval: return None
+        
+        # check to see if we have a global override
+        globalconfig = getattr(self, 'GlobalConfiguration', None)
+        if globalconfig:
+            if getattr(globalconfig, 'alwaysShowMemberPhotos'):
+                return retval
+        
+        user = getSecurityManager().getUser()
+        roles = user.getRoles()
+        allowbyrole = 0
+        for role in roles:
+            if role in self.unrestrictedImageRoles:
+                allowbyrole = 1
+                break
+                
+        if self.restrictImage and (not allowbyrole) and \
+           user.getId() != self.getId():
+            return retval
             
-        return imageurl
+        return retval
         
     security.declareProtected(Perms.manage_properties, 'get_emailAddresses')    
     def get_emailAddresses(self):
@@ -528,7 +566,7 @@ class CustomUser(User, Folder):
         assert verificationId
         uq = UserQuery(self, self.zsqlalchemy)
         assert not uq.userEmail_verificationId_valid(verificationId), \
-          'Email Verification ID %s exists' % verificationID
+          'Email Verification ID %s exists' % verificationId
         assert email in self.get_emailAddresses(), \
           'User "%s" does not have the address <%s>' % (self.getId(), email)
         
@@ -609,7 +647,6 @@ class CustomUser(User, Folder):
         RETURNS
           A list of email addresses, which have a verification date set.
         """
-        retval = []
         uq = UserQuery(self, self.zsqlalchemy)
         
         retval = uq.get_userEmail(preferred_only=False, verified_only=True)    
@@ -825,7 +862,6 @@ class CustomUser(User, Folder):
         # TODO: we don't quite support site_id yet
         site_id = ''
         group_id = key
-        retval = []
         
         uq = UserQuery(self, self.zsqlalchemy)
         retval = uq.get_groupUserEmail(site_id, group_id)
@@ -920,10 +956,10 @@ class CustomUser(User, Folder):
                                                roles, domains)
 
 
-      	logged_in_user = self.REQUEST.AUTHENTICATED_USER.getId() 
-      	if (logged_in_user):
-      	        site_root.cookie_authentication.credentialsChanged(user, userID,
-              	                                                   newPassword)
+        logged_in_user = self.REQUEST.AUTHENTICATED_USER.getId() 
+        if (logged_in_user):
+            site_root.cookie_authentication.credentialsChanged(user, userID,
+                                                               newPassword)
         m = 'set_password: Set password for %s (%s)' % \
           (self.getProperty('fn', ''), self.getId())
         log.info(m)
@@ -962,14 +998,14 @@ class CustomUser(User, Folder):
         m = u'clear_userPasswordResetVerificationIds: Clearing IDs '\
           'for "%s"' % self.getId()
         log.info(m)
-		
+        
     def get_invitation(self, invitationId):
         assert invitationId
         uq = UserQuery(self, self.zsqlalchemy)
         retval = uq.get_invitation(invitationId)
         assert retval, 'No invitation found for the ID %s' % invitationId
         return retval
-		
+        
     def add_invitation(self, invitationId, invitingUserId, siteId, groupId):
         uq = UserQuery(self, self.zsqlalchemy)
         uq.add_invitation(invitationId, invitingUserId, siteId, groupId)
@@ -1059,9 +1095,9 @@ class CustomUser(User, Folder):
     def upgrade(self):
         """ Upgrade existing objects.
 	
-      	"""
-      	# originally we weren't setting the ID correctly
-      	self.id = self.getId()
+        """
+        # originally we weren't setting the ID correctly
+        self.id = self.getId()
 
 InitializeClass(CustomUser)
 

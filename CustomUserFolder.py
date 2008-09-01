@@ -445,14 +445,14 @@ class CustomUserFolder(UserFolderWithGroups):
         """ Migrate the images to disk
         
         """
-        site_root = self.site_root().getId()
+        siteId = self.site_root().getId()
         contactImageDir = locateDataDirectory("groupserver.user.image",
-                                              (site_root.getId(),))
-        for image in self.contactsimages.getValues():
+                                              (siteId,))
+        for image in self.contactsimages.objectValues():
             if image.meta_type == 'Image':
                 filePath = os.path.join(contactImageDir, image.getId())
                 f = file(filePath, 'a+') 
-                f.write(image.read())
+                f.write(str(image.data))
                 f.close()
 
 manage_addCustomUserFolderForm = PageTemplateFile(

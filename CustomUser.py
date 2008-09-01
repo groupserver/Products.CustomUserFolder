@@ -39,7 +39,7 @@ from zope.interface import implements
 from Products.CustomUserFolder.interfaces import ICustomUser
 from zope.component import createObject
 
-from gs.image.interfaces import IGSImage
+from Products.GSImage.interfaces import IGSImage
 
 from Products.XWFCore.cache import LRUCache
 
@@ -375,22 +375,24 @@ class CustomUser(User, Folder):
         """
         self._properties = self._properties_def
     
-    @property
-    def image(self):
+
+    security.declareProtected(Perms.view, 'photo')
+    def photo(self):
         """ Purely a helper method to get the image of a user.
         
         """
         imageObject = self.get_image(url_only=False)
         if not imageObject:
             return None
-        
+
         # double check security
         
         # check to see if we have a global override
         globalconfig = getattr(self, 'GlobalConfiguration', None)
         if globalconfig:
             if getattr(globalconfig, 'alwaysShowMemberPhotos'):
-                return imageObject.index_html()
+                return imageObject.index_html(self.REQUEST,
+                                              self.REQUEST.RESPONSE)
         
         user = getSecurityManager().getUser()
         roles = user.getRoles()
@@ -402,16 +404,17 @@ class CustomUser(User, Folder):
                 
         if self.restrictImage and (not allowbyrole) and \
            user.getId() != self.getId():
-            return imageObject.index_html()
+            return imageObject.index_html(self.REQUEST,
+                                          self.REQUEST.RESPONSE)
 
     security.declareProtected(Perms.view, 'get_image')
     def get_image(self, url_only=True):
         """ Get the URL or actual image object for a user.
 
         """
-        site_root = self.site_root().getId()
+        siteId = self.site_root().getId()
         contactImageDir = locateDataDirectory("groupserver.user.image",
-                                              (site_root.getId(),))
+                                              (siteId,))
         
         given_name = self.getProperty('givenName', '').lower()
         family_name = self.getProperty('familyName', '').lower()
@@ -431,12 +434,13 @@ class CustomUser(User, Folder):
             imagePath = os.path.join(contactImageDir, newid)
             if os.path.isfile(imagePath):
                 if url_only:
-                    retval = '/p/%s/image' % self.get_canonicalNickname()
+                    retval = '/p/%s/photo' % self.get_canonicalNickname()
                 else:
                     f = file(imagePath, 'rb')
                     imageObject = Image('%s', '%s', f)
-                    IGSImage(imageObject).resize(81, 108, maintain_aspect=True)
-                    
+                    retval = IGSImage(imageObject).get_resized(81, 108,
+                                                         maintain_aspect=True)
+
         # if we don't have an image, shortcut the checks
         if not retval: return None
         

@@ -39,7 +39,7 @@ from zope.interface import implements
 from Products.CustomUserFolder.interfaces import ICustomUser
 from zope.component import createObject
 
-from Products.GSImage.interfaces import IGSImage
+from gs.image.interfaces import IGSImage
 
 from Products.XWFCore.cache import LRUCache
 

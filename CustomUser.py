@@ -385,28 +385,20 @@ class CustomUser(User, Folder):
         if not imageObject:
             return None
 
-        # double check security
-        
-        # check to see if we have a global override
-        globalconfig = getattr(self, 'GlobalConfiguration', None)
-        if globalconfig:
-            if getattr(globalconfig, 'alwaysShowMemberPhotos'):
-                return imageObject.index_html(self.REQUEST,
-                                              self.REQUEST.RESPONSE)
-        
-        user = getSecurityManager().getUser()
-        roles = user.getRoles()
-        allowbyrole = 0
-        for role in roles:
-            if role in self.unrestrictedImageRoles:
-                allowbyrole = 1
-                break
-                
-        if self.restrictImage and (not allowbyrole) and \
-           user.getId() != self.getId():
-            return imageObject.index_html(self.REQUEST,
-                                          self.REQUEST.RESPONSE)
+        return imageObject.index_html(self.REQUEST, 
+                                      self.REQUEST.RESPONSE)
 
+    security.declareProtected(Perms.view, 'photoObject')
+    def photoObject(self):
+        """ Purely a helper method to get the image of a user.
+        
+        """
+        imageObject = self.get_image(url_only=False)
+        if not imageObject:
+            return None
+
+        return imageObject
+    
     security.declareProtected(Perms.view, 'get_image')
     def get_image(self, url_only=True):
         """ Get the URL or actual image object for a user.
@@ -442,7 +434,8 @@ class CustomUser(User, Folder):
                                                          maintain_aspect=True)
 
         # if we don't have an image, shortcut the checks
-        if not retval: return None
+        if not retval:
+            return None
         
         # check to see if we have a global override
         globalconfig = getattr(self, 'GlobalConfiguration', None)
@@ -460,7 +453,7 @@ class CustomUser(User, Folder):
                 
         if self.restrictImage and (not allowbyrole) and \
            user.getId() != self.getId():
-            return retval
+            return None
             
         return retval
         

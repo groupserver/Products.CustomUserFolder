@@ -31,7 +31,8 @@ from Products.XWFCore import XWFUtils
 from Globals import InitializeClass
 from AccessControl import getSecurityManager
 from Products.XWFCore.XWFUtils import locateDataDirectory
-from OFS.Image import Image
+from Products.XWFFileLibrary2.XWFVirtualFileFolder2 import DisplayFile
+from zope.app.file.image import Image
 import os
 import string
 
@@ -385,8 +386,7 @@ class CustomUser(User, Folder):
         if not imageObject:
             return None
 
-        return imageObject.index_html(self.REQUEST, 
-                                      self.REQUEST.RESPONSE)
+        return DisplayFile(imageObject, self.REQUEST).show()
 
     security.declareProtected(Perms.view, 'photoObject')
     def photoObject(self):
@@ -429,9 +429,7 @@ class CustomUser(User, Folder):
                     retval = '/p/%s/photo' % self.get_canonicalNickname()
                 else:
                     f = file(imagePath, 'rb')
-                    imageObject = Image('%s', '%s', f)
-                    retval = IGSImage(imageObject).get_resized(81, 108,
-                                                         maintain_aspect=True)
+                    retval = IGSImage(Image(f)).get_resized(81, 108, True)
 
         # if we don't have an image, shortcut the checks
         if not retval:

@@ -931,7 +931,7 @@ class CustomUser(User, Folder):
 
         return newPassword
 
-    def set_password(self, newPassword):
+    def set_password(self, newPassword, updateCookies=True):
         """Sets the user's password to 'newPassword'.
 
         SIDE-EFFECTS
@@ -950,11 +950,12 @@ class CustomUser(User, Folder):
         site_root.acl_users.userFolderEditUser(userID, newPassword,
                                                roles, domains)
 
-
-        logged_in_user = self.REQUEST.AUTHENTICATED_USER.getId() 
-        if (logged_in_user):
-            site_root.cookie_authentication.credentialsChanged(user, userID,
-                                                               newPassword)
+        if updateCookies:
+            logged_in_user = self.REQUEST.AUTHENTICATED_USER.getId() 
+            if (logged_in_user):
+                site_root.cookie_authentication.credentialsChanged(user, 
+                                                                   userID,
+                                                                   newPassword)
         m = 'set_password: Set password for %s (%s)' % \
           (self.getProperty('fn', ''), self.getId())
         log.info(m)

@@ -238,7 +238,7 @@ class CustomUser(User, Folder):
                 if not groupList.getProperty('moderate_new_members', False):
                     continue
                 if groupList.hasProperty('moderated_members'):
-                    moderated_members = list(groupList.getProperty('moderated_members', []))
+                    moderated_members = filter(None, list(groupList.getProperty('moderated_members', [])))
                     if self.getId() not in moderated_members:
                         moderated_members.append(self.getId())
                         groupList.manage_changeProperties(moderated_members=moderated_members)

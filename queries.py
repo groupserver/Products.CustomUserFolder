@@ -14,8 +14,7 @@ class UserQuery(object):
         self.context = context
 
         self.user_id = context.getUserName()
-        top = time.time()
-        
+
         self.emailSettingTable = da.createTable('email_setting')
         self.userEmailTable = da.createTable('user_email')
         self.groupUserEmailTable = da.createTable('group_user_email')
@@ -23,9 +22,6 @@ class UserQuery(object):
         self.passwordResetTable = da.createTable('password_reset')
         self.invitationTable = da.createTable('user_invitation')
         self.nicknameTable = da.createTable('user_nickname')
-
-        bottom = time.time()
-        log.info("Time taken to init UserQuery = %.2f" % ((bottom-top)*1000.0)) 
 
     def add_userEmail(self, email_address, is_preferred=False):
         uet = self.userEmailTable

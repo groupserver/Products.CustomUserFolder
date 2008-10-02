@@ -27,10 +27,14 @@ q_security = ModuleSecurityInfo('Products.CustomUserFolder.queries')
 q_security.declarePublic('UserQuery')
 allow_class(UserQuery)
 
-from userinfo import GSUserInfo
+from userinfo import GSUserInfo, GSLoggedInUserFactory, GSAnonymousUserInfo
 m_security = ModuleSecurityInfo('Products.CustomUserFolder.userinfo')
 m_security.declarePublic('GSUserInfo')
+m_security.declarePublic('GSLoggedInUserFactory')
+m_security.declarePublic('GSAnonymousUserInfo')
 allow_class(GSUserInfo)
+allow_class(GSLoggedInUserFactory)
+allow_class(GSAnonymousUserInfo)
 
 
 def initialize(context):

@@ -1032,10 +1032,10 @@ class CustomUser(User, Folder):
                 self.userNicknameCache.add(cacheKey, nickname)
             except:
                 nickname = None
-
+        
         if nickname == None:
             nickname = self.getId()
-            
+
         return nickname
         
     def add_nickname(self, nickname):

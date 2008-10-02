@@ -90,9 +90,7 @@ class CustomUserFolder(UserFolderWithGroups):
         """
         email = email.lower()
         da = self.zsqlalchemy
-        engine = da.engine
-        metadata = sa.BoundMetaData(engine)
-        userEmailTable = sa.Table('user_email', metadata, autoload=True)
+        userEmailTable = da.createTable('user_email')
         
         statement = userEmailTable.select()      
         statement.append_whereclause(userEmailTable.c.email.op('ILIKE')(email))
@@ -108,10 +106,8 @@ class CustomUserFolder(UserFolderWithGroups):
         """Get the user ID from a email-verification ID
         """
         da = self.zsqlalchemy
-        engine = da.engine
-        metadata = sa.BoundMetaData(engine)
-        uet = sa.Table('user_email', metadata, autoload=True)
-        evt = sa.Table('email_verification', metadata, autoload=True)
+        uet = da.createTable('user_email')
+        evt = da.createTable('email_verification')
         
         s1 = evt.select()
         s1.append_whereclause(evt.c.verification_id == verificationId)
@@ -168,9 +164,7 @@ class CustomUserFolder(UserFolderWithGroups):
         """Get the user ID from a email-verification ID
         """
         da = self.zsqlalchemy
-        engine = da.engine
-        metadata = sa.BoundMetaData(engine)
-        pvt = sa.Table('password_reset', metadata, autoload=True)
+        pvt = da.createTable('password_reset')
 
         s1 = pvt.select()
         s1.append_whereclause(pvt.c.verification_id == verificationId)
@@ -197,9 +191,7 @@ class CustomUserFolder(UserFolderWithGroups):
         """Get the user ID from a email-verification ID
         """
         da = self.zsqlalchemy
-        engine = da.engine
-        metadata = sa.BoundMetaData(engine)
-        pvt = sa.Table('user_invitation', metadata, autoload=True)
+        pvt = da.createTable('user_invitation')
 
         s1 = pvt.select()
         s1.append_whereclause(pvt.c.invitation_id == invitationId)
@@ -395,9 +387,7 @@ class CustomUserFolder(UserFolderWithGroups):
         assert type(nickname) in (str, unicode)
 
         da = self.zsqlalchemy
-        engine = da.engine
-        metadata = sa.BoundMetaData(engine)
-        unt = sa.Table('user_nickname', metadata, autoload=True)
+        unt = da.createTable('user_nickname')
 
         statement = unt.select()
         statement.append_whereclause(unt.c.nickname == nickname)

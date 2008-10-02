@@ -2,6 +2,7 @@
 from sqlalchemy.exceptions import NoSuchTableError
 import sqlalchemy as sa
 import pytz, datetime
+import time
 
 import logging
 log = logging.getLogger("CustomUserFolder")
@@ -13,17 +14,18 @@ class UserQuery(object):
         self.context = context
 
         self.user_id = context.getUserName()
+        top = time.time()
+        
+        self.emailSettingTable = da.createTable('email_setting')
+        self.userEmailTable = da.createTable('user_email')
+        self.groupUserEmailTable = da.createTable('group_user_email')
+        self.emailVerificationTable = da.createTable('email_verification')
+        self.passwordResetTable = da.createTable('password_reset')
+        self.invitationTable = da.createTable('user_invitation')
+        self.nicknameTable = da.createTable('user_nickname')
 
-        engine = da.engine
-        metadata = sa.BoundMetaData(engine)
-
-        self.emailSettingTable = sa.Table('email_setting', metadata, autoload=True)
-        self.userEmailTable = sa.Table('user_email', metadata, autoload=True)
-        self.groupUserEmailTable = sa.Table('group_user_email', metadata, autoload=True)
-        self.emailVerificationTable = sa.Table('email_verification', metadata, autoload=True)
-        self.passwordResetTable = sa.Table('password_reset', metadata, autoload=True)
-        self.invitationTable = sa.Table('user_invitation', metadata, autoload=True)
-        self.nicknameTable = sa.Table('user_nickname', metadata, autoload=True)
+        bottom = time.time()
+        log.info("Time taken to init UserQuery = %.2f" % ((bottom-top)*1000.0)) 
 
     def add_userEmail(self, email_address, is_preferred=False):
         uet = self.userEmailTable

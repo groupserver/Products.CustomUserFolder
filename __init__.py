@@ -18,6 +18,7 @@
 # to the trunk. Code which does not follow the rules will be rejected.
 #
 import CustomUserFolder, CustomUser
+import audituser
 
 from AccessControl import ModuleSecurityInfo
 from AccessControl import allow_class, allow_module, allow_type

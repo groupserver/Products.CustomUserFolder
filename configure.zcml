@@ -39,6 +39,11 @@
     name="groupserver.LoggedInUser"
     permission="zope.Public"/>
 
+  <subscriber 
+    for="Products.CustomUserFolder.interfaces.ICustomUser
+         zope.lifecycleevent.interfaces.IObjectModifiedEvent"
+    handler="Products.CustomUserFolder.audituser.userInstanceModified"
+  />
     
 </configure>
 

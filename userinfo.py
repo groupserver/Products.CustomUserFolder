@@ -123,3 +123,10 @@ class GSAnonymousUserInfo(object):
         retval = default
         return retval
 
+def userInfo_to_anchor(userInfo):
+    assert isinstance(userInfo, GSUserInfo)
+    retval = u'<a class="fn" href="%s">%s</a>' % \
+      (userInfo.url, userInfo.name)
+    assert type(retval) == unicode
+    assert retval
+    return retval

@@ -32,7 +32,6 @@ class CustomUserAuditEventFactory(object):
             event = BasicAuditEvent(context, eventId, UNKNOWN, d, 
               userInfo, instanceUserInfo, siteInfo, None, 
               instanceDatum, supplementaryDatum, SUBSYSTEM)
-        print event
         return event
     
     def getInterfaces(self):

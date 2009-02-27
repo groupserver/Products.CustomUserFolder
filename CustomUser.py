@@ -405,54 +405,18 @@ class CustomUser(User, Folder):
 
         """
         siteId = self.site_root().getId()
-        contactImageDir = locateDataDirectory("groupserver.user.image",
+        dataDir = locateDataDirectory("groupserver.user.image",
                                               (siteId,))
-        
-        given_name = self.getProperty('givenName', '').lower()
-        family_name = self.getProperty('familyName', '').lower()
-        valid_chars = string.letters+string.digits+'_.'
-        
-        image_matches = ['%s.jpg' % self.getId(),
-                    '%s_%s_%s.jpg' % (family_name, given_name, self.getId())]
-        retval = ''
-        for id in image_matches:
-            newid = ''
-            for char in id:
-                if char in valid_chars:
-                    newid += char
-                else:
-                    newid += '-'
-                    
-            imagePath = os.path.join(contactImageDir, newid)
-            if os.path.isfile(imagePath):
-                if url_only:
-                    retval = '/p/%s/photo' % self.get_canonicalNickname()
-                else:
-                    f = file(imagePath, 'rb')
-                    retval = IGSImage(Image(f)).get_resized(81, 108, True)
+        fileName = '%s.jpg' % self.getId()
+        imagePath = os.path.join(dataDir, fileName)
 
-        # if we don't have an image, shortcut the checks
-        if not retval:
-            return None
-        
-        # check to see if we have a global override
-        globalconfig = getattr(self, 'GlobalConfiguration', None)
-        if globalconfig:
-            if getattr(globalconfig, 'alwaysShowMemberPhotos'):
-                return retval
-        
-        user = getSecurityManager().getUser()
-        roles = user.getRoles()
-        allowbyrole = 0
-        for role in roles:
-            if role in self.unrestrictedImageRoles:
-                allowbyrole = 1
-                break
-                
-        if self.restrictImage and (not allowbyrole) and \
-           user.getId() != self.getId():
-            return None
-            
+        retval = None
+        if os.path.isfile(imagePath):
+            if url_only:
+                retval = '/p/%s/photo' % self.get_canonicalNickname()
+            else:
+                f = file(imagePath, 'rb')
+                retval = IGSImage(Image(f)).get_resized(81, 108, True)
         return retval
         
     security.declareProtected(Perms.manage_properties, 'get_emailAddresses')    

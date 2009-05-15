@@ -40,7 +40,7 @@ from zope.interface import implements
 from Products.CustomUserFolder.interfaces import ICustomUser
 from zope.component import createObject
 
-from gs.image.interfaces import IGSImage
+from gs.image import GSImage
 
 from Products.XWFCore.cache import LRUCache
 
@@ -416,7 +416,7 @@ class CustomUser(User, Folder):
                 retval = '/p/%s/photo' % self.get_canonicalNickname()
             else:
                 f = file(imagePath, 'rb')
-                retval = IGSImage(Image(f)).get_resized(81, 108, True)
+                retval = GSImage(f).get_resized(81, 108, True)
         return retval
         
     security.declareProtected(Perms.manage_properties, 'get_emailAddresses')    

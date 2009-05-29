@@ -398,7 +398,7 @@ class CustomUser(User, Folder):
             return None
 
         return imageObject
-    
+  
     security.declareProtected(Perms.view, 'get_image')
     def get_image(self, url_only=True):
         """ Get the URL or actual image object for a user.
@@ -417,6 +417,22 @@ class CustomUser(User, Folder):
             else:
                 f = file(imagePath, 'rb')
                 retval = GSImage(f).get_resized(81, 108, True)
+        return retval
+
+    security.declareProtected(Perms.view, 'get_image_path')
+    def get_image_path(self):
+        """ Get the image path for a user.
+
+        """
+        siteId = self.site_root().getId()
+        dataDir = locateDataDirectory("groupserver.user.image",
+                                              (siteId,))
+        fileName = '%s.jpg' % self.getId()
+        imagePath = os.path.join(dataDir, fileName)
+
+        retval = None
+        if os.path.isfile(imagePath):
+            retval = imagePath
         return retval
         
     security.declareProtected(Perms.manage_properties, 'get_emailAddresses')    

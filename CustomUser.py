@@ -404,16 +404,11 @@ class CustomUser(User, Folder):
         """ Get the URL or actual image object for a user.
 
         """
-        siteId = self.site_root().getId()
-        dataDir = locateDataDirectory("groupserver.user.image",
-                                              (siteId,))
-        fileName = '%s.jpg' % self.getId()
-        imagePath = os.path.join(dataDir, fileName)
-
         retval = None
-        if os.path.isfile(imagePath):
+        imagePath = self.get_image_path() 
+        if imagePath:
             if url_only:
-                retval = '/p/%s/photo' % self.get_canonicalNickname()
+                retval = '/p/%s/photo' % self.getId()
             else:
                 f = file(imagePath, 'rb')
                 retval = GSImage(f).get_resized(81, 108, True)
@@ -434,7 +429,17 @@ class CustomUser(User, Folder):
         if os.path.isfile(imagePath):
             retval = imagePath
         return retval
-        
+    
+    security.declareProtected(Perms.view, 'get_resized_image_path')
+    def get_resized_image_path(self, x, y, maintain_aspect=True, only_smaller=True):
+        """ Get the resized image path for a user.
+
+        """
+        imagePath = self.get_image_path()
+        f = file(imagePath, 'rb')
+        retval = GSImage(f).get_cache_name(x, y, maintain_aspect, only_smaller)
+        return retval
+    
     security.declareProtected(Perms.manage_properties, 'get_emailAddresses')    
     def get_emailAddresses(self):
         """ Returns a list of all the user's email addresses.

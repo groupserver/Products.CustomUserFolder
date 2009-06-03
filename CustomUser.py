@@ -408,7 +408,7 @@ class CustomUser(User, Folder):
         imagePath = self.get_image_path() 
         if imagePath:
             if url_only:
-                retval = '/p/%s/photo' % self.getId()
+                retval = '/p/%s/photo' % self.get_canonicalNickname()
             else:
                 f = file(imagePath, 'rb')
                 retval = GSImage(f).get_resized(81, 108, True)

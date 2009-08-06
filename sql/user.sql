@@ -36,3 +36,8 @@ CREATE TABLE EMAIL_SETTING (
 
 CREATE UNIQUE INDEX email_setting_pkey ON email_setting USING BTREE
        (user_id, site_id, group_id);
+
+-- These are email addresses that are *never* allowed to participate in the system
+CREATE TABLE EMAIL_BLACKLIST (
+	EMAIL        TEXT        NOT NULL
+);

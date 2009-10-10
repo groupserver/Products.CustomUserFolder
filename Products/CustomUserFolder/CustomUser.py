@@ -184,6 +184,7 @@ class CustomUser(User, Folder):
                          n_dict=n_dict))
          
         for email_string in email_strings:
+            email_string = email_string.encode('utf-8','ignore')
             support_email = XWFUtils.getOption(self, 'supportEmail')
             if not support_email:
                 raise AttributeError, \

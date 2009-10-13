@@ -78,15 +78,18 @@ class GSUserInfo(object):
     def url(self):
         if self.__url == None:
             # This needs to get a little more complex
-            self.__url = '/p/%s' % self.nickname
+            self.__url = '/p/%s' % self.nickname.encode('utf-8','ignore')
         assert self.__url != None
         return self.__url
 
     @property
     def name(self):
         if self.__fn == None:
-            self.__fn = self.user.getProperty('fn', 
-              self.user.getProperty('preferredName'))
+            fn = self.get_property('fn')
+            if not fn:
+                fn = self.get_property('preferredName')
+            self.__fn = fn
+             
         assert self.__fn != None
         return self.__fn
         
@@ -98,12 +101,18 @@ class GSUserInfo(object):
     @property
     def nickname(self):
         if self.__nickname == None:
-            self.__nickname = self.user.get_canonicalNickname()
+            nn = self.user.get_canonicalNickname()
+            if isinstance(nn, str):
+                nn = unicode(nn, 'utf-8', 'ignore')
+            self.__nickname = nn
         assert self.__nickname != None
         return self.__nickname
         
     def get_property(self, prop, default=None):
         retval = self.user.getProperty(prop, default)
+        if isinstance(retval, str):
+            retval = unicode(retval, 'utf-8', 'ignore')
+        
         return retval
 
 
@@ -130,4 +139,3 @@ def userInfo_to_anchor(userInfo):
     assert type(retval) == unicode
     assert retval
     return retval
-

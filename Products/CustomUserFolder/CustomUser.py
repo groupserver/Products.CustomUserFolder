@@ -176,15 +176,18 @@ class CustomUser(User, Folder):
             
         email_strings = []
         for email_address in email_addresses:
-            email_strings.append(
-                template(self, self.REQUEST,
+            email_string = template(self, self.REQUEST,
                          to_addr=email_address,
                          n_id=n_id,
                          n_type=n_type,
-                         n_dict=n_dict))
+                         n_dict=n_dict)
+            if isinstance(email_string, unicode):
+                email_string = email_string.encode('utf-8','ignore')
+
+            email_strings.append(email_string)
          
         for email_string in email_strings:
-            email_string = email_string.encode('utf-8','ignore')
+            email_string = email_string
             support_email = XWFUtils.getOption(self, 'supportEmail')
             if not support_email:
                 raise AttributeError, \

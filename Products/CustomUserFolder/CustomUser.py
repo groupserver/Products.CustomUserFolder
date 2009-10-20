@@ -389,6 +389,10 @@ class CustomUser(User, Folder):
         imageObject = self.get_image(url_only=False)
         if not imageObject:
             return None
+        if self.xsendfile_header():
+            # actually not an imageObject, just the correct headers
+            # for the file to be downloaded
+            return imageObject
 
         return DisplayFile(imageObject, self.REQUEST).show()
 
@@ -403,6 +407,15 @@ class CustomUser(User, Folder):
 
         return imageObject
   
+    def get_xsendfile_header(self):
+        sendfile_header = None
+        if self.request.has_key('X-Sendfile-Type'):
+            sendfile_header = self.request.get('X-Sendfile-Type')
+        elif self.request.has_key('HTTP_X_SENDFILE_TYPE'):
+            sendfile_header = self.request.get('HTTP_X_SENDFILE_TYPE')
+        
+        return sendfile_header
+
     security.declareProtected(Perms.view, 'get_image')
     def get_image(self, url_only=True):
         """ Get the URL or actual image object for a user.
@@ -415,7 +428,21 @@ class CustomUser(User, Folder):
                 retval = '/p/%s/photo' % self.get_canonicalNickname()
             else:
                 f = file(imagePath, 'rb')
-                retval = GSImage(f).get_resized(81, 108, True)
+                sendfile_header = self.get_xsendfile_header()
+                if sendfile_header:
+                    # we can use x-sendfile, so just return some string
+                    # to stop apache choking up
+                    cache_path = GSImage(f).get_resized(81, 108, True,
+                                                        return_cache_path=True)
+                    if cache_path:
+                        self.response.setHeader(sendfile_header,
+                                                cache_path)
+                    else:
+                        self.response.setHeader(sendfile_header,
+                                                imagePath)
+                    retval = 'image'
+                else:
+                    retval = GSImage(f).get_resized(81, 108, True)
         return retval
 
     security.declareProtected(Perms.view, 'get_image_path')

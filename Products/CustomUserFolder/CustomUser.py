@@ -389,7 +389,7 @@ class CustomUser(User, Folder):
         imageObject = self.get_image(url_only=False)
         if not imageObject:
             return None
-        if self.xsendfile_header():
+        if self.get_xsendfile_header():
             # actually not an imageObject, just the correct headers
             # for the file to be downloaded
             return imageObject

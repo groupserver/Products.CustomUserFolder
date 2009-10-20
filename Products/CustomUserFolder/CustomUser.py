@@ -435,10 +435,10 @@ class CustomUser(User, Folder):
                     cache_path = GSImage(f).get_resized(81, 108, True,
                                                         return_cache_path=True)
                     if cache_path:
-                        self.response.setHeader(sendfile_header,
+                        self.request.response.setHeader(sendfile_header,
                                                 cache_path)
                     else:
-                        self.response.setHeader(sendfile_header,
+                        self.request.response.setHeader(sendfile_header,
                                                 imagePath)
                     retval = 'image'
                 else:

@@ -389,6 +389,9 @@ class CustomUser(User, Folder):
         imageObject = self.get_image(url_only=False)
         if not imageObject:
             return None
+        self.request.response.setHeader('Cache-Control',
+                                        'private; max-age=3600')
+        
         if self.get_xsendfile_header():
             # actually not an imageObject, just the correct headers
             # for the file to be downloaded
@@ -432,8 +435,11 @@ class CustomUser(User, Folder):
                 if sendfile_header:
                     # we can use x-sendfile, so just return some string
                     # to stop apache choking up
-                    cache_path = GSImage(f).get_resized(81, 108, True,
-                                                        return_cache_path=True)
+                    gsimage = GSImage(f)
+                    cache_path = gsimage.get_resized(81, 108, True,
+                                                     return_cache_path=True)
+                    self.request.response.setHeader('Content-Type',
+                                                    gsimage.contentType)
                     if cache_path:
                         self.request.response.setHeader(sendfile_header,
                                                 cache_path)

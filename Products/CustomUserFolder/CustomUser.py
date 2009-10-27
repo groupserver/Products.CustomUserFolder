@@ -390,7 +390,7 @@ class CustomUser(User, Folder):
         if not imageObject:
             return None
         self.request.response.setHeader('Cache-Control',
-                                        'private; max-age=3600')
+                                        'private; max-age=1200')
         
         if self.get_xsendfile_header():
             # actually not an imageObject, just the correct headers

@@ -412,7 +412,10 @@ class CustomUser(User, Folder):
   
     def get_xsendfile_header(self):
         sendfile_header = None
-        if self.request.has_key('X-Sendfile-Type'):
+        # check that we're actually being called from a browser first
+        if not(hasattr(self, 'request')):
+            sendfile_header = none
+        elif self.request.has_key('X-Sendfile-Type'):
             sendfile_header = self.request.get('X-Sendfile-Type')
         elif self.request.has_key('HTTP_X_SENDFILE_TYPE'):
             sendfile_header = self.request.get('HTTP_X_SENDFILE_TYPE')

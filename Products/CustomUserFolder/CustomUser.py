@@ -41,6 +41,7 @@ from Products.CustomUserFolder.interfaces import ICustomUser
 from zope.component import createObject
 
 from gs.image import GSImage
+from gs.profile.notify.interfaces import IGSNotifyUser
 
 from Products.XWFCore.cache import LRUCache
 
@@ -101,26 +102,6 @@ class CustomUser(User, Folder):
         self.unrestrictedImageRoles = []
         self._p_changed = 1
 
-    def render_notification(self, n_type, n_id, n_dict, email_address):
-        """Generate a notification, returning it as a string."""
-        site_root = self.site_root()
-        presentation = site_root.Templates.email.notifications.aq_explicit
-        
-        ptype_templates = getattr(presentation, n_type, None)
-        assert ptype_templates, 'No template of type %s found' % n_type
-        # AM: This is a dreadful hack to prevent the add_group notification
-        #   from being sent when the "group" joined is a site
-        ignore_ids = getattr(ptype_templates, 'ignore_ids', [])
-        if n_id in ignore_ids:
-            return None
-        
-        template = (getattr(ptype_templates.aq_explicit, n_id, None) or
-                    getattr(ptype_templates.aq_explicit, 'default', None))
-        assert template, 'No template found'
-        retval = template(self, self.REQUEST, to_addr=email_address,
-                          n_id=n_id, n_type=n_type, n_dict=n_dict)
-        return retval
-        
     def send_notification(self, n_type, n_id, n_dict=None, email_only=()):
         """ Send a notification to the user based on the type and ID of the
             notification.
@@ -128,82 +109,10 @@ class CustomUser(User, Folder):
             An optional dictionary of values may be passed to the template.
 
         """
-        site_root = self.site_root()
-        presentation = site_root.Templates.email.notifications.aq_explicit
-        
-        ptype_templates = getattr(presentation, n_type, None)
-        if not ptype_templates:
-            return None
-
-        if not n_dict:
-            n_dict = {}
-
-        # AM: This is a dreadful hack to prevent the add_group notification
-        #   from being sent when the "group" joined is a site
-        ignore_ids = getattr(ptype_templates, 'ignore_ids', [])
-        if n_id in ignore_ids:
-            return None        
-
-        template = (getattr(ptype_templates.aq_explicit, n_id, None) or
-                    getattr(ptype_templates.aq_explicit, 'default', None))
-        if not template:
-            return None
-        
-        try:
-            mailhost = site_root.superValues('Mail Host')[0]
-        except:
-            raise AttributeError, "Can't find a Mail Host object"
-
-        email_addresses = []
-        if email_only:
-            # If a specific addresses are specified, then we allow the 
-            #    system to send a message to *any* of the user's addresses,
-            #     even the unverified email addresses.
-            email_only = map(lambda x: x.lower(), email_only)
-            email_addresses = [e for e in self.get_emailAddresses() 
-                               if e.lower() in email_only]
-            m = u'send_notification: Using specific email addresses %s '\
-              u'for notification being sent to the user %s (%s)' % \
-                (email_addresses, self.getProperty('fn', ''), self.getId())
-            log.info(m)
-        else:
-            email_addresses = self.get_verifiedEmailAddresses()
-            m = u'send_notification: Using all the verified email '\
-              u'addresses %s for the notification being sent to the '\
-              u'user %s (%s)' % \
-                (email_addresses, self.getProperty('fn', ''), self.getId())
-            log.info(m)
-            
-        email_strings = []
-        for email_address in email_addresses:
-            email_string = template(self, self.REQUEST,
-                         to_addr=email_address,
-                         n_id=n_id,
-                         n_type=n_type,
-                         n_dict=n_dict)
-            if isinstance(email_string, unicode):
-                email_string = email_string.encode('utf-8','ignore')
-
-            email_strings.append(email_string)
-         
-        for email_string in email_strings:
-            email_string = email_string
-            support_email = XWFUtils.getOption(self, 'supportEmail')
-            if not support_email:
-                raise AttributeError, \
-                  "supportEmail was not defined in configuration"
-            to_email = email_addresses[email_strings.index(email_string)]
-            mailhost._send(mfrom=support_email,
-                           mto=to_email,
-                           messageText=email_string)
-            m = u'send_notification: Sent notification %s/%s to ' \
-              u'the address <%s> for the user %s (%s)' % \
-              (n_type, n_id, to_email, self.getProperty('fn', ''), 
-                self.getId())
-            log.info(m)
-        
+        notifyUser = IGSNotifyUser(self)
+        notifyUser.send_notification(n_type, n_id, n_dict, email_only)
         return 1
-
+        
     security.declareProtected(Perms.manage_properties, 'add_groupWithNotification')
     def add_groupWithNotification(self, group):
         """ Add a group to the user, and if available, send them a notification.

@@ -82,7 +82,6 @@ class CustomUserFolder(UserFolderWithGroups):
         """
         return getattr(self, self.user_folder_id, None)
 
-
     security.declareProtected(Perms.manage_users, 'get_userIdByEmail')
     def get_userIdByEmail(self, email):
         """ Get a user ID by email address.
@@ -92,8 +91,8 @@ class CustomUserFolder(UserFolderWithGroups):
         da = self.zsqlalchemy
         userEmailTable = da.createTable('user_email')
         
-        statement = userEmailTable.select()      
-        statement.append_whereclause(userEmailTable.c.email.op('ILIKE')(email))
+        statement = userEmailTable.select()
+        statement.append_whereclause(email == sa.func.lower(userEmailTable.c.email))
         
         r = statement.execute().fetchone()
         if r:
@@ -117,7 +116,7 @@ class CustomUserFolder(UserFolderWithGroups):
         if r1:
             email = r1['email']
             s2 = uet.select()
-            s2.append_whereclause(uet.c.email.op('ILIKE')(email))
+            s2.append_whereclause(email == sa.func.lower(uet.c.email))
             r2 = s2.execute().fetchone()
             if r2:
                 return r2['user_id']

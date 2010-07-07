@@ -18,6 +18,13 @@
 # You MUST follow the rules in http://iopen.net/STYLE before checking in code
 # to the trunk. Code which does not follow the rules will be rejected.
 #
+
+try:
+    # zope 2.12+
+    from zope.container.interfaces import IObjectRemovedEvent,IObjectAddedEvent
+except:
+    from zope.app.container.interfaces import IObjectRemovedEvent,IObjectAddedEvent
+
 from AccessControl import ClassSecurityInfo
 from AccessControl import Permissions as Perms
 from AccessControl.User import User
@@ -1153,7 +1160,6 @@ def removedCustomUser(ob, event):
     
     return
     
-from zope.app.container.interfaces import IObjectRemovedEvent,IObjectAddedEvent
 def movedCustomUser(ob, event):
     """A CustomUser was moved. 
     """

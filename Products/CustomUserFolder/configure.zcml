@@ -8,13 +8,14 @@
   <class class="OFS.Folder.Folder">
       <implements interface="zope.app.folder.interfaces.IFolder" />
   </class>
+
+  <class class=".CustomUser.CustomUser">
+      <implements interface=".interfaces.ICustomUser" />
+  </class>
   
   <interface 
     interface=".interfaces.ICustomUser" />
 
-  <five:implements 
-    class=".CustomUser.CustomUser"
-    interface=".interfaces.ICustomUser" />
   <subscriber
     for="Products.CustomUserFolder.interfaces.ICustomUser
           zope.app.container.interfaces.IObjectMovedEvent"

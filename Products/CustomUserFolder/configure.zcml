@@ -5,11 +5,9 @@
   xmlns:sqlos="http://namespaces.sqlobject.org/sqlos"
   xmlns:five="http://namespaces.zope.org/five">
 
-  <!-- declare a marker interface on the Folder class to allow us 
-    to add marker Interfaces, views and adaptation -->
-  <five:implements 
-    class="OFS.Folder.Folder"
-    interface="zope.app.folder.interfaces.IFolder" />
+  <class class="OFS.Folder.Folder">
+      <implements interface="zope.app.folder.interfaces.IFolder" />
+  </class>
   
   <interface 
     interface=".interfaces.ICustomUser" />

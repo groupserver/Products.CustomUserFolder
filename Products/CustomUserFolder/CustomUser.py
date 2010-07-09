@@ -18,6 +18,13 @@
 # You MUST follow the rules in http://iopen.net/STYLE before checking in code
 # to the trunk. Code which does not follow the rules will be rejected.
 #
+
+try:
+    # zope 2.12+
+    from zope.container.interfaces import IObjectRemovedEvent,IObjectAddedEvent
+except:
+    from zope.app.container.interfaces import IObjectRemovedEvent,IObjectAddedEvent
+
 from AccessControl import ClassSecurityInfo
 from AccessControl import Permissions as Perms
 from AccessControl.User import User
@@ -28,7 +35,7 @@ from queries import UserQuery
 from OFS.Folder import Folder
 from Products.XWFCore import XWFUtils
 
-from Globals import InitializeClass
+from App.class_init import InitializeClass
 from AccessControl import getSecurityManager
 from Products.XWFCore.XWFUtils import locateDataDirectory
 from Products.XWFFileLibrary2.XWFVirtualFileFolder2 import DisplayFile
@@ -380,7 +387,6 @@ class CustomUser(User, Folder):
         """
         self._properties = self._properties_def
     
-
     security.declareProtected(Perms.view, 'photo')
     def photo(self):
         """ Purely a helper method to get the image of a user.
@@ -389,7 +395,8 @@ class CustomUser(User, Folder):
         imageObject = self.get_image(url_only=False)
         if not imageObject:
             return None
-        self.request.response.setHeader('Cache-Control',
+        
+        self.REQUEST.response.setHeader('Cache-Control',
                                         'private; max-age=1200')
         
         if self.get_xsendfile_header():
@@ -413,12 +420,12 @@ class CustomUser(User, Folder):
     def get_xsendfile_header(self):
         sendfile_header = None
         # check that we're actually being called from a browser first
-        if not(hasattr(self, 'request')):
+        if not(hasattr(self, 'REQUEST')):
             sendfile_header = None
-        elif self.request.has_key('X-Sendfile-Type'):
-            sendfile_header = self.request.get('X-Sendfile-Type')
-        elif self.request.has_key('HTTP_X_SENDFILE_TYPE'):
-            sendfile_header = self.request.get('HTTP_X_SENDFILE_TYPE')
+        elif self.REQUEST.has_key('X-Sendfile-Type'):
+            sendfile_header = self.REQUEST.get('X-Sendfile-Type')
+        elif self.REQUEST.has_key('HTTP_X_SENDFILE_TYPE'):
+            sendfile_header = self.REQUEST.get('HTTP_X_SENDFILE_TYPE')
         
         return sendfile_header
 
@@ -441,13 +448,13 @@ class CustomUser(User, Folder):
                     gsimage = GSImage(f)
                     cache_path = gsimage.get_resized(81, 108, True,
                                                      return_cache_path=True)
-                    self.request.response.setHeader('Content-Type',
+                    self.REQUEST.response.setHeader('Content-Type',
                                                     gsimage.contentType)
                     if cache_path:
-                        self.request.response.setHeader(sendfile_header,
+                        self.REQUEST.response.setHeader(sendfile_header,
                                                 cache_path)
                     else:
-                        self.request.response.setHeader(sendfile_header,
+                        self.REQUEST.response.setHeader(sendfile_header,
                                                 imagePath)
                     retval = 'image'
                 else:
@@ -1153,7 +1160,6 @@ def removedCustomUser(ob, event):
     
     return
     
-from zope.app.container.interfaces import IObjectRemovedEvent,IObjectAddedEvent
 def movedCustomUser(ob, event):
     """A CustomUser was moved. 
     """

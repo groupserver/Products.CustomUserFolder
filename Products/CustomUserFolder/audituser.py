@@ -63,18 +63,8 @@ class ChangeProfileEvent(BasicAuditEvent):
            self.instanceDatum)
         return retval
 
-
-
-
-
 def userInstanceModified(instance, event):
-    print 'Instance %s' % instance
-    print 'Event %s' % event
     log.info('Stuff')
-
-
-
-
 
 class foo(object):
     def __init__(self, user):

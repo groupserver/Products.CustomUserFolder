@@ -35,7 +35,7 @@ from queries import UserQuery
 from OFS.Folder import Folder
 from Products.XWFCore import XWFUtils
 
-from Globals import InitializeClass
+from AccessControl.class_init import InitializeClass
 from AccessControl import getSecurityManager
 from Products.XWFCore.XWFUtils import locateDataDirectory
 from Products.XWFFileLibrary2.XWFVirtualFileFolder2 import DisplayFile

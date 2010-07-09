@@ -22,7 +22,8 @@ from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 from AccessControl import ClassSecurityInfo
 from AccessControl import AuthEncoding
 from AccessControl import Permissions as Perms
-from Globals import InitializeClass, INSTANCE_HOME
+from Globals import INSTANCE_HOME
+from AccessControl.class_init import InitializeClass
 from Products.NuxUserGroups import UserFolderWithGroups
 from zope.interface import implements
 from Products.CustomUserFolder.interfaces import ICustomUserFolder

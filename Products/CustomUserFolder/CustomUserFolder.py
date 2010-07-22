@@ -115,12 +115,7 @@ class CustomUserFolder(UserFolderWithGroups):
         
         retval = ''
         if r1:
-            email = r1['email']
-            s2 = uet.select()
-            s2.append_whereclause(email == sa.func.lower(uet.c.email))
-            r2 = s2.execute().fetchone()
-            if r2:
-                return r2['user_id']
+            return self.get_userIdByEmail(r1['email'])
         assert type(retval) == str
         return retval
         

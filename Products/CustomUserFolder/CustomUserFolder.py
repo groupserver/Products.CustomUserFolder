@@ -179,33 +179,6 @@ class CustomUserFolder(UserFolderWithGroups):
             return self.getUser(user_id)
 
         return None
-
-    security.declareProtected(Perms.manage_users,
-      'get_userIdByInvitationId')
-    def get_userIdByInvitationId(self, invitationId):
-        """Get the user ID from a email-verification ID
-        """
-        da = self.zsqlalchemy
-        pvt = da.createTable('user_invitation')
-
-        s1 = pvt.select()
-        s1.append_whereclause(pvt.c.invitation_id == invitationId)
-        r1 = s1.execute().fetchone()
-
-        retval = ''
-        if r1:
-            retval = r1['user_id']
-        assert type(retval) == str
-        return retval
-
-    security.declareProtected(Perms.manage_users, 'get_userByInvitationId')
-    def get_userByInvitationId(self, invitationId):
-        assert invitationId
-        user_id = self.get_userIdByInvitationId(invitationId)
-        if user_id:
-            return self.getUser(user_id)
-
-        return None
         
     security.declareProtected(Perms.manage_users, 'get_userByEmail')
     def getUserNames(self):

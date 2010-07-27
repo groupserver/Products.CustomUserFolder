@@ -1027,31 +1027,6 @@ class CustomUser(User, Folder):
           'for "%s"' % self.getId()
         log.info(m)
         
-    def get_invitation(self, invitationId):
-        assert invitationId
-        uq = UserQuery(self, self.zsqlalchemy)
-        retval = uq.get_invitation(invitationId)
-        assert retval, 'No invitation found for the ID %s' % invitationId
-        return retval
-        
-    def add_invitation(self, invitationId, invitingUserId, siteId, groupId):
-        uq = UserQuery(self, self.zsqlalchemy)
-        uq.add_invitation(invitationId, invitingUserId, siteId, groupId)
-        m = 'add_invitation: Added invitation (ID %s) to the group %s/%s '\
-          'for  the user %s (%s)' % (invitationId, siteId, groupId, 
-            self.getProperty('fn', ''), self.getId())
-        log.info(m)
-    
-    def remove_invitations(self):
-        """Delete all group-membership invitations relating to a user.
-        """
-        uq = UserQuery(self, self.zsqlalchemy)
-        uq.clear_invitations()
-
-        m = u'remove_invitations: Removed invitations for the user %s (%s)' %\
-          (self.getProperty('fn', ''), self.getId())
-        log.info(m)
-
     def get_canonicalNickname(self):
         cacheKey = '%s:%s' % (self.site_root().getId(), self.getId())
         
@@ -1152,7 +1127,6 @@ def removedCustomUser(ob, event):
     uid = ob.getId()
     ob.clear_groups()
     ob.clear_addresses()
-    ob.remove_invitations()
     ob.clear_userPasswordResetVerificationIds()
     ob.clear_nicknames()
     m = u'removedCustomUser: Deleted "%s"' % uid

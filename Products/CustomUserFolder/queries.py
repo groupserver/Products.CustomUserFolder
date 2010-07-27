@@ -1,8 +1,7 @@
 # coding=utf-8
+import pytz, datetime, time
 from sqlalchemy.exceptions import NoSuchTableError
 import sqlalchemy as sa
-import pytz, datetime
-import time
 
 import logging
 log = logging.getLogger("CustomUserFolder")
@@ -20,7 +19,6 @@ class UserQuery(object):
         self.groupUserEmailTable = da.createTable('group_user_email')
         self.emailVerificationTable = da.createTable('email_verification')
         self.passwordResetTable = da.createTable('password_reset')
-        self.invitationTable = da.createTable('user_invitation')
         self.nicknameTable = da.createTable('user_nickname')
 
     def add_userEmail(self, email_address, is_preferred=False):
@@ -238,77 +236,6 @@ class UserQuery(object):
     def clear_userPasswordResetVerificationIds(self):
         prt = self.passwordResetTable
         d = prt.delete(prt.c.user_id == self.user_id)
-        d.execute()
-
-    def get_invitation(self, invitationId):
-        ivt = self.invitationTable
-        statement = ivt.select()
-        statement.append_whereclause(ivt.c.invitation_id == invitationId)
-        
-        r = statement.execute()
-        retval = {}
-        if r.rowcount:
-            res = r.fetchone()
-            retval = {
-              'invitation_id':    res['invitation_id'],
-              'user_id':          res['user_id'],
-              'inviting_user_id': res['inviting_user_id'],
-              'site_id':          res['site_id'],
-              'group_id':         res['group_id'],
-              'invitation_date':  res['invitation_date']
-            }
-        return retval
-
-    def get_userInvitations(self, userId):
-        ivt = self.invitationTable
-        statement = ivt.select()
-        statement.append_whereclause(ivt.c.user_id == user_id)
-        
-        r = statement.execute()
-        retval = []
-        if r.rowcount:
-            retval = [{
-                'invitation_id':    invite['invitation_id'],
-                'user_id':          invite['user_id'],
-                'inviting_user_id': invite['inviting_user_id'],
-                'site_id':          invite['site_id'],
-                'group_id':         invite['group_id'],
-                'invitation_date':  invite['invitation_date']
-              } for invite in r.fetchall()]
-        return retval
-
-    def get_userInvitationsForGroup(self, groupId, siteId):
-        ivt = self.invitationTable
-        statement = ivt.select()
-        statement.append_whereclause(ivt.c.user_id == self.userId)
-        statement.append_whereclause(ivt.c.group_id == groupId)
-        statement.append_whereclause(ivt.c.site_id == siteId)
-        
-        r = statement.execute()
-        retval = []
-        if r.rowcount:
-            retval = [{
-                'invitation_id':    invite['invitation_id'],
-                'user_id':          invite['user_id'],
-                'inviting_user_id': invite['inviting_user_id'],
-                'site_id':          invite['site_id'],
-                'group_id':         invite['group_id'],
-                'invitation_date':  invite['invitation_date']
-              } for invite in r.fetchall()]
-        return retval
-
-    def add_invitation(self, invitationId, invitingUserId, siteId, groupId):
-        
-        ivt = self.invitationTable
-        d = datetime.datetime.utcnow().replace(tzinfo=pytz.utc)
-        statement = ivt.insert()
-        statement.execute(invitation_id = invitationId, 
-          user_id = self.user_id,  inviting_user_id = invitingUserId, 
-          site_id = siteId, group_id = groupId, invitation_date = d)
-
-    def clear_invitations(self):
-        ivt = self.invitationTable
-        d = ivt.delete(ivt.c.user_id == self.user_id)
         d.execute()
         
     def get_latestNickname(self):

@@ -5,7 +5,7 @@ import commands, glob, os
 def get_version():
     version_string = ''
     if not release:
-        status,output = commands.getstatusoutput("hg tip --template '{node|short}'")
+        status,output = commands.getstatusoutput("hg dentify'")
         if status != 0:
             pkginfo = os.path.join(glob.glob('*.egg-info')[0],
                                    'PKG-INFO')

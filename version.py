@@ -5,7 +5,7 @@ import commands, glob, os
 def get_version():
     version_string = ''
     if not release:
-        status,output = commands.getstatusoutput("hg identify")
+        status,output = commands.getstatusoutput("hg identify -i")
         if status != 0:
             pkginfo = os.path.join(glob.glob('*.egg-info')[0],
                                    'PKG-INFO')

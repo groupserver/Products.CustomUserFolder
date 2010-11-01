@@ -172,8 +172,10 @@ class UserQuery(object):
         r = statement.execute()
         email_addresses = []
         for row in r.fetchall():
-            email_addresses.append(row['email'])
-        
+            email_address = row['email']
+            if email_address not in email_addresses:
+                email_addresses.append(email_address)
+                
         return email_addresses
 
     def set_groupEmailSetting(self, site_id, group_id, setting):

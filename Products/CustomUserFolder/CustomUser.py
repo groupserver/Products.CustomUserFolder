@@ -868,6 +868,7 @@ class CustomUser(User, Folder):
                 # If there are no specific settings for the group, return
                 #   the default settings
                 retval = self.get_preferredEmailAddresses()
+        
         return retval
 
     security.declareProtected(Perms.manage_properties, 

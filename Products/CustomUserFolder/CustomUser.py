@@ -18,40 +18,32 @@
 # You MUST follow the rules in http://iopen.net/STYLE before checking in code
 # to the trunk. Code which does not follow the rules will be rejected.
 #
-
 try:
     # zope 2.12+
-    from zope.container.interfaces import IObjectRemovedEvent,IObjectAddedEvent
+    from zope.container.interfaces import IObjectRemovedEvent,IObjectAddedEvent #@UnresolvedImport @UnusedImport
 except:
-    from zope.app.container.interfaces import IObjectRemovedEvent,IObjectAddedEvent
+    from zope.app.container.interfaces import IObjectRemovedEvent,IObjectAddedEvent #@Reimport
 
-from AccessControl import ClassSecurityInfo
-from AccessControl import Permissions as Perms
+from AccessControl import ClassSecurityInfo, Permissions as Perms, allow_class
 from AccessControl.User import User
-from AccessControl import allow_class
-
+from App.class_init import InitializeClass
+from OFS.Folder import Folder
+from Products.CustomUserFolder.interfaces import ICustomUser
+from Products.XWFCore import XWFUtils
+from Products.XWFCore.XWFUtils import locateDataDirectory
+from Products.XWFCore.cache import LRUCache
+from Products.XWFFileLibrary2.XWFVirtualFileFolder2 import DisplayFile
+from gs.image import GSImage
 from queries import UserQuery
 
-from OFS.Folder import Folder
-from Products.XWFCore import XWFUtils
-
-from App.class_init import InitializeClass
-from AccessControl import getSecurityManager
-from Products.XWFCore.XWFUtils import locateDataDirectory
-from Products.XWFFileLibrary2.XWFVirtualFileFolder2 import DisplayFile
-from zope.app.file.image import Image
-import os
-import string
-
-from zope.interface import implements
-from Products.CustomUserFolder.interfaces import ICustomUser
 from zope.component import createObject
-
-from gs.image import GSImage
-
-from Products.XWFCore.cache import LRUCache
+from zope.interface import implements
 
 import logging
+import rfc822
+import re
+import os
+
 log = logging.getLogger('CustomUser')
 
 class CustomUser(User, Folder):
@@ -220,7 +212,6 @@ class CustomUser(User, Folder):
         # If people wonder why group-IDs must be unique across sites, this 
         #    function is one of the reasons.
         
-        import re
         from Products.XWFCore.XWFUtils import getOption, get_user, get_user_realnames, get_support_email
         from Products.XWFCore.XWFUtils import get_site_by_id, get_group_by_siteId_and_groupId
          
@@ -310,8 +301,6 @@ class CustomUser(User, Folder):
         
         """
         # AM: Copy and paste of horrendous code follows.
-
-        import re
         from Products.XWFCore.XWFUtils import getOption, get_user, get_user_realnames, get_support_email
         from Products.XWFCore.XWFUtils import get_site_by_id, get_group_by_siteId_and_groupId
 
@@ -514,7 +503,6 @@ class CustomUser(User, Folder):
         """ Validates and normalizes an email address.
             
         """
-        import rfc822
         email = email.strip()
         if not email:
             raise ValidationError('No email address given')

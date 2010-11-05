@@ -1,6 +1,5 @@
 # coding=utf-8
-import pytz, datetime, time
-from sqlalchemy.exceptions import NoSuchTableError
+import pytz, datetime
 import sqlalchemy as sa
 
 import logging
@@ -108,7 +107,7 @@ class UserQuery(object):
     def remove_userEmail(self, email_address):
         uet = self.userEmailTable        
         and_ = sa.and_
-        d = uet.delete(and_(sa.func.lower(uet.c.email)==email_address.lower())).execute()
+        uet.delete(and_(sa.func.lower(uet.c.email)==email_address.lower())).execute()
 
     def get_userEmail(self, preferred_only=False, verified_only=True):
         uet = self.userEmailTable
@@ -133,8 +132,7 @@ class UserQuery(object):
 
     def clear_preferredEmail(self):
         uet = self.userEmailTable
-        and_ = sa.and_
-                
+        
         u = uet.update(uet.c.user_id==self.user_id)
         u.execute(is_preferred=False)
         
@@ -152,7 +150,7 @@ class UserQuery(object):
         uet = self.groupUserEmailTable        
         and_ = sa.and_
 
-        d = uet.delete(and_(uet.c.user_id==self.user_id,
+        uet.delete(and_(uet.c.user_id==self.user_id,
                uet.c.site_id==site_id,
                uet.c.group_id==group_id,
                sa.func.lower(uet.c.email)==email_address.lower())).execute()
@@ -207,9 +205,9 @@ class UserQuery(object):
         est = self.emailSettingTable        
         and_ = sa.and_
 
-        d = est.delete(and_(est.c.user_id==self.user_id,
-                            est.c.site_id==site_id,
-                            est.c.group_id==group_id)).execute()
+        est.delete(and_(est.c.user_id==self.user_id,
+                        est.c.site_id==site_id,
+                        est.c.group_id==group_id)).execute()
         
     def get_groupEmailSetting(self, site_id, group_id):
         """ Given a site_id and group_id, check to see if the user

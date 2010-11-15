@@ -926,7 +926,10 @@ class CustomUser(User, Folder):
         log.info(m)
         email_addresses = uq.get_groupUserEmail(site_id, group_id)
         return email_addresses
-                                                   
+                                      
+    # Password-related methods. Most of these have been moved to
+    #   gs.profile.password.passworduser.PasswordUser
+    
     security.declareProtected(Perms.manage_properties, 'get_password')
     def get_password(self):
         """ Get the user's password. Note, if the password is encrypted,
@@ -938,29 +941,22 @@ class CustomUser(User, Folder):
         return self._getPassword()
 
     def reset_password(self):
-        """Resets the user password. This should be called when the
-        user forgets the password.
-
-        SIDE-EFFECTS
-           Changes the password by calling "self.set_password".
-
-        RETURNS
-           The newly created password."""
-
+        """Resets the user password."""
+        m = 'CustomUser.reset_password is deprecated: it should ' \
+            'never be used. Called from %s' % self.REQUEST.URL
+        log.warn(m)
+        
         newPassword = XWFUtils.generate_password(8)
         self.set_password(newPassword)
 
         return newPassword
 
     def set_password(self, newPassword, updateCookies=True):
-        """Sets the user's password to 'newPassword'.
-
-        SIDE-EFFECTS
-          Changes the user-information in 'site_root.acl_users' and
-          'site_root.cookie_authentication'.
-
-        RETURNS
-          None."""
+        """Sets the user's password"""
+        m = 'CustomUser.set_password is deprecated: it is replaced ' \
+            'by gs.profile.password.passworduser.set_password. Called '\
+            'from %s' % self.REQUEST.URL
+        log.warn(m)
 
         site_root = self.site_root()	
         user =  site_root.acl_users.getUser(self.getId())
@@ -982,32 +978,24 @@ class CustomUser(User, Folder):
         log.info(m)
         
     def add_password_verification(self, verificationId):
-        """Adds a verificationId to the password-reset table
-        
-        ARGUMENTS
-          verificationId: The verification ID to set.
-          
-        SIDE-EFFECTS
-          Changes the user-information in 'password-reset' table.
-
-        RETURNS
-          None."""
+        """Adds a verificationId to the password-reset table"""
+        m = 'CustomUser.add_password_verification is deprecated: it is '\
+            'replaced by ' \
+            'gs.profile.password.passworduser.add_password_verification. '\
+            'Called from %s' % self.REQUEST.URL
+        log.warn(m)
 
         uq = UserQuery(self, self.zsqlalchemy)
         uq.set_userPasswordResetVerificationId(verificationId)
 
     def clear_userPasswordResetVerificationIds(self):
         """Clears verification IDs, for a particular user, from the
-           password-reset table
-        
-        ARGUMENTS
-          None.
-          
-        SIDE-EFFECTS
-          Changes the user-information in 'password_reset' table.
-
-        RETURNS
-          None."""
+           password-reset table"""
+       m = 'CustomUser.clear_userPasswordResetVerificationIds is '\
+            'deprecated: it is replaced by ' \
+            'gs.profile.password.passworduser.clear_password_verification. '\
+            'Called from %s' % self.REQUEST.URL
+        log.warn(m)
           
         uq = UserQuery(self, self.zsqlalchemy)
         uq.clear_userPasswordResetVerificationIds()
@@ -1016,6 +1004,8 @@ class CustomUser(User, Folder):
           'for "%s"' % self.getId()
         log.info(m)
         
+    # Nickname related methods.
+    
     def get_canonicalNickname(self):
         cacheKey = '%s:%s' % (self.site_root().getId(), self.getId())
         

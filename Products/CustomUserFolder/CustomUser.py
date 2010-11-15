@@ -991,7 +991,7 @@ class CustomUser(User, Folder):
     def clear_userPasswordResetVerificationIds(self):
         """Clears verification IDs, for a particular user, from the
            password-reset table"""
-       m = 'CustomUser.clear_userPasswordResetVerificationIds is '\
+        m = 'CustomUser.clear_userPasswordResetVerificationIds is '\
             'deprecated: it is replaced by ' \
             'gs.profile.password.passworduser.clear_password_verification. '\
             'Called from %s' % self.REQUEST.URL

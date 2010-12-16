@@ -548,7 +548,7 @@ class CustomUser(User, Folder):
           The email address associated with the verification ID.
           
         SIDE EFFECTS
-          The email address assoicated with the verification ID is 
+          The email address associated with the verification ID is 
           verified.
         """
         assert verificationId

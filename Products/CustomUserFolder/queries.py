@@ -41,8 +41,13 @@ class UserQuery(object):
             retval = rs1.fetchone()['verified_date'] != None
         assert type(retval) == bool
         return retval
-
+    
+    # Verification methods: mostly deprecated and moved to 
+    # gs.profile.email.verify.
     def add_userEmail_verificationId(self, verificationId, email):
+        m = 'UserQuery.add_userEmail_verificationId is deprecated: ' \
+          'it should never be used. Called from %s' % self.REQUEST.URL
+        log.warn(m)
         assert verificationId
         assert email
         evt = self.emailVerificationTable
@@ -55,6 +60,9 @@ class UserQuery(object):
         # Change the user_email table?
         
     def remove_userEmail_verificationId(self, email):
+        m = 'UserQuery.remove_userEmail_verificationId is deprecated: ' \
+          'it should never be used. Called from %s' % self.REQUEST.URL
+        log.warn(m)
         assert email
         evt = self.emailVerificationTable
         d = evt.delete(sa.func.lower(evt.c.email) == email.lower())
@@ -62,6 +70,9 @@ class UserQuery(object):
         self.remove_userEmail(email)
 
     def userEmail_verificationId_valid(self, verificationId):
+        m = 'UserQuery.userEmail_verificationId_valid is deprecated: ' \
+          'it should never be used. Called from %s' % self.REQUEST.URL
+        log.warn(m)
         assert verificationId
         evt = self.emailVerificationTable
 
@@ -71,8 +82,11 @@ class UserQuery(object):
         retval = rs1.rowcount == 1
         assert type(retval) == bool
         return retval
-        
+
     def verify_userEmail(self, verificationId):
+        m = 'UserQuery.verify_userEmail is deprecated: it should ' \
+          'never be used. Called from %s' % self.REQUEST.URL
+        log.warn(m)
         assert verificationId
         uet = self.userEmailTable
         evt = self.emailVerificationTable
@@ -96,6 +110,9 @@ class UserQuery(object):
         return email
 
     def unverify_userEmail(self, email):
+        m = 'UserQuery.unverify_userEmail is deprecated: it should ' \
+          'never be used. Called from %s' % self.REQUEST.URL
+        log.warn(m)
         uet = self.userEmailTable
         
         # Set the email address as unverified

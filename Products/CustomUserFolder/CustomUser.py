@@ -535,22 +535,19 @@ class CustomUser(User, Folder):
         m = 'Added the email address <%s> to %s (%s)' %\
           (email, self.getProperty('fn', ''), self.getId())
         log.info(m)
-        
+    
+    # Email verification methods. These are deprecated and
+    # have been moved to gs.profile.email.verify.
+    
     security.declareProtected(Perms.manage_properties,
         'verify_emailAddress')
     def verify_emailAddress(self, verificationId):
         """Verify the email address associated with the verification ID
-        
-        ARGUMENTS
-            verificationID: The verification code of the email address.
-            
-        RETURNS
-          The email address associated with the verification ID.
-          
-        SIDE EFFECTS
-          The email address associated with the verification ID is 
-          verified.
         """
+        m = 'CustomUser.verify_emailAddress is deprecated: it should ' \
+          'never be used. Called from %s' % self.REQUEST.URL
+        log.warn(m)
+        
         assert verificationId
         uq = UserQuery(self, self.zsqlalchemy)
         assert uq.userEmail_verificationId_valid(verificationId), \
@@ -566,18 +563,11 @@ class CustomUser(User, Folder):
         return email
 
     def add_emailAddressVerification(self, verificationId, email):
-        """Add a verification ID for a particular email address
+        """Add a verification ID for a particular email address"""
+        m = 'CustomUser.add_emailAddressVerification is deprecated: ' \
+          'it should never be used. Called from %s' % self.REQUEST.URL
+        log.warn(m)
         
-        ARGUMENTS
-            verificationId: the verification ID for the address
-            email: The email address that is being verified
-            
-        SIDE EFFECTS
-            An entry in the email address verification table is made.
-            
-        RETURNS
-            None
-        """
         assert verificationId
         uq = UserQuery(self, self.zsqlalchemy)
         assert not uq.userEmail_verificationId_valid(verificationId), \
@@ -594,18 +584,11 @@ class CustomUser(User, Folder):
 
     def remove_emailAddressVerification(self, email):
         """Remove all entries in the email address verification table
-        associated with a particular address
+        associated with a particular address"""
+        m = 'CustomUser.remove_emailAddressVerification is deprecated: ' \
+          'it should never be used. Called from %s' % self.REQUEST.URL
+        log.warn(m)
         
-        ARGUMENTS
-          email: an email address
-          
-        SIDE EFFECTS
-          All entries in the email address verification table, which
-          exist for the email address, are removed.
-          
-        RETURNS
-           None
-        """
         assert email
         assert email in self.get_emailAddresses(), \
           'User "%s" does not have the address <%s>' % (self.getId(), email)
@@ -618,15 +601,11 @@ class CustomUser(User, Folder):
         log.info(m)
         
     def emailAddress_isVerified(self, email):
-        """Check to see if an address is verified.
+        """Check to see if an address is verified."""
+        m = 'CustomUser.emailAddress_isVerified is deprecated: ' \
+          'it should never be used. Called from %s' % self.REQUEST.URL
+        log.warn(m)
         
-        ARGUMENTS
-          email: The email address to check.
-        SIDE EFFECTS
-          None.
-        RETURNS
-          True if the email address is verified. False otherwise.
-        """
         assert email
         assert email in self.get_emailAddresses(), \
           'User "%s" does not have the address <%s>' % (self.getId(), email)

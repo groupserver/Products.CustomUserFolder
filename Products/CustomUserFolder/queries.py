@@ -46,7 +46,9 @@ class UserQuery(object):
     # gs.profile.email.verify.
     def add_userEmail_verificationId(self, verificationId, email):
         m = 'UserQuery.add_userEmail_verificationId is deprecated: ' \
-          'it should never be used. Called from %s' % self.REQUEST.URL
+          'it should never be used. Use '\
+          'gs.profile.email.verify.queries.EmailQuery.set_verification_id '\
+          'instead. Called from %s' % self.REQUEST.URL
         log.warn(m)
         assert verificationId
         assert email
@@ -61,7 +63,9 @@ class UserQuery(object):
         
     def remove_userEmail_verificationId(self, email):
         m = 'UserQuery.remove_userEmail_verificationId is deprecated: ' \
-          'it should never be used. Called from %s' % self.REQUEST.URL
+          'it should never be used. Use '\
+          'gs.profile.email.verify.queries.EmailQuery.clear_verification_ids '\
+          'instead. Called from %s' % self.REQUEST.URL
         log.warn(m)
         assert email
         evt = self.emailVerificationTable
@@ -71,7 +75,9 @@ class UserQuery(object):
 
     def userEmail_verificationId_valid(self, verificationId):
         m = 'UserQuery.userEmail_verificationId_valid is deprecated: ' \
-          'it should never be used. Called from %s' % self.REQUEST.URL
+          'it should never be used. Use '\
+          'gs.profile.email.verify.queries.VerificationQuery.verificationId_status '\
+          'instead. Called from %s' % self.REQUEST.URL
         log.warn(m)
         assert verificationId
         evt = self.emailVerificationTable
@@ -85,7 +91,9 @@ class UserQuery(object):
 
     def verify_userEmail(self, verificationId):
         m = 'UserQuery.verify_userEmail is deprecated: it should ' \
-          'never be used. Called from %s' % self.REQUEST.URL
+          'never be used. Use '\
+          'gs.profile.email.verify.queries.EmailQuery.verify_address '\
+          'instead. Called from %s' % self.REQUEST.URL
         log.warn(m)
         assert verificationId
         uet = self.userEmailTable
@@ -110,9 +118,6 @@ class UserQuery(object):
         return email
 
     def unverify_userEmail(self, email):
-        m = 'UserQuery.unverify_userEmail is deprecated: it should ' \
-          'never be used. Called from %s' % self.REQUEST.URL
-        log.warn(m)
         uet = self.userEmailTable
         
         # Set the email address as unverified

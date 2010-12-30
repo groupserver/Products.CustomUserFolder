@@ -122,8 +122,13 @@ class CustomUserFolder(UserFolderWithGroups):
     security.declareProtected(Perms.manage_users, 'get_userByEmailVerificationId')
     def get_userByEmailVerificationId(self, verificationId):
         """ Get the user by verification ID
-        
         """
+        m = 'CustomUserFolder.get_userByEmailVerificationId is '\
+          'deprecated: it should never be used. Use '\
+          'gs.profile.email.verify.queries.VerificationQuery.get_email_from_verificationId '\
+          'and gs.profile.email.verify.emailuser.EmailUser instead. '\
+          'Called from %s.' % self.REQUEST.URL
+        log.warn(m)
         user_id = self.get_userIdByEmailVerificationId(verificationId)
         if user_id:
             return self.getUser(user_id)

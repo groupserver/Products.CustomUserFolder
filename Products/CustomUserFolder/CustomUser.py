@@ -536,7 +536,7 @@ class CustomUser(User, Folder):
           (email, self.getProperty('fn', ''), self.getId())
         log.info(m)
     
-    # Email verification methods. These are deprecated and
+    # Email verification methods. Most of these are deprecated and
     # have been moved to gs.profile.email.verify.
     
     security.declareProtected(Perms.manage_properties,
@@ -544,8 +544,10 @@ class CustomUser(User, Folder):
     def verify_emailAddress(self, verificationId):
         """Verify the email address associated with the verification ID
         """
-        m = 'CustomUser.verify_emailAddress is deprecated: it should ' \
-          'never be used. Called from %s' % self.REQUEST.URL
+        m = 'CustomUser.verify_emailAddress is deprecated: it should '\
+          'never be used. Use '\
+          'gs.profile.email.verify.emailuser.EmailUser.verify_email '\
+          'instead. Called from %s.' % self.REQUEST.URL
         log.warn(m)
         
         assert verificationId
@@ -565,7 +567,9 @@ class CustomUser(User, Folder):
     def add_emailAddressVerification(self, verificationId, email):
         """Add a verification ID for a particular email address"""
         m = 'CustomUser.add_emailAddressVerification is deprecated: ' \
-          'it should never be used. Called from %s' % self.REQUEST.URL
+          'it should never be used. Use '\
+          'gs.profile.email.verify.emailuser.EmailUser.add_verification_id '\
+          'instead. Called from %s.' % self.REQUEST.URL
         log.warn(m)
         
         assert verificationId
@@ -586,7 +590,9 @@ class CustomUser(User, Folder):
         """Remove all entries in the email address verification table
         associated with a particular address"""
         m = 'CustomUser.remove_emailAddressVerification is deprecated: ' \
-          'it should never be used. Called from %s' % self.REQUEST.URL
+          'it should never be used. Use '\
+          'gs.profile.email.verify.emailuser.EmailUser.clear_verification_ids '\
+          'instead. Called from %s.' % self.REQUEST.URL
         log.warn(m)
         
         assert email
@@ -599,13 +605,9 @@ class CustomUser(User, Folder):
           'verification data associated with the address <%s> '\
           'for %s (%s)' % (email, self.getProperty('fn', ''), self.getId())
         log.info(m)
-        
+
     def emailAddress_isVerified(self, email):
         """Check to see if an address is verified."""
-        m = 'CustomUser.emailAddress_isVerified is deprecated: ' \
-          'it should never be used. Called from %s' % self.REQUEST.URL
-        log.warn(m)
-        
         assert email
         assert email in self.get_emailAddresses(), \
           'User "%s" does not have the address <%s>' % (self.getId(), email)

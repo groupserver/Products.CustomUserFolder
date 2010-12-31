@@ -1041,7 +1041,6 @@ class CustomUser(User, Folder):
         
     def clear_addresses(self):
         for email in self.get_emailAddresses():
-            self.remove_emailAddressVerification(email)
             self.remove_emailAddress(email)
         m = 'clear_addresses: Cleared addresses from  %s (%s)' %\
           (self.getProperty('fn', ''), self.getId())

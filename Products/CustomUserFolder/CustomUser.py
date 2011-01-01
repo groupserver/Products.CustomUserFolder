@@ -546,7 +546,7 @@ class CustomUser(User, Folder):
         """
         m = 'CustomUser.verify_emailAddress is deprecated: it should '\
           'never be used. Use '\
-          'gs.profile.email.verify.emailuser.EmailUser.verify_email '\
+          'gs.profile.email.verify.emailverificationuser.EmailVerificationUser.verify_email '\
           'instead. Called from %s.' % self.REQUEST.URL
         log.warn(m)
         
@@ -568,7 +568,7 @@ class CustomUser(User, Folder):
         """Add a verification ID for a particular email address"""
         m = 'CustomUser.add_emailAddressVerification is deprecated: ' \
           'it should never be used. Use '\
-          'gs.profile.email.verify.emailuser.EmailUser.add_verification_id '\
+          'gs.profile.email.verify.emailverificationuser.EmailVerificationUser.add_verification_id '\
           'instead. Called from %s.' % self.REQUEST.URL
         log.warn(m)
         
@@ -591,7 +591,7 @@ class CustomUser(User, Folder):
         associated with a particular address"""
         m = 'CustomUser.remove_emailAddressVerification is deprecated: ' \
           'it should never be used. Use '\
-          'gs.profile.email.verify.emailuser.EmailUser.clear_verification_ids '\
+          'gs.profile.email.verify.emailverificationuser.EmailVerificationUser.clear_verification_ids '\
           'instead. Called from %s.' % self.REQUEST.URL
         log.warn(m)
         

@@ -21,6 +21,11 @@ class UserQuery(object):
         self.nicknameTable = da.createTable('user_nickname')
 
     def add_userEmail(self, email_address, is_preferred=False):
+        m = 'UserQuery.add_userEmail is deprecated: ' \
+          'it should never be used. Use '\
+          'gs.profile.email.base.queries.UserQuery.add_address '\
+          'instead.'
+        log.warn(m)
         uet = self.userEmailTable
         
         i = uet.insert()
@@ -31,6 +36,11 @@ class UserQuery(object):
                   verified_date=None)
     
     def userEmail_verified(self, email):
+        m = 'UserQuery.userEmail_verified is deprecated: ' \
+          'it should never be used. Use '\
+          'gs.profile.email.base.queries.UserQuery.address_verified '\
+          'instead.'
+        log.warn(m)
         assert email
         uet = self.userEmailTable
         s1 = uet.select(sa.func.lower(uet.c.email) == email.lower())
@@ -48,7 +58,7 @@ class UserQuery(object):
         m = 'UserQuery.add_userEmail_verificationId is deprecated: ' \
           'it should never be used. Use '\
           'gs.profile.email.verify.queries.EmailQuery.set_verification_id '\
-          'instead. Called from %s' % self.REQUEST.URL
+          'instead.'
         log.warn(m)
         assert verificationId
         assert email
@@ -65,7 +75,7 @@ class UserQuery(object):
         m = 'UserQuery.remove_userEmail_verificationId is deprecated: ' \
           'it should never be used. Use '\
           'gs.profile.email.verify.queries.EmailQuery.clear_verification_ids '\
-          'instead. Called from %s' % self.REQUEST.URL
+          'instead.'
         log.warn(m)
         assert email
         evt = self.emailVerificationTable
@@ -77,7 +87,7 @@ class UserQuery(object):
         m = 'UserQuery.userEmail_verificationId_valid is deprecated: ' \
           'it should never be used. Use '\
           'gs.profile.email.verify.queries.VerificationQuery.verificationId_status '\
-          'instead. Called from %s' % self.REQUEST.URL
+          'instead.'
         log.warn(m)
         assert verificationId
         evt = self.emailVerificationTable
@@ -93,7 +103,7 @@ class UserQuery(object):
         m = 'UserQuery.verify_userEmail is deprecated: it should ' \
           'never be used. Use '\
           'gs.profile.email.verify.queries.EmailQuery.verify_address '\
-          'instead. Called from %s' % self.REQUEST.URL
+          'instead.'
         log.warn(m)
         assert verificationId
         uet = self.userEmailTable
@@ -127,11 +137,21 @@ class UserQuery(object):
         return email
     
     def remove_userEmail(self, email_address):
+        m = 'UserQuery.remove_userEmail is deprecated: ' \
+          'it should never be used. Use '\
+          'gs.profile.email.base.queries.UserQuery.remove_address '\
+          'instead.'
+        log.warn(m)
         uet = self.userEmailTable        
         and_ = sa.and_
         uet.delete(and_(sa.func.lower(uet.c.email)==email_address.lower())).execute()
 
     def get_userEmail(self, preferred_only=False, verified_only=True):
+        m = 'UserQuery.get_userEmail is deprecated: ' \
+          'it should never be used. Use '\
+          'gs.profile.email.base.queries.UserQuery.get_addresses '\
+          'instead.'
+        log.warn(m)
         uet = self.userEmailTable
         statement = sa.select([uet.c.email], uet.c.user_id==self.user_id)
         if preferred_only:
@@ -145,6 +165,11 @@ class UserQuery(object):
         return email_addresses
         
     def set_preferredEmail(self, email_address, is_preferred):
+        m = 'UserQuery.set_preferredEmail is deprecated: ' \
+          'it should never be used. Use '\
+          'gs.profile.email.base.queries.UserQuery.update_delivery '\
+          'instead.'
+        log.warn(m)
         uet = self.userEmailTable
         and_ = sa.and_
         

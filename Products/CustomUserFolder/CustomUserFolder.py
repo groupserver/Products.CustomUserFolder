@@ -282,18 +282,15 @@ class CustomUserFolder(UserFolderWithGroups):
           (displayName, userId)
 
         user.manage_changeProperties(fn=displayName)
-
         # For now
         user.manage_addProperty('creation_date', DateTime.DateTime(), 
                                 'date')
-
-        user.add_defaultDeliveryEmailAddress(email)
   
         assert user
         assert userId == user.getId()
         # --=mpj17=-- Trick for young players: the following assert 
-        # *should* work, but it does not necessarially work, as a race
-        # condidition is created between this code and the relational
+        # *should* work, but it does not necessarily work, as a race
+        # condition is created between this code and the relational
         # database.
         # assert email in user.get_emailAddresses()
         assert displayName == user.getProperty('fn')

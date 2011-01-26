@@ -483,6 +483,11 @@ class CustomUser(User, Folder):
             A helper method to purify the list of addresses.
             
         """
+        m = 'CustomUser.get_emailAddresses is deprecated: it should '\
+          'never be used. Use '\
+          'gs.profile.email.base.emailuser.EmailUser.get_addresses '\
+          'instead. Called from %s.' % self.REQUEST.URL
+        log.warn(m)
         # --=mpj17=-- Note that registration requires this to be able
         #   to return all the user's email addresses, not just the 
         #   verified addresses.
@@ -493,7 +498,7 @@ class CustomUser(User, Folder):
     security.declareProtected(Perms.manage_properties, 'validate_emailAddresses')
     def validate_emailAddresses(self):
         """ Validate all the user's email addresses.
-            
+            Deprecated.
         """
         for email in self.get_emailAddresses():
             self._validateAndNormalizeEmail(email)
@@ -503,6 +508,12 @@ class CustomUser(User, Folder):
         """ Validates and normalizes an email address.
             
         """
+        m = 'CustomUser._validateAndNormalizeEmail is deprecated: it should '\
+          'never be used. Use '\
+          'gs.profile.email.base.emailuser.EmailUser._validateAndNormalizeEmail '\
+          'instead. Called from %s.' % self.REQUEST.URL
+        log.warn(m)
+        
         email = email.strip()
         if not email:
             raise ValidationError('No email address given')
@@ -528,6 +539,11 @@ class CustomUser(User, Folder):
         addresses.
         
         """
+        m = 'CustomUser.add_emailAddress is deprecated: it should '\
+          'never be used. Use '\
+          'gs.profile.email.base.emailuser.EmailUser.add_address '\
+          'instead. Called from %s.' % self.REQUEST.URL
+        log.warn(m)
         email = self._validateAndNormalizeEmail(email)
         uq = UserQuery(self, self.zsqlalchemy)        
         uq.add_userEmail(email, is_preferred)
@@ -608,6 +624,11 @@ class CustomUser(User, Folder):
 
     def emailAddress_isVerified(self, email):
         """Check to see if an address is verified."""
+        m = 'CustomUser.emailAddress_isVerified is deprecated: it should '\
+          'never be used. Use '\
+          'gs.profile.email.base.emailuser.EmailUser.is_address_verified '\
+          'instead. Called from %s.' % self.REQUEST.URL
+        log.warn(m)
         assert email
         assert email in self.get_emailAddresses(), \
           'User "%s" does not have the address <%s>' % (self.getId(), email)
@@ -621,6 +642,12 @@ class CustomUser(User, Folder):
         addresses.
         
         """
+        m = 'CustomUser.remove_emailAddress is deprecated: it should '\
+          'never be used. Use '\
+          'gs.profile.email.base.emailuser.EmailUser.remove_address '\
+          'instead. Called from %s.' % self.REQUEST.URL
+        log.warn(m)
+        
         uq = UserQuery(self, self.zsqlalchemy)
 
         email = self._validateAndNormalizeEmail(email)
@@ -643,6 +670,11 @@ class CustomUser(User, Folder):
         RETURNS
           A list of email addresses, which have a verification date set.
         """
+        m = 'CustomUser.get_verifiedEmailAddresses is deprecated: it should '\
+          'never be used. Use '\
+          'gs.profile.email.base.emailuser.EmailUser.get_verified_addresses '\
+          'instead. Called from %s.' % self.REQUEST.URL
+        log.warn(m)
         uq = UserQuery(self, self.zsqlalchemy)
         
         retval = uq.get_userEmail(preferred_only=False, verified_only=True)    
@@ -657,6 +689,11 @@ class CustomUser(User, Folder):
         """ Get the user's default delivery email addresses.
         
         """
+        m = 'CustomUser.get_defaultDeliveryEmailAddresses is deprecated: '\
+          'it should never be used. Use '\
+          'gs.profile.email.base.emailuser.EmailUser.get_delivery_addresses '\
+          'instead. Called from %s.' % self.REQUEST.URL
+        log.warn(m)
         uq = UserQuery(self, self.zsqlalchemy)
         
         return uq.get_userEmail(preferred_only=True)        
@@ -670,6 +707,11 @@ class CustomUser(User, Folder):
             delivered by default.
         
         """
+        m = 'CustomUser.add_defaultDeliveryEmailAddress is deprecated: it should '\
+          'never be used. Use '\
+          'gs.profile.email.base.emailuser.EmailUser.set_delivery '\
+          'instead. Called from %s.' % self.REQUEST.URL
+        log.warn(m)
         email = self._validateAndNormalizeEmail(email)
 
         uq = UserQuery(self, self.zsqlalchemy)
@@ -699,7 +741,7 @@ class CustomUser(User, Folder):
       'add_defaultDeliveryEmailAddresses')
     def add_defaultDeliveryEmailAddresses(self, addresses):
         """ Set all the addresses to which email will be delivered by default.
-        
+            Deprecated.
         """
         uq = UserQuery(self, self.zsqlalchemy)
 
@@ -717,6 +759,11 @@ class CustomUser(User, Folder):
             email will be delivered by default.
         
         """
+        m = 'CustomUser.add_defaultDeliveryEmailAddress is deprecated: it should '\
+          'never be used. Use '\
+          'gs.profile.email.base.emailuser.EmailUser.drop_delivery '\
+          'instead. Called from %s.' % self.REQUEST.URL
+        log.warn(m)
         uq = UserQuery(self, self.zsqlalchemy)
 
         email = self._validateAndNormalizeEmail(email)

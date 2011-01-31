@@ -273,7 +273,7 @@ class CustomUserFolder(UserFolderWithGroups):
         assert userId
         assert displayName
         assert not(self.getUser(userId))
-        assert not(self.get_userIdByEmail(email))
+        assert not(self.get_userIdByEmail(email)), '<%s> exists' % email
 
         self._doAddUser(userId, '', [], [], [])
         user = self.getUser(userId)

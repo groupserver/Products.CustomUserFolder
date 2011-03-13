@@ -483,7 +483,6 @@ class CustomUser(User, Folder):
             A helper method to purify the list of addresses.
             
         """
-        log.info(str(self.REQUEST))
         m = 'CustomUser.get_emailAddresses is deprecated: it should '\
           'never be used. Use '\
           'gs.profile.email.base.emailuser.EmailUser.get_addresses '\

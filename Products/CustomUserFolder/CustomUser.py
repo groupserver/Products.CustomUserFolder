@@ -483,10 +483,11 @@ class CustomUser(User, Folder):
             A helper method to purify the list of addresses.
             
         """
+        log.info(str(self.REQUEST))
         m = 'CustomUser.get_emailAddresses is deprecated: it should '\
           'never be used. Use '\
           'gs.profile.email.base.emailuser.EmailUser.get_addresses '\
-          'instead. Called from %s.' % self.REQUEST['URL']
+          'instead. Called from %s.' % self.REQUEST['PATH_INFO']
         log.warn(m)
         # --=mpj17=-- Note that registration requires this to be able
         #   to return all the user's email addresses, not just the 
@@ -511,7 +512,7 @@ class CustomUser(User, Folder):
         m = 'CustomUser._validateAndNormalizeEmail is deprecated: it should '\
           'never be used. Use '\
           'gs.profile.email.base.emailuser.EmailUser._validateAndNormalizeEmail '\
-          'instead. Called from %s.' % self.REQUEST['URL']
+          'instead. Called from %s.' % self.REQUEST['PATH_INFO']
         log.warn(m)
         
         email = email.strip()
@@ -542,7 +543,7 @@ class CustomUser(User, Folder):
         m = 'CustomUser.add_emailAddress is deprecated: it should '\
           'never be used. Use '\
           'gs.profile.email.base.emailuser.EmailUser.add_address '\
-          'instead. Called from %s.' % self.REQUEST['URL']
+          'instead. Called from %s.' % self.REQUEST['PATH_INFO']
         log.warn(m)
         email = self._validateAndNormalizeEmail(email)
         uq = UserQuery(self, self.zsqlalchemy)        
@@ -563,7 +564,7 @@ class CustomUser(User, Folder):
         m = 'CustomUser.verify_emailAddress is deprecated: it should '\
           'never be used. Use '\
           'gs.profile.email.verify.emailverificationuser.EmailVerificationUser.verify_email '\
-          'instead. Called from %s.' % self.REQUEST['URL']
+          'instead. Called from %s.' % self.REQUEST['PATH_INFO']
         log.warn(m)
         
         assert verificationId
@@ -585,7 +586,7 @@ class CustomUser(User, Folder):
         m = 'CustomUser.add_emailAddressVerification is deprecated: ' \
           'it should never be used. Use '\
           'gs.profile.email.verify.emailverificationuser.EmailVerificationUser.add_verification_id '\
-          'instead. Called from %s.' % self.REQUEST['URL']
+          'instead. Called from %s.' % self.REQUEST['PATH_INFO']
         log.warn(m)
         
         assert verificationId
@@ -608,7 +609,7 @@ class CustomUser(User, Folder):
         m = 'CustomUser.remove_emailAddressVerification is deprecated: ' \
           'it should never be used. Use '\
           'gs.profile.email.verify.emailverificationuser.EmailVerificationUser.clear_verification_ids '\
-          'instead. Called from %s.' % self.REQUEST['URL']
+          'instead. Called from %s.' % self.REQUEST['PATH_INFO']
         log.warn(m)
         
         assert email
@@ -627,7 +628,7 @@ class CustomUser(User, Folder):
         m = 'CustomUser.emailAddress_isVerified is deprecated: it should '\
           'never be used. Use '\
           'gs.profile.email.base.emailuser.EmailUser.is_address_verified '\
-          'instead. Called from %s.' % self.REQUEST['URL']
+          'instead. Called from %s.' % self.REQUEST['PATH_INFO']
         log.warn(m)
         assert email
         assert email in self.get_emailAddresses(), \
@@ -645,7 +646,7 @@ class CustomUser(User, Folder):
         m = 'CustomUser.remove_emailAddress is deprecated: it should '\
           'never be used. Use '\
           'gs.profile.email.base.emailuser.EmailUser.remove_address '\
-          'instead. Called from %s.' % self.REQUEST['URL']
+          'instead. Called from %s.' % self.REQUEST['PATH_INFO']
         log.warn(m)
         
         uq = UserQuery(self, self.zsqlalchemy)
@@ -673,7 +674,7 @@ class CustomUser(User, Folder):
         m = 'CustomUser.get_verifiedEmailAddresses is deprecated: it should '\
           'never be used. Use '\
           'gs.profile.email.base.emailuser.EmailUser.get_verified_addresses '\
-          'instead. Called from %s.' % self.REQUEST['URL']
+          'instead. Called from %s.' % self.REQUEST['PATH_INFO']
         log.warn(m)
         uq = UserQuery(self, self.zsqlalchemy)
         
@@ -692,7 +693,7 @@ class CustomUser(User, Folder):
         m = 'CustomUser.get_defaultDeliveryEmailAddresses is deprecated: '\
           'it should never be used. Use '\
           'gs.profile.email.base.emailuser.EmailUser.get_delivery_addresses '\
-          'instead. Called from %s.' % self.REQUEST['URL']
+          'instead. Called from %s.' % self.REQUEST['PATH_INFO']
         log.warn(m)
         uq = UserQuery(self, self.zsqlalchemy)
         
@@ -710,7 +711,7 @@ class CustomUser(User, Folder):
         m = 'CustomUser.add_defaultDeliveryEmailAddress is deprecated: it should '\
           'never be used. Use '\
           'gs.profile.email.base.emailuser.EmailUser.set_delivery '\
-          'instead. Called from %s.' % self.REQUEST['URL']
+          'instead. Called from %s.' % self.REQUEST['PATH_INFO']
         log.warn(m)
         email = self._validateAndNormalizeEmail(email)
 
@@ -762,7 +763,7 @@ class CustomUser(User, Folder):
         m = 'CustomUser.add_defaultDeliveryEmailAddress is deprecated: it should '\
           'never be used. Use '\
           'gs.profile.email.base.emailuser.EmailUser.drop_delivery '\
-          'instead. Called from %s.' % self.REQUEST['URL']
+          'instead. Called from %s.' % self.REQUEST['PATH_INFO']
         log.warn(m)
         uq = UserQuery(self, self.zsqlalchemy)
 
@@ -971,7 +972,7 @@ class CustomUser(User, Folder):
     def reset_password(self):
         """Resets the user password."""
         m = 'CustomUser.reset_password is deprecated: it should ' \
-            'never be used. Called from %s' % self.REQUEST['URL']
+            'never be used. Called from %s' % self.REQUEST['PATH_INFO']
         log.warn(m)
         
         newPassword = XWFUtils.generate_password(8)
@@ -983,7 +984,7 @@ class CustomUser(User, Folder):
         """Sets the user's password"""
         m = 'CustomUser.set_password is deprecated: it is replaced ' \
             'by gs.profile.password.passworduser.set_password. Called '\
-            'from %s' % self.REQUEST['URL']
+            'from %s' % self.REQUEST['PATH_INFO']
         log.warn(m)
 
         site_root = self.site_root()	
@@ -1010,7 +1011,7 @@ class CustomUser(User, Folder):
         m = 'CustomUser.add_password_verification is deprecated: it is '\
             'replaced by ' \
             'gs.profile.password.passworduser.add_password_verification. '\
-            'Called from %s' % self.REQUEST['URL']
+            'Called from %s' % self.REQUEST['PATH_INFO']
         log.warn(m)
 
         uq = UserQuery(self, self.zsqlalchemy)
@@ -1022,7 +1023,7 @@ class CustomUser(User, Folder):
         m = 'CustomUser.clear_userPasswordResetVerificationIds is '\
             'deprecated: it is replaced by ' \
             'gs.profile.password.passworduser.clear_password_verification. '\
-            'Called from %s' % self.REQUEST['URL']
+            'Called from %s' % self.REQUEST['PATH_INFO']
         log.warn(m)
           
         uq = UserQuery(self, self.zsqlalchemy)

@@ -125,7 +125,7 @@ class CustomUserFolder(UserFolderWithGroups):
         m = 'CustomUserFolder.get_userByEmailVerificationId is '\
           'deprecated: it should never be used. Use '\
           'gs.profile.email.verify.emailverificationuser.EmailVerificationUserFromId '\
-          'instead. Called from %s.' % self.REQUEST['URL']
+          'instead. Called from %s.' % self.REQUEST['PATH_INFO']
         log.warn(m)
         user_id = self.get_userIdByEmailVerificationId(verificationId)
         if user_id:

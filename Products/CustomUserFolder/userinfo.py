@@ -133,7 +133,9 @@ class GSAnonymousUserInfo(object):
         return retval
 
 def userInfo_to_anchor(userInfo):
-    assert isinstance(userInfo, GSUserInfo), 'Not a user info'
+    assert (isinstance(userInfo, GSUserInfo) or
+            isinstance(userInfo, GSAnonymousUserInfo)), 'Not a user info'
+    
     retval = u'<a class="fn" href="%s">%s</a>' % \
       (userInfo.url, userInfo.name)
     assert type(retval) == unicode

@@ -487,7 +487,7 @@ class CustomUser(User, Folder):
           'never be used. Use '\
           'gs.profile.email.base.emailuser.EmailUser.get_addresses '\
           'instead. Called from %s.' % self.REQUEST['PATH_INFO']
-        log.warn(m)
+        log.debug(m)
         # --=mpj17=-- Note that registration requires this to be able
         #   to return all the user's email addresses, not just the 
         #   verified addresses.
@@ -512,7 +512,7 @@ class CustomUser(User, Folder):
           'never be used. Use '\
           'gs.profile.email.base.emailuser.EmailUser._validateAndNormalizeEmail '\
           'instead. Called from %s.' % self.REQUEST['PATH_INFO']
-        log.warn(m)
+        log.debug(m)
         
         email = email.strip()
         if not email:
@@ -543,7 +543,7 @@ class CustomUser(User, Folder):
           'never be used. Use '\
           'gs.profile.email.base.emailuser.EmailUser.add_address '\
           'instead. Called from %s.' % self.REQUEST['PATH_INFO']
-        log.warn(m)
+        log.debug(m)
         email = self._validateAndNormalizeEmail(email)
         uq = UserQuery(self, self.zsqlalchemy)        
         uq.add_userEmail(email, is_preferred)
@@ -564,7 +564,7 @@ class CustomUser(User, Folder):
           'never be used. Use '\
           'gs.profile.email.verify.emailverificationuser.EmailVerificationUser.verify_email '\
           'instead. Called from %s.' % self.REQUEST['PATH_INFO']
-        log.warn(m)
+        log.debug(m)
         
         assert verificationId
         uq = UserQuery(self, self.zsqlalchemy)
@@ -586,7 +586,7 @@ class CustomUser(User, Folder):
           'it should never be used. Use '\
           'gs.profile.email.verify.emailverificationuser.EmailVerificationUser.add_verification_id '\
           'instead. Called from %s.' % self.REQUEST['PATH_INFO']
-        log.warn(m)
+        log.debug(m)
         
         assert verificationId
         uq = UserQuery(self, self.zsqlalchemy)
@@ -609,7 +609,7 @@ class CustomUser(User, Folder):
           'it should never be used. Use '\
           'gs.profile.email.verify.emailverificationuser.EmailVerificationUser.clear_verification_ids '\
           'instead. Called from %s.' % self.REQUEST['PATH_INFO']
-        log.warn(m)
+        log.debug(m)
         
         assert email
         assert email in self.get_emailAddresses(), \
@@ -628,7 +628,7 @@ class CustomUser(User, Folder):
           'never be used. Use '\
           'gs.profile.email.base.emailuser.EmailUser.is_address_verified '\
           'instead. Called from %s.' % self.REQUEST['PATH_INFO']
-        log.warn(m)
+        log.debug(m)
         assert email
         assert email in self.get_emailAddresses(), \
           'User "%s" does not have the address <%s>' % (self.getId(), email)
@@ -646,7 +646,7 @@ class CustomUser(User, Folder):
           'never be used. Use '\
           'gs.profile.email.base.emailuser.EmailUser.remove_address '\
           'instead. Called from %s.' % self.REQUEST['PATH_INFO']
-        log.warn(m)
+        log.debug(m)
         
         uq = UserQuery(self, self.zsqlalchemy)
 
@@ -674,7 +674,7 @@ class CustomUser(User, Folder):
           'never be used. Use '\
           'gs.profile.email.base.emailuser.EmailUser.get_verified_addresses '\
           'instead. Called from %s.' % self.REQUEST['PATH_INFO']
-        log.warn(m)
+        log.debug(m)
         uq = UserQuery(self, self.zsqlalchemy)
         
         retval = uq.get_userEmail(preferred_only=False, verified_only=True)    
@@ -693,7 +693,7 @@ class CustomUser(User, Folder):
           'it should never be used. Use '\
           'gs.profile.email.base.emailuser.EmailUser.get_delivery_addresses '\
           'instead. Called from %s.' % self.REQUEST['PATH_INFO']
-        log.warn(m)
+        log.debug(m)
         uq = UserQuery(self, self.zsqlalchemy)
         
         return uq.get_userEmail(preferred_only=True)        
@@ -711,7 +711,7 @@ class CustomUser(User, Folder):
           'never be used. Use '\
           'gs.profile.email.base.emailuser.EmailUser.set_delivery '\
           'instead. Called from %s.' % self.REQUEST['PATH_INFO']
-        log.warn(m)
+        log.debug(m)
         email = self._validateAndNormalizeEmail(email)
 
         uq = UserQuery(self, self.zsqlalchemy)
@@ -763,7 +763,7 @@ class CustomUser(User, Folder):
           'never be used. Use '\
           'gs.profile.email.base.emailuser.EmailUser.drop_delivery '\
           'instead. Called from %s.' % self.REQUEST['PATH_INFO']
-        log.warn(m)
+        log.debug(m)
         uq = UserQuery(self, self.zsqlalchemy)
 
         email = self._validateAndNormalizeEmail(email)
@@ -972,7 +972,7 @@ class CustomUser(User, Folder):
         """Resets the user password."""
         m = 'CustomUser.reset_password is deprecated: it should ' \
             'never be used. Called from %s' % self.REQUEST['PATH_INFO']
-        log.warn(m)
+        log.debug(m)
         
         newPassword = XWFUtils.generate_password(8)
         self.set_password(newPassword)
@@ -984,7 +984,7 @@ class CustomUser(User, Folder):
         m = 'CustomUser.set_password is deprecated: it is replaced ' \
             'by gs.profile.password.passworduser.set_password. Called '\
             'from %s' % self.REQUEST['PATH_INFO']
-        log.warn(m)
+        log.debug(m)
 
         site_root = self.site_root()	
         user =  site_root.acl_users.getUser(self.getId())
@@ -1011,7 +1011,7 @@ class CustomUser(User, Folder):
             'replaced by ' \
             'gs.profile.password.passworduser.add_password_verification. '\
             'Called from %s' % self.REQUEST['PATH_INFO']
-        log.warn(m)
+        log.debug(m)
 
         uq = UserQuery(self, self.zsqlalchemy)
         uq.set_userPasswordResetVerificationId(verificationId)
@@ -1023,7 +1023,7 @@ class CustomUser(User, Folder):
             'deprecated: it is replaced by ' \
             'gs.profile.password.passworduser.clear_password_verification. '\
             'Called from %s' % self.REQUEST['PATH_INFO']
-        log.warn(m)
+        log.debug(m)
           
         uq = UserQuery(self, self.zsqlalchemy)
         uq.clear_userPasswordResetVerificationIds()

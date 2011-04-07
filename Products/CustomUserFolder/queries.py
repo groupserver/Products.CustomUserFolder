@@ -25,7 +25,7 @@ class UserQuery(object):
           'it should never be used. Use '\
           'gs.profile.email.base.queries.UserQuery.add_address '\
           'instead.'
-        log.warn(m)
+        log.debug(m)
         uet = self.userEmailTable
         
         i = uet.insert()
@@ -40,7 +40,7 @@ class UserQuery(object):
           'it should never be used. Use '\
           'gs.profile.email.base.queries.UserQuery.address_verified '\
           'instead.'
-        log.warn(m)
+        log.debug(m)
         assert email
         uet = self.userEmailTable
         s1 = uet.select(sa.func.lower(uet.c.email) == email.lower())
@@ -59,7 +59,7 @@ class UserQuery(object):
           'it should never be used. Use '\
           'gs.profile.email.verify.queries.EmailQuery.set_verification_id '\
           'instead.'
-        log.warn(m)
+        log.debug(m)
         assert verificationId
         assert email
         evt = self.emailVerificationTable
@@ -76,7 +76,7 @@ class UserQuery(object):
           'it should never be used. Use '\
           'gs.profile.email.verify.queries.EmailQuery.clear_verification_ids '\
           'instead.'
-        log.warn(m)
+        log.debug(m)
         assert email
         evt = self.emailVerificationTable
         d = evt.delete(sa.func.lower(evt.c.email) == email.lower())
@@ -88,7 +88,7 @@ class UserQuery(object):
           'it should never be used. Use '\
           'gs.profile.email.verify.queries.VerificationQuery.verificationId_status '\
           'instead.'
-        log.warn(m)
+        log.debug(m)
         assert verificationId
         evt = self.emailVerificationTable
 
@@ -104,7 +104,7 @@ class UserQuery(object):
           'never be used. Use '\
           'gs.profile.email.verify.queries.EmailQuery.verify_address '\
           'instead.'
-        log.warn(m)
+        log.debug(m)
         assert verificationId
         uet = self.userEmailTable
         evt = self.emailVerificationTable
@@ -141,7 +141,7 @@ class UserQuery(object):
           'it should never be used. Use '\
           'gs.profile.email.base.queries.UserQuery.remove_address '\
           'instead.'
-        log.warn(m)
+        log.debug(m)
         uet = self.userEmailTable        
         and_ = sa.and_
         uet.delete(and_(sa.func.lower(uet.c.email)==email_address.lower())).execute()
@@ -151,7 +151,7 @@ class UserQuery(object):
           'it should never be used. Use '\
           'gs.profile.email.base.queries.UserQuery.get_addresses '\
           'instead.'
-        log.warn(m)
+        log.debug(m)
         uet = self.userEmailTable
         statement = sa.select([uet.c.email], uet.c.user_id==self.user_id)
         if preferred_only:
@@ -169,7 +169,7 @@ class UserQuery(object):
           'it should never be used. Use '\
           'gs.profile.email.base.queries.UserQuery.update_delivery '\
           'instead.'
-        log.warn(m)
+        log.debug(m)
         uet = self.userEmailTable
         and_ = sa.and_
         

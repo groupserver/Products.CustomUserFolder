@@ -18,16 +18,18 @@
 # You MUST follow the rules in http://iopen.net/STYLE before checking in code
 # to the trunk. Code which does not follow the rules will be rejected.
 #
+import rfc822, re, os
 try:
     # zope 2.12+
     from zope.container.interfaces import IObjectRemovedEvent,IObjectAddedEvent #@UnresolvedImport @UnusedImport
 except:
     from zope.app.container.interfaces import IObjectRemovedEvent,IObjectAddedEvent #@Reimport
-
 from AccessControl import ClassSecurityInfo, Permissions as Perms, allow_class
 from AccessControl.User import User
 from App.class_init import InitializeClass
 from OFS.Folder import Folder
+from zope.component import createObject
+from zope.interface import implements
 from Products.CustomUserFolder.interfaces import ICustomUser
 from Products.XWFCore import XWFUtils
 from Products.XWFCore.XWFUtils import locateDataDirectory
@@ -36,14 +38,7 @@ from Products.XWFFileLibrary2.XWFVirtualFileFolder2 import DisplayFile
 from gs.image import GSImage
 from queries import UserQuery
 
-from zope.component import createObject
-from zope.interface import implements
-
 import logging
-import rfc822
-import re
-import os
-
 log = logging.getLogger('CustomUser')
 
 class CustomUser(User, Folder):
@@ -491,7 +486,7 @@ class CustomUser(User, Folder):
         # --=mpj17=-- Note that registration requires this to be able
         #   to return all the user's email addresses, not just the 
         #   verified addresses.
-        uq = UserQuery(self, self.zsqlalchemy)
+        uq = UserQuery(self)
         
         return uq.get_userEmail(preferred_only=False, verified_only=False)
 
@@ -545,7 +540,7 @@ class CustomUser(User, Folder):
           'instead. Called from %s.' % self.REQUEST['PATH_INFO']
         log.debug(m)
         email = self._validateAndNormalizeEmail(email)
-        uq = UserQuery(self, self.zsqlalchemy)        
+        uq = UserQuery(self)        
         uq.add_userEmail(email, is_preferred)
         
         m = 'Added the email address <%s> to %s (%s)' %\
@@ -567,7 +562,7 @@ class CustomUser(User, Folder):
         log.debug(m)
         
         assert verificationId
-        uq = UserQuery(self, self.zsqlalchemy)
+        uq = UserQuery(self)
         assert uq.userEmail_verificationId_valid(verificationId), \
           'Invalid verification ID: "%s"' % verificationId
           
@@ -589,7 +584,7 @@ class CustomUser(User, Folder):
         log.debug(m)
         
         assert verificationId
-        uq = UserQuery(self, self.zsqlalchemy)
+        uq = UserQuery(self)
         assert not uq.userEmail_verificationId_valid(verificationId), \
           'Email Verification ID %s exists' % verificationId
         assert email in self.get_emailAddresses(), \
@@ -614,7 +609,7 @@ class CustomUser(User, Folder):
         assert email
         assert email in self.get_emailAddresses(), \
           'User "%s" does not have the address <%s>' % (self.getId(), email)
-        uq = UserQuery(self, self.zsqlalchemy)
+        uq = UserQuery(self)
         uq.remove_userEmail_verificationId(email)
         
         m = 'remove_emailAddressVerification: removed email address '\
@@ -632,7 +627,7 @@ class CustomUser(User, Folder):
         assert email
         assert email in self.get_emailAddresses(), \
           'User "%s" does not have the address <%s>' % (self.getId(), email)
-        uq = UserQuery(self, self.zsqlalchemy)
+        uq = UserQuery(self)
         return uq.userEmail_verified(email)
 
     security.declareProtected(Perms.manage_properties,
@@ -648,7 +643,7 @@ class CustomUser(User, Folder):
           'instead. Called from %s.' % self.REQUEST['PATH_INFO']
         log.debug(m)
         
-        uq = UserQuery(self, self.zsqlalchemy)
+        uq = UserQuery(self)
 
         email = self._validateAndNormalizeEmail(email)
 
@@ -675,7 +670,7 @@ class CustomUser(User, Folder):
           'gs.profile.email.base.emailuser.EmailUser.get_verified_addresses '\
           'instead. Called from %s.' % self.REQUEST['PATH_INFO']
         log.debug(m)
-        uq = UserQuery(self, self.zsqlalchemy)
+        uq = UserQuery(self)
         
         retval = uq.get_userEmail(preferred_only=False, verified_only=True)    
         assert type(retval) == list
@@ -694,7 +689,7 @@ class CustomUser(User, Folder):
           'gs.profile.email.base.emailuser.EmailUser.get_delivery_addresses '\
           'instead. Called from %s.' % self.REQUEST['PATH_INFO']
         log.debug(m)
-        uq = UserQuery(self, self.zsqlalchemy)
+        uq = UserQuery(self)
         
         return uq.get_userEmail(preferred_only=True)        
     
@@ -714,7 +709,7 @@ class CustomUser(User, Folder):
         log.debug(m)
         email = self._validateAndNormalizeEmail(email)
 
-        uq = UserQuery(self, self.zsqlalchemy)
+        uq = UserQuery(self)
         
         user_email = uq.get_userEmail(preferred_only=False, 
                                       verified_only=False)
@@ -743,7 +738,7 @@ class CustomUser(User, Folder):
         """ Set all the addresses to which email will be delivered by default.
             Deprecated.
         """
-        uq = UserQuery(self, self.zsqlalchemy)
+        uq = UserQuery(self)
 
         # first clear all the preferredEmailAddresses
         uq.clear_preferredEmail()
@@ -764,7 +759,7 @@ class CustomUser(User, Folder):
           'gs.profile.email.base.emailuser.EmailUser.drop_delivery '\
           'instead. Called from %s.' % self.REQUEST['PATH_INFO']
         log.debug(m)
-        uq = UserQuery(self, self.zsqlalchemy)
+        uq = UserQuery(self)
 
         email = self._validateAndNormalizeEmail(email)
 
@@ -784,7 +779,7 @@ class CustomUser(User, Folder):
             represent something else in the future.
         
         """
-        uq = UserQuery(self, self.zsqlalchemy)
+        uq = UserQuery(self)
         # TODO: we don't quite support site_id yet
         site_id = ''
         group_id = key
@@ -798,7 +793,7 @@ class CustomUser(User, Folder):
             represent something else in the future.
             
         """
-        uq = UserQuery(self, self.zsqlalchemy)
+        uq = UserQuery(self)
         # TODO: we don't quite support site_id yet
         site_id = ''
         group_id = key
@@ -813,7 +808,7 @@ class CustomUser(User, Folder):
             represent something else in the future.
             
         """
-        uq = UserQuery(self, self.zsqlalchemy)
+        uq = UserQuery(self)
         # TODO: we don't quite support site_id yet
         uq.set_groupEmailSetting(site_id, group_id, 'digest')
 
@@ -829,7 +824,7 @@ class CustomUser(User, Folder):
             represent something else in the future.
             
         """
-        uq = UserQuery(self, self.zsqlalchemy)
+        uq = UserQuery(self)
         uq.clear_groupEmailSetting(site_id, group_id)
 
         m = '%s (%s) disabling digest mode for %s' % \
@@ -841,9 +836,9 @@ class CustomUser(User, Folder):
         """ Get the settings for the given key.
         
             returns 1 if default, 2 if non-default, 3 if digest,
-	            or 0 if disabled.
+                    or 0 if disabled.
         """
-        uq = UserQuery(self, self.zsqlalchemy)
+        uq = UserQuery(self)
 
         # TODO: we don't quite support site_id yet
         site_id = ''
@@ -907,7 +902,7 @@ class CustomUser(User, Folder):
         site_id = ''
         group_id = key
         
-        uq = UserQuery(self, self.zsqlalchemy)
+        uq = UserQuery(self)
         retval = uq.get_groupUserEmail(site_id, group_id)
         
         return retval
@@ -918,7 +913,7 @@ class CustomUser(User, Folder):
         group.
         
         """
-        uq = UserQuery(self, self.zsqlalchemy)
+        uq = UserQuery(self)
         email = self._validateAndNormalizeEmail(email)
 
         # TODO: we don't support site_id
@@ -939,7 +934,7 @@ class CustomUser(User, Folder):
         group.
         
         """
-        uq = UserQuery(self, self.zsqlalchemy)
+        uq = UserQuery(self)
         email = self._validateAndNormalizeEmail(email)
 
         # TODO: we don't support site_id
@@ -986,7 +981,7 @@ class CustomUser(User, Folder):
             'from %s' % self.REQUEST['PATH_INFO']
         log.debug(m)
 
-        site_root = self.site_root()	
+        site_root = self.site_root()    
         user =  site_root.acl_users.getUser(self.getId())
         roles = user.getRoles()
         domains = user.getDomains()
@@ -1013,7 +1008,7 @@ class CustomUser(User, Folder):
             'Called from %s' % self.REQUEST['PATH_INFO']
         log.debug(m)
 
-        uq = UserQuery(self, self.zsqlalchemy)
+        uq = UserQuery(self)
         uq.set_userPasswordResetVerificationId(verificationId)
 
     def clear_userPasswordResetVerificationIds(self):
@@ -1025,7 +1020,7 @@ class CustomUser(User, Folder):
             'Called from %s' % self.REQUEST['PATH_INFO']
         log.debug(m)
           
-        uq = UserQuery(self, self.zsqlalchemy)
+        uq = UserQuery(self)
         uq.clear_userPasswordResetVerificationIds()
         
         m = u'clear_userPasswordResetVerificationIds: Clearing IDs '\
@@ -1040,7 +1035,7 @@ class CustomUser(User, Folder):
         if self.userNicknameCache.has_key(cacheKey):
             nickname = self.userNicknameCache.get(cacheKey)
         else:
-            uq = UserQuery(self, self.zsqlalchemy)
+            uq = UserQuery(self)
             try:
                 nickname = uq.get_latestNickname()
                 self.userNicknameCache.add(cacheKey, nickname)
@@ -1055,7 +1050,7 @@ class CustomUser(User, Folder):
     def add_nickname(self, nickname):
         cacheKey = '%s:%s' % (self.site_root().getId(), self.getId())
 
-        uq = UserQuery(self, self.zsqlalchemy)
+        uq = UserQuery(self)
         uq.add_nickname(nickname)
         m = 'add_nickname: Added nickname "%s" to %s (%s)' %\
           (nickname, self.getProperty('fn', ''), self.getId())
@@ -1068,7 +1063,7 @@ class CustomUser(User, Folder):
     def clear_nicknames(self):
         cacheKey = '%s:%s' % (self.site_root().getId(), self.getId())
 
-        uq = UserQuery(self, self.zsqlalchemy)
+        uq = UserQuery(self)
         uq.clear_nicknames()
         m = 'clear_nicknames: Cleared nicknames from  %s (%s)' %\
           (self.getProperty('fn', ''), self.getId())
@@ -1103,7 +1098,7 @@ class CustomUser(User, Folder):
 
     def upgrade(self):
         """ Upgrade existing objects.
-	
+        
         """
         # originally we weren't setting the ID correctly
         self.id = self.getId()

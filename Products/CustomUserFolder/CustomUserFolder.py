@@ -18,6 +18,8 @@
 # You MUST follow the rules in http://iopen.net/STYLE before checking in code
 # to the trunk. Code which does not follow the rules will be rejected.
 #
+import os, DateTime, re
+import sqlalchemy as sa
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 from AccessControl import ClassSecurityInfo
 from AccessControl import AuthEncoding
@@ -29,11 +31,8 @@ from zope.interface import implements
 from Products.CustomUserFolder.interfaces import ICustomUserFolder
 from AccessControl.User import readUserAccessFile
 from Products.XWFCore.XWFUtils import locateDataDirectory
-import os
 
-import DateTime
-import re
-import sqlalchemy as sa
+from gs.database import getTable, getSession
 
 import logging
 log = logging.getLogger('CustomUserFolder')
@@ -89,99 +88,57 @@ class CustomUserFolder(UserFolderWithGroups):
         
         """
         email = email.lower()
-        da = self.zsqlalchemy
-        userEmailTable = da.createTable('user_email')
+        uet = getTable('user_email')
+        s = uet.select([uet.c.user_id], limit=1)
+        s.append_whereclause(email == sa.func.lower(uet.c.email))
         
-        statement = userEmailTable.select()
-        statement.append_whereclause(email == sa.func.lower(userEmailTable.c.email))
-        
-        r = statement.execute().fetchone()
+        session = getSession()
+        r = session.execute(s).fetchone()
         if r:
             return r['user_id']
 
         return None
         
+    security.declareProtected(Perms.manage_users, 'get_userByEmail')
+    def get_userByEmail(self, email):
+        """ Get the user by email address.
+        """
+        user_id = self.get_userIdByEmail(email)
+        retval = None
+        if user_id:
+            retval = self.getUser(user_id)
+        return retval
+
     security.declareProtected(Perms.manage_users, 'get_userIdByEmailVerificationId')
     def get_userIdByEmailVerificationId(self, verificationId):
-        """Get the user ID from a email-verification ID
-        """
-        da = self.zsqlalchemy
-        evt = da.createTable('email_verification')
-        
-        s1 = evt.select()
-        s1.append_whereclause(evt.c.verification_id == verificationId)
-        r1 = s1.execute().fetchone()
-        
-        retval = ''
-        if r1:
-            return self.get_userIdByEmail(r1['email'])
-        assert type(retval) == str
-        return retval
+        m = 'Use gs.profile.email.verify'
+        assert False, m
         
     security.declareProtected(Perms.manage_users, 'get_userByEmailVerificationId')
     def get_userByEmailVerificationId(self, verificationId):
-        """ Get the user by verification ID
-        """
+        """ Get the user by verification ID"""
         m = 'CustomUserFolder.get_userByEmailVerificationId is '\
           'deprecated: it should never be used. Use '\
           'gs.profile.email.verify.emailverificationuser.EmailVerificationUserFromId '\
           'instead. Called from %s.' % self.REQUEST['PATH_INFO']
-        log.warn(m)
-        user_id = self.get_userIdByEmailVerificationId(verificationId)
-        if user_id:
-            return self.getUser(user_id)
-        return None
-
-    security.declareProtected(Perms.manage_users, 'get_userByEmail')
-    def get_userByEmail(self, email):
-        """ Get the user by email address.
-        
-        """
-        user_id = self.get_userIdByEmail(email)
-        if user_id:
-            return self.getUser(user_id)
-
-        return None
+        assert False, m
 
     security.declareProtected(Perms.manage_users, 'get_userByVerificationCode')
     def get_userByVerificationCode(self, verification_code):
-        """ Get the user by verification code.
-        
-        """
-        if not verification_code:
-            return None
-        
-        for user in self.getUsers():
-            if verification_code == user.get_verificationCode():
-                return user
-        
-        return None
+        """ Get the user by verification code."""
+        m = 'Use gs.profile.email.verify'
+        assert False, m
 
     security.declareProtected(Perms.manage_users, 'get_userIdByPasswordVerificationId')
     def get_userIdByPasswordVerificationId(self, verificationId):
-        """Get the user ID from a email-verification ID
-        """
-        da = self.zsqlalchemy
-        pvt = da.createTable('password_reset')
-
-        s1 = pvt.select()
-        s1.append_whereclause(pvt.c.verification_id == verificationId)
-        r1 = s1.execute().fetchone()
-
-        retval = ''
-        if r1:
-            retval = r1['user_id']
-        assert type(retval) == str
-        return retval
+        """Get the user ID from a email-verification ID"""
+        m = 'Use gs.profile.password'
+        assert False, m
 
     security.declareProtected(Perms.manage_users, 'get_userByPasswordVerificationId')
     def get_userByPasswordVerificationId(self, verificationId):
-        assert verificationId
-        user_id = self.get_userIdByPasswordVerificationId(verificationId)
-        if user_id:
-            return self.getUser(user_id)
-
-        return None
+        m = 'Use gs.profile.password'
+        assert False, m
         
     security.declareProtected(Perms.manage_users, 'get_userByEmail')
     def getUserNames(self):
@@ -312,55 +269,19 @@ class CustomUserFolder(UserFolderWithGroups):
 
     security.declarePublic('verify_address')
     def verify_address(self, Mail):
-        """Verify the email address of an existing user.
-        
-        This method is designed to be called from the mail server.
-        
-        ARGUMENTS
-          Mail: the mail message to process.
-          
-        SIDE EFFECTS
-          The email address associated the verification ID in the subject
-          is verified.
-          
-        RETURNS
-          None.
-        """
-        assert Mail
-        if not HaveMailBoxer:
-            raise ImportError, ('MailBoxerTools is not available, unable to '
-                                'verify user from email')
-        
-        mailHeader, mailBody = MailBoxerTools.splitMail(Mail) #@UnusedVariable
-        subjHdr = mailHeader.get('subject', '')
-        subject = MailBoxerTools.mime_decode_header(subjHdr)
-        assert subject, 'No subject in verification mail message'
-
-        m = 'verify_address: Processing message "%s"' % subject
-        log.info(m)
-        
-        verificationId = re.findall('{(.*?)}', subject)[0]
-        verificationId = re.sub('\s', '', verificationId)
-        assert verificationId, 'No verification ID in verification mail message'
-        
-        user = self.get_userByEmailVerificationId(verificationId)
-        assert user, 'No user for the verification ID "%s"' % verificationId
-        email = user.verify_emailAddress(verificationId) #@UnusedVariable
-        # TODO: send out a notification to the user, informing him or her
-        #   that the address has been verified.
+        m = 'Use gs.profile.email.verify'
+        assert False, m
         
     security.declarePublic('get_userIdByNickname')
     def get_userIdByNickname(self, nickname):
         assert nickname
         assert type(nickname) in (str, unicode)
-
-        da = self.zsqlalchemy
-        unt = da.createTable('user_nickname')
-
-        statement = unt.select()
-        statement.append_whereclause(unt.c.nickname == nickname)
+        unt = getTable('user_nickname')
+        s = unt.select([unt.c.user_id], limit = 1)
+        s.append_whereclause(unt.c.nickname == nickname)
         
-        r = statement.execute()
+        session = getSession()
+        r = session.execute(s)
         retval = ''
         if r.rowcount:
             retval = r.fetchone()['user_id']

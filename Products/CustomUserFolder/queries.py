@@ -1,6 +1,8 @@
 # coding=utf-8
 import pytz, datetime
 import sqlalchemy as sa
+from zope.sqlalchemy import mark_changed 
+from gs.database import getTable, getSession
 
 import logging
 log = logging.getLogger("CustomUserFolder")
@@ -13,12 +15,12 @@ class UserQuery(object):
 
         self.user_id = context.getUserName()
 
-        self.emailSettingTable = da.createTable('email_setting')
-        self.userEmailTable = da.createTable('user_email')
-        self.groupUserEmailTable = da.createTable('group_user_email')
-        self.emailVerificationTable = da.createTable('email_verification')
-        self.passwordResetTable = da.createTable('password_reset')
-        self.nicknameTable = da.createTable('user_nickname')
+        self.emailSettingTable = getTable('email_setting')
+        self.userEmailTable = getTable('user_email')
+        self.groupUserEmailTable = getTable('group_user_email')
+        self.emailVerificationTable = getTable('email_verification')
+        self.passwordResetTable = getTable('password_reset')
+        self.nicknameTable = getTable('user_nickname')
 
     def add_userEmail(self, email_address, is_preferred=False):
         m = 'UserQuery.add_userEmail is deprecated: ' \
@@ -26,31 +28,15 @@ class UserQuery(object):
           'gs.profile.email.base.queries.UserQuery.add_address '\
           'instead.'
         log.debug(m)
-        uet = self.userEmailTable
-        
-        i = uet.insert()
-        
-        i.execute(user_id=self.user_id,
-                  email=email_address,
-                  is_preferred=is_preferred,
-                  verified_date=None)
-    
+        assert False
+
     def userEmail_verified(self, email):
         m = 'UserQuery.userEmail_verified is deprecated: ' \
           'it should never be used. Use '\
           'gs.profile.email.base.queries.UserQuery.address_verified '\
           'instead.'
         log.debug(m)
-        assert email
-        uet = self.userEmailTable
-        s1 = uet.select(sa.func.lower(uet.c.email) == email.lower())
-        rs1 = s1.execute()
-
-        retval = False
-        if rs1.rowcount == 1:
-            retval = rs1.fetchone()['verified_date'] != None
-        assert type(retval) == bool
-        return retval
+        assert False
     
     # Verification methods: mostly deprecated and moved to 
     # gs.profile.email.verify.
@@ -60,16 +46,7 @@ class UserQuery(object):
           'gs.profile.email.verify.queries.EmailQuery.set_verification_id '\
           'instead.'
         log.debug(m)
-        assert verificationId
-        assert email
-        evt = self.emailVerificationTable
-        i = evt.insert()
-        # --=mpj17=-- With email addresses, we try and be case-insensitive
-        # but case preserving (like NTFS). So we *add* the address with
-        # full capitalisation, but remove it (in the function 
-        # remove_userEmail_verificationId below) by being case-insensitive.
-        i.execute(verification_id=verificationId, email=email)
-        # Change the user_email table?
+        assert False
         
     def remove_userEmail_verificationId(self, email):
         m = 'UserQuery.remove_userEmail_verificationId is deprecated: ' \
@@ -77,11 +54,7 @@ class UserQuery(object):
           'gs.profile.email.verify.queries.EmailQuery.clear_verification_ids '\
           'instead.'
         log.debug(m)
-        assert email
-        evt = self.emailVerificationTable
-        d = evt.delete(sa.func.lower(evt.c.email) == email.lower())
-        d.execute()
-        self.remove_userEmail(email)
+        assert False
 
     def userEmail_verificationId_valid(self, verificationId):
         m = 'UserQuery.userEmail_verificationId_valid is deprecated: ' \
@@ -89,15 +62,7 @@ class UserQuery(object):
           'gs.profile.email.verify.queries.VerificationQuery.verificationId_status '\
           'instead.'
         log.debug(m)
-        assert verificationId
-        evt = self.emailVerificationTable
-
-        # Get the email address        
-        s1 = evt.select(evt.c.verification_id == verificationId)
-        rs1 = s1.execute()
-        retval = rs1.rowcount == 1
-        assert type(retval) == bool
-        return retval
+        assert False
 
     def verify_userEmail(self, verificationId):
         m = 'UserQuery.verify_userEmail is deprecated: it should ' \
@@ -105,35 +70,17 @@ class UserQuery(object):
           'gs.profile.email.verify.queries.EmailQuery.verify_address '\
           'instead.'
         log.debug(m)
-        assert verificationId
-        uet = self.userEmailTable
-        evt = self.emailVerificationTable
-
-        # Get the email address        
-        s1 = evt.select(evt.c.verification_id == verificationId)
-        rs1 = s1.execute()
-        assert rs1.rowcount == 1
-        email = rs1.fetchone()['email']
-        
-        # Set the email address as verified
-        d = datetime.datetime.utcnow().replace(tzinfo=pytz.utc)
-        s2 = uet.update(sa.func.lower(uet.c.email) == email.lower())
-        s2.execute(verified_date = d  )
-          
-        # Remove the old verification code(s)
-        s3 = evt.delete(sa.func.lower(evt.c.email) == email.lower())
-        s3.execute()
-        
-        assert email
-        return email
+        assert False
 
     def unverify_userEmail(self, email):
+        '''Set the email address as unverified'''
         uet = self.userEmailTable
-        
-        # Set the email address as unverified
-        s2 = uet.update(sa.func.lower(uet.c.email) == email.lower())
-        s2.execute(verified_date = None  )
-        
+        u = uet.update(sa.func.lower(uet.c.email) == email.lower())
+        d = {'verified_date': None }
+
+        session = getSession()
+        session.execute(u, params=d)
+        mark_changed(session)
         return email
     
     def remove_userEmail(self, email_address):
@@ -142,9 +89,7 @@ class UserQuery(object):
           'gs.profile.email.base.queries.UserQuery.remove_address '\
           'instead.'
         log.debug(m)
-        uet = self.userEmailTable        
-        and_ = sa.and_
-        uet.delete(and_(sa.func.lower(uet.c.email)==email_address.lower())).execute()
+        assert False
 
     def get_userEmail(self, preferred_only=False, verified_only=True):
         m = 'UserQuery.get_userEmail is deprecated: ' \
@@ -152,17 +97,7 @@ class UserQuery(object):
           'gs.profile.email.base.queries.UserQuery.get_addresses '\
           'instead.'
         log.debug(m)
-        uet = self.userEmailTable
-        statement = sa.select([uet.c.email], uet.c.user_id==self.user_id)
-        if preferred_only:
-            statement.append_whereclause(uet.c.is_preferred==preferred_only)
-        if verified_only:
-            statement.append_whereclause(uet.c.verified_date!=None)
-        r = statement.execute()
-        email_addresses = []
-        for row in r.fetchall():
-            email_addresses.append(row['email'])
-        return email_addresses
+        assert False
         
     def set_preferredEmail(self, email_address, is_preferred):
         m = 'UserQuery.set_preferredEmail is deprecated: ' \
@@ -170,51 +105,54 @@ class UserQuery(object):
           'gs.profile.email.base.queries.UserQuery.update_delivery '\
           'instead.'
         log.debug(m)
-        uet = self.userEmailTable
-        and_ = sa.and_
-        
-        u = uet.update(and_(uet.c.user_id==self.user_id,
-                            sa.func.lower(uet.c.email)==email_address.lower()))
-        u.execute(is_preferred=is_preferred)
+        assert False
 
     def clear_preferredEmail(self):
         uet = self.userEmailTable
-        
         u = uet.update(uet.c.user_id==self.user_id)
-        u.execute(is_preferred=False)
-        
+        d = {'is_preferred': False}
+
+        session = getSession()
+        session.execute(u, params=d)
+        mark_changed(session)
+
     def add_groupUserEmail(self, site_id, group_id, email_address):
         uet = self.groupUserEmailTable
-        
         i = uet.insert()
-        
-        i.execute(user_id=self.user_id,
-                  site_id=site_id,
-                  group_id=group_id,
-                  email=email_address)
+        d = {'user_id': self.user_id,
+             'site_id': site_id,
+             'group_id': group_id,
+             'email': email_address}
+
+        session = getSession()
+        session.execute(i, params=d)
+        mark_changed(session)
         
     def remove_groupUserEmail(self, site_id, group_id, email_address):
         uet = self.groupUserEmailTable        
         and_ = sa.and_
+        d = uet.delete(and_(uet.c.user_id==self.user_id,
+                            uet.c.site_id==site_id,
+                            uet.c.group_id==group_id,
+                            sa.func.lower(uet.c.email)==email_address.lower()))
 
-        uet.delete(and_(uet.c.user_id==self.user_id,
-               uet.c.site_id==site_id,
-               uet.c.group_id==group_id,
-               sa.func.lower(uet.c.email)==email_address.lower())).execute()
-
+        session = getSession()
+        session.execute(d)
+        mark_changed(session)
+        
     def get_groupUserEmail(self, site_id, group_id, verified_only=True):
         guet = self.groupUserEmailTable
-        
-        statement = guet.select()
-        statement.append_whereclause(guet.c.user_id==self.user_id)
-        statement.append_whereclause(guet.c.site_id==site_id)
-        statement.append_whereclause(guet.c.group_id==group_id)
+        s = guet.select()
+        s.append_whereclause(guet.c.user_id==self.user_id)
+        s.append_whereclause(guet.c.site_id==site_id)
+        s.append_whereclause(guet.c.group_id==group_id)
         if verified_only:
             uet = self.userEmailTable
-            statement.append_whereclause(uet.c.user_id == guet.c.user_id)
-            statement.append_whereclause(uet.c.verified_date!=None)
+            s.append_whereclause(uet.c.user_id == guet.c.user_id)
+            s.append_whereclause(uet.c.verified_date!=None)
     
-        r = statement.execute()
+        session = getSession()
+        r = session.execute(s)
         email_addresses = []
         for row in r.fetchall():
             email_address = row['email']
@@ -226,27 +164,28 @@ class UserQuery(object):
     def set_groupEmailSetting(self, site_id, group_id, setting):
         """ Given a site_id, group_id and a setting, set the email_setting
             table.
-
         """
-        
         assert setting in possible_settings, "Unknown setting %s" % setting
-
         est = self.emailSettingTable
         and_ = sa.and_
-
         curr_setting = self.get_groupEmailSetting(site_id, group_id)
         if not curr_setting:
-            i = est.insert()
-            i.execute(user_id=self.user_id,
-                      site_id=site_id,
-                      group_id=group_id,
-                      setting=setting)
+            iOrU = est.insert()
+            d = {'user_id': self.user_id,
+                 'site_id': site_id,
+                 'group_id': group_id,
+                 'setting': setting}
             
         else:
-            u = est.update(and_(est.c.user_id==self.context.getUserName(),
-                                est.c.site_id==site_id,
-                                est.c.group_id==group_id))
-            u.execute(setting=setting)
+            iOrU = est.update(and_(est.c.user_id==self.context.getUserName(),
+                                   est.c.site_id==site_id,
+                                   est.c.group_id==group_id))
+            d = {'setting':setting}
+
+        session = getSession()
+        session.execute(iOrU, parms = d)
+        mark_changed(session)
+    # --=mpj17==-- Up to here.
 
     def clear_groupEmailSetting(self, site_id, group_id):
         est = self.emailSettingTable        

@@ -73,9 +73,7 @@ class foo(object):
         self.instanceUserInfo = IGSUserInfo(user)
         self.siteInfo = createObject('groupserver.SiteInfo', user)
         
-        da = user.zsqlalchemy
-        self.queries = AuditQuery(da)
-      
+        self.queries = AuditQuery()
         self.factory = ProfileAuditEventFactory()
         
     def info(self, code, instanceDatum = '', supplementaryDatum = ''):

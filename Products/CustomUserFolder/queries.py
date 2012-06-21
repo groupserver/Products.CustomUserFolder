@@ -4,13 +4,10 @@ import sqlalchemy as sa
 from zope.sqlalchemy import mark_changed 
 from gs.database import getTable, getSession
 
-import logging
-log = logging.getLogger("CustomUserFolder")
-
 possible_settings = ['webonly', 'digest']
 
 class UserQuery(object):
-    def __init__(self, context, da):
+    def __init__(self, context, da=None):
         self.context = context
 
         self.user_id = context.getUserName()
@@ -27,16 +24,14 @@ class UserQuery(object):
           'it should never be used. Use '\
           'gs.profile.email.base.queries.UserQuery.add_address '\
           'instead.'
-        log.debug(m)
-        assert False
+        assert False, m
 
     def userEmail_verified(self, email):
         m = 'UserQuery.userEmail_verified is deprecated: ' \
           'it should never be used. Use '\
           'gs.profile.email.base.queries.UserQuery.address_verified '\
           'instead.'
-        log.debug(m)
-        assert False
+        assert False, m
     
     # Verification methods: mostly deprecated and moved to 
     # gs.profile.email.verify.
@@ -45,32 +40,28 @@ class UserQuery(object):
           'it should never be used. Use '\
           'gs.profile.email.verify.queries.EmailQuery.set_verification_id '\
           'instead.'
-        log.debug(m)
-        assert False
+        assert False, m
         
     def remove_userEmail_verificationId(self, email):
         m = 'UserQuery.remove_userEmail_verificationId is deprecated: ' \
           'it should never be used. Use '\
           'gs.profile.email.verify.queries.EmailQuery.clear_verification_ids '\
           'instead.'
-        log.debug(m)
-        assert False
+        assert False, m
 
     def userEmail_verificationId_valid(self, verificationId):
         m = 'UserQuery.userEmail_verificationId_valid is deprecated: ' \
           'it should never be used. Use '\
           'gs.profile.email.verify.queries.VerificationQuery.verificationId_status '\
           'instead.'
-        log.debug(m)
-        assert False
+        assert False, m
 
     def verify_userEmail(self, verificationId):
         m = 'UserQuery.verify_userEmail is deprecated: it should ' \
           'never be used. Use '\
           'gs.profile.email.verify.queries.EmailQuery.verify_address '\
           'instead.'
-        log.debug(m)
-        assert False
+        assert False, m
 
     def unverify_userEmail(self, email):
         '''Set the email address as unverified'''
@@ -88,24 +79,21 @@ class UserQuery(object):
           'it should never be used. Use '\
           'gs.profile.email.base.queries.UserQuery.remove_address '\
           'instead.'
-        log.debug(m)
-        assert False
+        assert False, m
 
     def get_userEmail(self, preferred_only=False, verified_only=True):
         m = 'UserQuery.get_userEmail is deprecated: ' \
           'it should never be used. Use '\
           'gs.profile.email.base.queries.UserQuery.get_addresses '\
           'instead.'
-        log.debug(m)
-        assert False
+        assert False, m
         
     def set_preferredEmail(self, email_address, is_preferred):
         m = 'UserQuery.set_preferredEmail is deprecated: ' \
           'it should never be used. Use '\
           'gs.profile.email.base.queries.UserQuery.update_delivery '\
           'instead.'
-        log.debug(m)
-        assert False
+        assert False, m
 
     def clear_preferredEmail(self):
         uet = self.userEmailTable
@@ -115,7 +103,8 @@ class UserQuery(object):
         session = getSession()
         session.execute(u, params=d)
         mark_changed(session)
-
+        
+    # TODO: https://redmine.iopen.net/issues/3563
     def add_groupUserEmail(self, site_id, group_id, email_address):
         uet = self.groupUserEmailTable
         i = uet.insert()
@@ -183,17 +172,20 @@ class UserQuery(object):
             d = {'setting':setting}
 
         session = getSession()
-        session.execute(iOrU, parms = d)
+        session.execute(iOrU, params = d)
         mark_changed(session)
-    # --=mpj17==-- Up to here.
 
     def clear_groupEmailSetting(self, site_id, group_id):
         est = self.emailSettingTable        
         and_ = sa.and_
 
-        est.delete(and_(est.c.user_id==self.user_id,
-                        est.c.site_id==site_id,
-                        est.c.group_id==group_id)).execute()
+        d = est.delete(and_(est.c.user_id==self.user_id,
+                            est.c.site_id==site_id,
+                            est.c.group_id==group_id))
+
+        session = getSession()
+        session.execute(d)
+        mark_changed(d)
         
     def get_groupEmailSetting(self, site_id, group_id):
         """ Given a site_id and group_id, check to see if the user
@@ -201,37 +193,36 @@ class UserQuery(object):
         
         """
         est = self.emailSettingTable
-        statement = est.select()
-        statement.append_whereclause(est.c.user_id==self.user_id)
-        statement.append_whereclause(est.c.site_id==site_id)
-        statement.append_whereclause(est.c.group_id==group_id)
-        r = statement.execute()
-        
+        s = est.select()
+        s.append_whereclause(est.c.user_id==self.user_id)
+        s.append_whereclause(est.c.site_id==site_id)
+        s.append_whereclause(est.c.group_id==group_id)
+
+        session = getSession()
+        r = session.execute(s)
         setting = None
         if r.rowcount:
             result = r.fetchone()
             setting = result['setting']
-        
         return setting
-        
+
     def set_userPasswordResetVerificationId(self, verificationId):
-        prt = self.passwordResetTable
-        i = prt.insert()
-        i.execute(verification_id = verificationId, user_id = self.user_id)
+        m = 'Use gs.profile.password to reset a password'
+        assert False, m
 
     def clear_userPasswordResetVerificationIds(self):
-        prt = self.passwordResetTable
-        d = prt.delete(prt.c.user_id == self.user_id)
-        d.execute()
+        m = 'Use gs.profile.password to reset a password'
+        assert False, m
         
+    # TODO: See https://redmine.iopen.net/issues/600
     def get_latestNickname(self):
         unt = self.nicknameTable
-        statement = unt.select()
-        statement.append_whereclause(unt.c.user_id == self.user_id)
-        statement.order_by(sa.desc(unt.c.date))
-        statement.limit = 1
+        cols = [unt.c.nickname]
+        s = unt.select(cols, order_by = sa.desc(unt.c.date), limit = 1)
+        s.append_whereclause(unt.c.user_id == self.user_id)
         
-        r = statement.execute()
+        session = getSession(s)
+        r = session.execute(s)
         if r.rowcount:
             retval = r.fetchone()['nickname']
         else:
@@ -240,12 +231,19 @@ class UserQuery(object):
 
     def add_nickname(self, nickname):
         unt = self.nicknameTable
-        statement = unt.insert()
-        statement.execute(user_id = self.user_id, nickname = nickname,
-          date = datetime.datetime.now())
+        i = unt.insert()
+        d = {'user_id': self.user_id, 
+             'nickname': nickname,
+             'date': datetime.datetime.now()}
+        
+        session = getSession()
+        session.execute(i, params=d)
+        mark_changed(session)
 
     def clear_nicknames(self):
         unt = self.nicknameTable
         d = unt.delete(unt.c.user_id == self.user_id)
-        d.execute()
 
+        session = getSession()
+        session.execute(d)
+        mark_changed(session)

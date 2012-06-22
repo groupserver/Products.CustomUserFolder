@@ -1,4 +1,4 @@
-# coding=utf-8
+                # coding=utf-8
 # Copyright (C) 2003,2004 IOPEN Technologies Ltd.
 #
 # This program is free software; you can redistribute it and/or
@@ -89,7 +89,7 @@ class CustomUserFolder(UserFolderWithGroups):
         """
         email = email.lower()
         uet = getTable('user_email')
-        s = uet.select([uet.c.user_id], limit=1)
+        s = sa.select([uet.c.user_id], limit=1)
         s.append_whereclause(email == sa.func.lower(uet.c.email))
         
         session = getSession()

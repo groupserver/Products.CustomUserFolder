@@ -36,10 +36,23 @@ from Products.XWFCore.XWFUtils import locateDataDirectory
 from Products.XWFCore.cache import LRUCache
 from Products.XWFFileLibrary2.XWFVirtualFileFolder2 import DisplayFile
 from gs.image import GSImage
+from gs.profile.email.base.queries import UserEmailQuery
 from queries import UserQuery
 
 import logging
 log = logging.getLogger('CustomUser')
+
+def user_image_path(context, user_id): 
+        siteId = context.site_root().getId()
+        dataDir = locateDataDirectory("groupserver.user.image",
+                                              (siteId,))
+        fileName = '%s.jpg' % user_id
+        imagePath = os.path.join(dataDir, fileName)
+
+        retval = None
+        if os.path.isfile(imagePath):
+            retval = imagePath
+        return retval
 
 class CustomUser(User, Folder):
     """ A Custom user, based on the builtin user object.
@@ -450,16 +463,7 @@ class CustomUser(User, Folder):
         """ Get the image path for a user.
 
         """
-        siteId = self.site_root().getId()
-        dataDir = locateDataDirectory("groupserver.user.image",
-                                              (siteId,))
-        fileName = '%s.jpg' % self.getId()
-        imagePath = os.path.join(dataDir, fileName)
-
-        retval = None
-        if os.path.isfile(imagePath):
-            retval = imagePath
-        return retval
+        return user_image_path(self, self.getId())
     
     security.declareProtected(Perms.view, 'get_resized_image_path')
     def get_resized_image_path(self, x, y, maintain_aspect=True, only_smaller=True):
@@ -689,9 +693,9 @@ class CustomUser(User, Folder):
           'gs.profile.email.base.emailuser.EmailUser.get_delivery_addresses '\
           'instead. Called from %s.' % self.REQUEST['PATH_INFO']
         log.debug(m)
-        uq = UserQuery(self)
+        ueq = UserEmailQuery(self)
         
-        return uq.get_userEmail(preferred_only=True)        
+        return ueq.get_addresses(preferredOnly=True)        
     
     get_preferredEmailAddresses = get_defaultDeliveryEmailAddresses
     

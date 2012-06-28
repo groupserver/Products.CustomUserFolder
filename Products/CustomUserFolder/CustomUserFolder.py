@@ -277,7 +277,7 @@ class CustomUserFolder(UserFolderWithGroups):
         assert nickname
         assert type(nickname) in (str, unicode)
         unt = getTable('user_nickname')
-        s = unt.select([unt.c.user_id], limit = 1)
+        s = sa.select([unt.c.user_id], limit = 1)
         s.append_whereclause(unt.c.nickname == nickname)
         
         session = getSession()

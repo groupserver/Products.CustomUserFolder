@@ -127,7 +127,8 @@ class UserQuery(object):
 
         session = getSession()
         session.execute(d)
-        
+        mark_changed(session)       
+ 
     def get_groupUserEmail(self, site_id, group_id, verified_only=True):
         guet = self.groupUserEmailTable
         s = guet.select()
@@ -184,7 +185,8 @@ class UserQuery(object):
 
         session = getSession()
         session.execute(d)
-        
+        mark_changed(session)       
+ 
     def get_groupEmailSetting(self, site_id, group_id):
         """ Given a site_id and group_id, check to see if the user
             has any specific email settings.
@@ -244,3 +246,4 @@ class UserQuery(object):
 
         session = getSession()
         session.execute(d)
+        mark_changed(session)

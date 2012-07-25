@@ -39,6 +39,7 @@ from gs.image import GSImage
 from gs.profile.email.base.queries import UserEmailQuery
 from queries import UserQuery
 from gs.email import send_email
+from gs.profile.email.base.emailuser import EmailUserFromUser
 
 import logging
 log = logging.getLogger('CustomUser')
@@ -394,12 +395,9 @@ class CustomUser(User, Folder):
           'gs.profile.email.base.emailuser.EmailUser.get_addresses '\
           'instead. Called from %s.' % self.REQUEST['PATH_INFO']
         log.debug(m)
-        # --=mpj17=-- Note that registration requires this to be able
-        #   to return all the user's email addresses, not just the 
-        #   verified addresses.
-        uq = UserQuery(self)
-        
-        return uq.get_userEmail(preferred_only=False, verified_only=False)
+
+        eu = EmailUserFromUser(self)
+        return eu.get_addresses()
 
     security.declareProtected(Perms.manage_properties, 'validate_emailAddresses')
     def validate_emailAddresses(self):
@@ -581,11 +579,8 @@ class CustomUser(User, Folder):
           'gs.profile.email.base.emailuser.EmailUser.get_verified_addresses '\
           'instead. Called from %s.' % self.REQUEST['PATH_INFO']
         log.debug(m)
-        uq = UserQuery(self)
-        
-        retval = uq.get_userEmail(preferred_only=False, verified_only=True)    
-        assert type(retval) == list
-        return retval
+        eu = EmailUserFromUser(self)
+        return eu.get_verified_addresses()
         
     security.declareProtected(Perms.manage_properties, 
       'get_preferredEmailAddresses')
@@ -600,9 +595,8 @@ class CustomUser(User, Folder):
           'gs.profile.email.base.emailuser.EmailUser.get_delivery_addresses '\
           'instead. Called from %s.' % self.REQUEST['PATH_INFO']
         log.debug(m)
-        ueq = UserEmailQuery(self)
-        
-        return ueq.get_addresses(preferredOnly=True)        
+        eu = EmailUserFromUser(self)
+        return eu.get_delivery_addresses()
     
     get_preferredEmailAddresses = get_defaultDeliveryEmailAddresses
     
@@ -621,9 +615,7 @@ class CustomUser(User, Folder):
         email = self._validateAndNormalizeEmail(email)
 
         uq = UserQuery(self)
-        
-        user_email = uq.get_userEmail(preferred_only=False, 
-                                      verified_only=False)
+        user_email = self.get_emailAddresses() 
     
         # if we don't have the email address in the database yet, add it
         # and set it as preferred

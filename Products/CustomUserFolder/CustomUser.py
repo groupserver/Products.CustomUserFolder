@@ -449,9 +449,10 @@ class CustomUser(User, Folder):
           'instead. Called from %s.' % self.REQUEST['PATH_INFO']
         log.debug(m)
         email = self._validateAndNormalizeEmail(email)
-        uq = UserQuery(self)        
-        uq.add_userEmail(email, is_preferred)
         
+        eu = EmailUserFromUser(self)
+        eu.add_address(email, is_preferred)
+
         m = 'Added the email address <%s> to %s (%s)' %\
           (email, self.getProperty('fn', ''), self.getId())
         log.info(m)
@@ -552,15 +553,13 @@ class CustomUser(User, Folder):
           'instead. Called from %s.' % self.REQUEST['PATH_INFO']
         log.debug(m)
         
-        uq = UserQuery(self)
-
         email = self._validateAndNormalizeEmail(email)
+        eu = EmailUserFromUser(self)
+        eu.remove_address(email)
 
-        uq.remove_userEmail(email)        
         m = 'remove_emailAddress: removed email address '\
           '<%s> for "%s"' % (email, self.getId())
         log.info(m)
-
 
     security.declareProtected(Perms.view, 
       'get_verifiedEmailAddresses')
@@ -614,20 +613,20 @@ class CustomUser(User, Folder):
         log.debug(m)
         email = self._validateAndNormalizeEmail(email)
 
-        uq = UserQuery(self)
         user_email = self.get_emailAddresses() 
-    
+        eu = EmailUserFromUser(self)
+        
         # if we don't have the email address in the database yet, add it
         # and set it as preferred
         if email not in user_email:
-            uq.add_userEmail(email, is_preferred=True)
+            eu.add_address(email, is_preferred=True)
             m = u'add_defaultDeliveryEmailAddress: Added the preferred '\
               u'address <%s> to the user %s (%s)' %\
               (email, self.getProperty('fn', ''), self.getId())
             log.info(m)
         # otherwise just set it as preferred
         else:
-            uq.set_preferredEmail(email, is_preferred=True)
+            eu.set_delivery(email)
             m = u'add_defaultDeliveryEmailAddress: Set the address <%s>' \
               'as preferred to the user %s (%s)' %\
               (email, self.getProperty('fn', ''), self.getId())
@@ -666,7 +665,9 @@ class CustomUser(User, Folder):
 
         email = self._validateAndNormalizeEmail(email)
 
-        uq.set_preferredEmail(email, is_preferred=False)        
+        user_email = self.get_emailAddresses()
+        eu = EmailUserFromUser(self)
+        eu.remove_delivery(email)
         
         m = 'Added <%s> to the list of preferred email addresses for '\
           '%s (%s)' % (email, self.getProperty('fn', ''), self.getId())

@@ -33,7 +33,6 @@ from zope.interface import implements
 from Products.CustomUserFolder.interfaces import ICustomUser
 from Products.XWFCore import XWFUtils
 from Products.XWFCore.XWFUtils import locateDataDirectory
-from Products.XWFCore.cache import LRUCache
 from Products.XWFFileLibrary2.XWFVirtualFileFolder2 import DisplayFile
 from gs.image import GSImage
 from gs.profile.email.base.queries import UserEmailQuery
@@ -92,9 +91,6 @@ class CustomUser(User, Folder):
         )
 
     _properties = _properties_def
-    
-    userNicknameCache = LRUCache("userNickname")
-    userNicknameCache.set_max_objects(512)
     
     security.declarePrivate('init_properties')
     def init_properties(self):
@@ -934,46 +930,26 @@ class CustomUser(User, Folder):
     # Nickname related methods.
     
     def get_canonicalNickname(self):
-        cacheKey = '%s:%s' % (self.site_root().getId(), self.getId())
-        
-        if self.userNicknameCache.has_key(cacheKey):
-            nickname = self.userNicknameCache.get(cacheKey)
-        else:
-            uq = UserQuery(self)
-            try:
-                nickname = uq.get_latestNickname()
-                self.userNicknameCache.add(cacheKey, nickname)
-            except:
-                nickname = None
-        
+        uq = UserQuery(self)
+        nickname = uq.get_latestNickname()
         if nickname == None:
             nickname = self.getId()
 
         return nickname
         
     def add_nickname(self, nickname):
-        cacheKey = '%s:%s' % (self.site_root().getId(), self.getId())
-
         uq = UserQuery(self)
         uq.add_nickname(nickname)
         m = 'add_nickname: Added nickname "%s" to %s (%s)' %\
           (nickname, self.getProperty('fn', ''), self.getId())
         log.info(m)
-
-        # update the nickname cache, since the latest nickname added is also
-        # canonical        
-        self.userNicknameCache.add(cacheKey, nickname)
         
     def clear_nicknames(self):
-        cacheKey = '%s:%s' % (self.site_root().getId(), self.getId())
-
         uq = UserQuery(self)
         uq.clear_nicknames()
         m = 'clear_nicknames: Cleared nicknames from  %s (%s)' %\
           (self.getProperty('fn', ''), self.getId())
         log.info(m)
-
-        self.userNicknameCache.remove(cacheKey)
 
     def clear_groups(self):
         acl_users = getattr(self, 'acl_users', None)

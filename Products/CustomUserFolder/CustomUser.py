@@ -667,7 +667,7 @@ class CustomUser(User, Folder):
 
         user_email = self.get_emailAddresses()
         eu = EmailUserFromUser(self)
-        eu.remove_delivery(email)
+        eu.drop_delivery(email)
         
         m = 'Added <%s> to the list of preferred email addresses for '\
           '%s (%s)' % (email, self.getProperty('fn', ''), self.getId())

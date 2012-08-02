@@ -1031,7 +1031,8 @@ def removedCustomUser(ob, event):
     uid = ob.getId()
     ob.clear_groups()
     ob.clear_addresses()
-    ob.clear_userPasswordResetVerificationIds()
+    # FIX
+    # ob.clear_userPasswordResetVerificationIds()
     ob.clear_nicknames()
     m = u'removedCustomUser: Deleted "%s"' % uid
     log.info(m)

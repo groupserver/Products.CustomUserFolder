@@ -218,10 +218,10 @@ class UserQuery(object):
     def get_latestNickname(self):
         unt = self.nicknameTable
         cols = [unt.c.nickname]
-        s = unt.select(cols, order_by = sa.desc(unt.c.date), limit = 1)
+        s = sa.select(cols, order_by = sa.desc(unt.c.date), limit = 1)
         s.append_whereclause(unt.c.user_id == self.user_id)
         
-        session = getSession(s)
+        session = getSession()
         r = session.execute(s)
         if r.rowcount:
             retval = r.fetchone()['nickname']

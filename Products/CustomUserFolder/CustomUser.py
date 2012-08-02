@@ -33,7 +33,6 @@ from zope.interface import implements
 from Products.CustomUserFolder.interfaces import ICustomUser
 from Products.XWFCore import XWFUtils
 from Products.XWFCore.XWFUtils import locateDataDirectory
-from Products.XWFCore.cache import LRUCache
 from Products.XWFFileLibrary2.XWFVirtualFileFolder2 import DisplayFile
 from gs.image import GSImage
 from gs.profile.email.base.queries import UserEmailQuery
@@ -92,9 +91,6 @@ class CustomUser(User, Folder):
         )
 
     _properties = _properties_def
-    
-    userNicknameCache = LRUCache("userNickname")
-    userNicknameCache.set_max_objects(512)
     
     security.declarePrivate('init_properties')
     def init_properties(self):
@@ -449,9 +445,10 @@ class CustomUser(User, Folder):
           'instead. Called from %s.' % self.REQUEST['PATH_INFO']
         log.debug(m)
         email = self._validateAndNormalizeEmail(email)
-        uq = UserQuery(self)        
-        uq.add_userEmail(email, is_preferred)
         
+        eu = EmailUserFromUser(self)
+        eu.add_address(email, is_preferred)
+
         m = 'Added the email address <%s> to %s (%s)' %\
           (email, self.getProperty('fn', ''), self.getId())
         log.info(m)
@@ -552,15 +549,13 @@ class CustomUser(User, Folder):
           'instead. Called from %s.' % self.REQUEST['PATH_INFO']
         log.debug(m)
         
-        uq = UserQuery(self)
-
         email = self._validateAndNormalizeEmail(email)
+        eu = EmailUserFromUser(self)
+        eu.remove_address(email)
 
-        uq.remove_userEmail(email)        
         m = 'remove_emailAddress: removed email address '\
           '<%s> for "%s"' % (email, self.getId())
         log.info(m)
-
 
     security.declareProtected(Perms.view, 
       'get_verifiedEmailAddresses')
@@ -614,20 +609,20 @@ class CustomUser(User, Folder):
         log.debug(m)
         email = self._validateAndNormalizeEmail(email)
 
-        uq = UserQuery(self)
         user_email = self.get_emailAddresses() 
-    
+        eu = EmailUserFromUser(self)
+        
         # if we don't have the email address in the database yet, add it
         # and set it as preferred
         if email not in user_email:
-            uq.add_userEmail(email, is_preferred=True)
+            eu.add_address(email, is_preferred=True)
             m = u'add_defaultDeliveryEmailAddress: Added the preferred '\
               u'address <%s> to the user %s (%s)' %\
               (email, self.getProperty('fn', ''), self.getId())
             log.info(m)
         # otherwise just set it as preferred
         else:
-            uq.set_preferredEmail(email, is_preferred=True)
+            eu.set_delivery(email)
             m = u'add_defaultDeliveryEmailAddress: Set the address <%s>' \
               'as preferred to the user %s (%s)' %\
               (email, self.getProperty('fn', ''), self.getId())
@@ -666,7 +661,9 @@ class CustomUser(User, Folder):
 
         email = self._validateAndNormalizeEmail(email)
 
-        uq.set_preferredEmail(email, is_preferred=False)        
+        user_email = self.get_emailAddresses()
+        eu = EmailUserFromUser(self)
+        eu.drop_delivery(email)
         
         m = 'Added <%s> to the list of preferred email addresses for '\
           '%s (%s)' % (email, self.getProperty('fn', ''), self.getId())
@@ -933,46 +930,26 @@ class CustomUser(User, Folder):
     # Nickname related methods.
     
     def get_canonicalNickname(self):
-        cacheKey = '%s:%s' % (self.site_root().getId(), self.getId())
-        
-        if self.userNicknameCache.has_key(cacheKey):
-            nickname = self.userNicknameCache.get(cacheKey)
-        else:
-            uq = UserQuery(self)
-            try:
-                nickname = uq.get_latestNickname()
-                self.userNicknameCache.add(cacheKey, nickname)
-            except:
-                nickname = None
-        
+        uq = UserQuery(self)
+        nickname = uq.get_latestNickname()
         if nickname == None:
             nickname = self.getId()
 
         return nickname
         
     def add_nickname(self, nickname):
-        cacheKey = '%s:%s' % (self.site_root().getId(), self.getId())
-
         uq = UserQuery(self)
         uq.add_nickname(nickname)
         m = 'add_nickname: Added nickname "%s" to %s (%s)' %\
           (nickname, self.getProperty('fn', ''), self.getId())
         log.info(m)
-
-        # update the nickname cache, since the latest nickname added is also
-        # canonical        
-        self.userNicknameCache.add(cacheKey, nickname)
         
     def clear_nicknames(self):
-        cacheKey = '%s:%s' % (self.site_root().getId(), self.getId())
-
         uq = UserQuery(self)
         uq.clear_nicknames()
         m = 'clear_nicknames: Cleared nicknames from  %s (%s)' %\
           (self.getProperty('fn', ''), self.getId())
         log.info(m)
-
-        self.userNicknameCache.remove(cacheKey)
 
     def clear_groups(self):
         acl_users = getattr(self, 'acl_users', None)

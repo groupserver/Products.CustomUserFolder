@@ -24,6 +24,7 @@ setup(name='Products.CustomUserFolder',
       install_requires=[
           'setuptools',
           'gs.database',
+          'Products.NuxUserGroups',
           # -*- Extra requirements: -*-
       ],
       entry_points="""

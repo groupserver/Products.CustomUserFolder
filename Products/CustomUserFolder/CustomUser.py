@@ -33,7 +33,6 @@ from zope.interface import implements
 from Products.CustomUserFolder.interfaces import ICustomUser
 from Products.XWFCore import XWFUtils
 from Products.XWFCore.XWFUtils import locateDataDirectory
-from Products.XWFFileLibrary2.XWFVirtualFileFolder2 import DisplayFile
 from gs.image import GSImage
 from gs.profile.email.base.queries import UserEmailQuery
 from queries import UserQuery
@@ -288,36 +287,6 @@ class CustomUser(User, Folder):
         """
         self._properties = self._properties_def
     
-    security.declareProtected(Perms.view, 'photo')
-    def photo(self):
-        """ Purely a helper method to get the image of a user.
-        
-        """
-        imageObject = self.get_image(url_only=False)
-        if not imageObject:
-            return None
-        
-        self.REQUEST.response.setHeader('Cache-Control',
-                                        'private; max-age=1200')
-        
-        if self.get_xsendfile_header():
-            # actually not an imageObject, just the correct headers
-            # for the file to be downloaded
-            return imageObject
-
-        return DisplayFile(imageObject, self.REQUEST).show()
-
-    security.declareProtected(Perms.view, 'photoObject')
-    def photoObject(self):
-        """ Purely a helper method to get the image of a user.
-        
-        """
-        imageObject = self.get_image(url_only=False)
-        if not imageObject:
-            return None
-
-        return imageObject
-  
     def get_xsendfile_header(self):
         sendfile_header = None
         # check that we're actually being called from a browser first

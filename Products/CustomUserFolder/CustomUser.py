@@ -38,6 +38,7 @@ from gs.profile.email.base.queries import UserEmailQuery
 from queries import UserQuery
 from gs.email import send_email
 from gs.profile.email.base.emailuser import EmailUserFromUser
+from gs.profile.notify.interfaces import IGSNotifyUser
 
 import logging
 log = logging.getLogger('CustomUser')
@@ -193,7 +194,8 @@ class CustomUser(User, Folder):
             groupsInfo.clear_groups_cache()
 
         try:
-            self.send_notification('add_group', group, n_dict)
+            notify = IGSNotifyUser(self)
+            notify.send_notification('add_group', group, n_dict)
         except:
             # we really can't do much, because if we fail here, we may
             # cause the person to get an email over and over if they're
@@ -271,7 +273,8 @@ class CustomUser(User, Folder):
             groupsInfo.clear_groups_cache()
 
         try:
-            self.send_notification('del_group', group, n_dict)
+            notify = IGSNotifyUser(self)
+            notify.send_notification('del_group', group, n_dict)
         except:
             # we really can't do much, because if we fail here, we may
             # cause the person to get an email over and over if they're

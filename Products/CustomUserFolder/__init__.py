@@ -17,13 +17,17 @@
 # You MUST follow the rules in http://iopen.net/STYLE before checking in code
 # to the trunk. Code which does not follow the rules will be rejected.
 #
-import CustomUserFolder, CustomUser
-import audituser
+#lint:disable
+from __future__ import absolute_import
+import .CustomUserFolder
+import .CustomUser
+import .audituser
 
+#lint:enable
 from AccessControl import ModuleSecurityInfo
-from AccessControl import allow_class, allow_module, allow_type
+from AccessControl import allow_class
 
-from queries import UserQuery
+from .queries import UserQuery
 q_security = ModuleSecurityInfo('Products.CustomUserFolder.queries')
 q_security.declarePublic('UserQuery')
 allow_class(UserQuery)

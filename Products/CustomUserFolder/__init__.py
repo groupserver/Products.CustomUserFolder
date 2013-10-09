@@ -18,16 +18,15 @@
 # to the trunk. Code which does not follow the rules will be rejected.
 #
 #lint:disable
-from __future__ import absolute_import
-import .CustomUserFolder
-import .CustomUser
-import .audituser
+import CustomUserFolder
+import CustomUser
+import audituser
 
 #lint:enable
 from AccessControl import ModuleSecurityInfo
 from AccessControl import allow_class
 
-from .queries import UserQuery
+from queries import UserQuery
 q_security = ModuleSecurityInfo('Products.CustomUserFolder.queries')
 q_security.declarePublic('UserQuery')
 allow_class(UserQuery)

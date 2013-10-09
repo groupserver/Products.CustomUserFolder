@@ -1,10 +1,24 @@
-# coding=utf-8
-import pytz, datetime
+# -*- coding: utf-8 -*-
+##############################################################################
+#
+# Copyright © 2013 OnlineGroups.net and Contributors.
+# All Rights Reserved.
+#
+# This software is subject to the provisions of the Zope Public License,
+# Version 2.1 (ZPL).  A copy of the ZPL should accompany this distribution.
+# THIS SOFTWARE IS PROVIDED "AS IS" AND ANY AND ALL EXPRESS OR IMPLIED
+# WARRANTIES ARE DISCLAIMED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+# WARRANTIES OF TITLE, MERCHANTABILITY, AGAINST INFRINGEMENT, AND FITNESS
+# FOR A PARTICULAR PURPOSE.
+#
+##############################################################################
+import datetime
 import sqlalchemy as sa
-from zope.sqlalchemy import mark_changed 
+from zope.sqlalchemy import mark_changed
 from gs.database import getTable, getSession
 
 possible_settings = ['webonly', 'digest']
+
 
 class UserQuery(object):
     def __init__(self, context, da=None):
@@ -32,8 +46,8 @@ class UserQuery(object):
           'gs.profile.email.base.queries.UserQuery.address_verified '\
           'instead.'
         assert False, m
-    
-    # Verification methods: mostly deprecated and moved to 
+
+    # Verification methods: mostly deprecated and moved to
     # gs.profile.email.verify.
     def add_userEmail_verificationId(self, verificationId, email):
         m = 'UserQuery.add_userEmail_verificationId is deprecated: ' \
@@ -41,7 +55,7 @@ class UserQuery(object):
           'gs.profile.email.verify.queries.EmailQuery.set_verification_id '\
           'instead.'
         assert False, m
-        
+
     def remove_userEmail_verificationId(self, email):
         m = 'UserQuery.remove_userEmail_verificationId is deprecated: ' \
           'it should never be used. Use '\
@@ -67,13 +81,13 @@ class UserQuery(object):
         '''Set the email address as unverified'''
         uet = self.userEmailTable
         u = uet.update(sa.func.lower(uet.c.email) == email.lower())
-        d = {'verified_date': None }
+        d = {'verified_date': None, }
 
         session = getSession()
         session.execute(u, params=d)
         mark_changed(session)
         return email
-    
+
     def remove_userEmail(self, email_address):
         m = 'UserQuery.remove_userEmail is deprecated: ' \
           'it should never be used. Use '\
@@ -87,7 +101,7 @@ class UserQuery(object):
           'gs.profile.email.base.queries.UserQuery.get_addresses '\
           'instead.'
         assert False, m
-        
+
     def set_preferredEmail(self, email_address, is_preferred):
         m = 'UserQuery.set_preferredEmail is deprecated: ' \
           'it should never be used. Use '\
@@ -97,13 +111,13 @@ class UserQuery(object):
 
     def clear_preferredEmail(self):
         uet = self.userEmailTable
-        u = uet.update(uet.c.user_id==self.user_id)
+        u = uet.update(uet.c.user_id == self.user_id)
         d = {'is_preferred': False}
 
         session = getSession()
         session.execute(u, params=d)
         mark_changed(session)
-        
+
     # TODO: https://redmine.iopen.net/issues/3563
     def add_groupUserEmail(self, site_id, group_id, email_address):
         uet = self.groupUserEmailTable
@@ -116,30 +130,31 @@ class UserQuery(object):
         session = getSession()
         session.execute(i, params=d)
         mark_changed(session)
-        
+
     def remove_groupUserEmail(self, site_id, group_id, email_address):
-        uet = self.groupUserEmailTable        
+        uet = self.groupUserEmailTable
         and_ = sa.and_
-        d = uet.delete(and_(uet.c.user_id==self.user_id,
-                            uet.c.site_id==site_id,
-                            uet.c.group_id==group_id,
-                            sa.func.lower(uet.c.email)==email_address.lower()))
+        e = email_address.lower()
+        d = uet.delete(and_(uet.c.user_id == self.user_id,
+                            uet.c.site_id == site_id,
+                            uet.c.group_id == group_id,
+                            sa.func.lower(uet.c.email) == e))
 
         session = getSession()
         session.execute(d)
-        mark_changed(session)       
- 
+        mark_changed(session)
+
     def get_groupUserEmail(self, site_id, group_id, verified_only=True):
         guet = self.groupUserEmailTable
         s = guet.select()
-        s.append_whereclause(guet.c.user_id==self.user_id)
-        s.append_whereclause(guet.c.site_id==site_id)
-        s.append_whereclause(guet.c.group_id==group_id)
+        s.append_whereclause(guet.c.user_id == self.user_id)
+        s.append_whereclause(guet.c.site_id == site_id)
+        s.append_whereclause(guet.c.group_id == group_id)
         if verified_only:
             uet = self.userEmailTable
             s.append_whereclause(uet.c.user_id == guet.c.user_id)
-            s.append_whereclause(uet.c.verified_date!=None)
-    
+            s.append_whereclause(uet.c.verified_date != None)  # lint:ok
+
         session = getSession()
         r = session.execute(s)
         email_addresses = []
@@ -147,7 +162,7 @@ class UserQuery(object):
             email_address = row['email']
             if email_address not in email_addresses:
                 email_addresses.append(email_address)
-                
+
         return email_addresses
 
     def set_groupEmailSetting(self, site_id, group_id, setting):
@@ -164,39 +179,39 @@ class UserQuery(object):
                  'site_id': site_id,
                  'group_id': group_id,
                  'setting': setting}
-            
+
         else:
-            iOrU = est.update(and_(est.c.user_id==self.context.getUserName(),
-                                   est.c.site_id==site_id,
-                                   est.c.group_id==group_id))
-            d = {'setting':setting}
+            iOrU = est.update(and_(est.c.user_id == self.context.getUserName(),
+                                   est.c.site_id == site_id,
+                                   est.c.group_id == group_id))
+            d = {'setting': setting, }
 
         session = getSession()
-        session.execute(iOrU, params = d)
+        session.execute(iOrU, params=d)
         mark_changed(session)
 
     def clear_groupEmailSetting(self, site_id, group_id):
-        est = self.emailSettingTable        
+        est = self.emailSettingTable
         and_ = sa.and_
 
-        d = est.delete(and_(est.c.user_id==self.user_id,
-                            est.c.site_id==site_id,
-                            est.c.group_id==group_id))
+        d = est.delete(and_(est.c.user_id == self.user_id,
+                            est.c.site_id == site_id,
+                            est.c.group_id == group_id))
 
         session = getSession()
         session.execute(d)
-        mark_changed(session)       
- 
+        mark_changed(session)
+
     def get_groupEmailSetting(self, site_id, group_id):
         """ Given a site_id and group_id, check to see if the user
             has any specific email settings.
-        
+
         """
         est = self.emailSettingTable
         s = est.select()
-        s.append_whereclause(est.c.user_id==self.user_id)
-        s.append_whereclause(est.c.site_id==site_id)
-        s.append_whereclause(est.c.group_id==group_id)
+        s.append_whereclause(est.c.user_id == self.user_id)
+        s.append_whereclause(est.c.site_id == site_id)
+        s.append_whereclause(est.c.group_id == group_id)
 
         session = getSession()
         r = session.execute(s)
@@ -213,14 +228,14 @@ class UserQuery(object):
     def clear_userPasswordResetVerificationIds(self):
         m = 'Use gs.profile.password to reset a password'
         assert False, m
-        
+
     # TODO: See https://redmine.iopen.net/issues/600
     def get_latestNickname(self):
         unt = self.nicknameTable
         cols = [unt.c.nickname]
-        s = sa.select(cols, order_by = sa.desc(unt.c.date), limit = 1)
+        s = sa.select(cols, order_by=sa.desc(unt.c.date), limit=1)
         s.append_whereclause(unt.c.user_id == self.user_id)
-        
+
         session = getSession()
         r = session.execute(s)
         if r.rowcount:
@@ -232,10 +247,10 @@ class UserQuery(object):
     def add_nickname(self, nickname):
         unt = self.nicknameTable
         i = unt.insert()
-        d = {'user_id': self.user_id, 
+        d = {'user_id': self.user_id,
              'nickname': nickname,
              'date': datetime.datetime.now()}
-        
+
         session = getSession()
         session.execute(i, params=d)
         mark_changed(session)

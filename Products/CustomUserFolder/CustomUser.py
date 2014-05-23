@@ -35,7 +35,6 @@ from Products.XWFCore import XWFUtils
 from Products.XWFCore.XWFUtils import locateDataDirectory
 from gs.image import GSImage
 from queries import UserQuery
-from gs.profile.email.base.emailuser import EmailUserFromUser
 from gs.profile.notify.interfaces import IGSNotifyUser
 
 import logging
@@ -395,9 +394,7 @@ class CustomUser(User, Folder):
           'gs.profile.email.base.emailuser.EmailUser.get_addresses '\
           'instead. Called from %s.' % self.REQUEST['PATH_INFO']
         log.debug(m)
-
-        eu = EmailUserFromUser(self)
-        return eu.get_addresses()
+        raise NotImplemented
 
     security.declareProtected(Perms.manage_properties,
                                 'validate_emailAddresses')
@@ -452,14 +449,7 @@ class CustomUser(User, Folder):
           'gs.profile.email.base.emailuser.EmailUser.add_address '\
           'instead. Called from %s.' % self.REQUEST['PATH_INFO']
         log.debug(m)
-        email = self._validateAndNormalizeEmail(email)
-
-        eu = EmailUserFromUser(self)
-        eu.add_address(email, is_preferred)
-
-        m = 'Added the email address <%s> to %s (%s)' %\
-          (email, self.getProperty('fn', ''), self.getId())
-        log.info(m)
+        raise NotImplemented
 
     # Email verification methods. Most of these are deprecated and
     # have been moved to gs.profile.email.verify.
@@ -558,14 +548,7 @@ class CustomUser(User, Folder):
           'gs.profile.email.base.emailuser.EmailUser.remove_address '\
           'instead. Called from %s.' % self.REQUEST['PATH_INFO']
         log.debug(m)
-
-        email = self._validateAndNormalizeEmail(email)
-        eu = EmailUserFromUser(self)
-        eu.remove_address(email)
-
-        m = 'remove_emailAddress: removed email address '\
-          '<%s> for "%s"' % (email, self.getId())
-        log.info(m)
+        raise NotImplemented
 
     security.declareProtected(Perms.view,
       'get_verifiedEmailAddresses')
@@ -585,8 +568,7 @@ class CustomUser(User, Folder):
           'gs.profile.email.base.emailuser.EmailUser.get_verified_addresses '\
           'instead. Called from %s.' % self.REQUEST['PATH_INFO']
         log.debug(m)
-        eu = EmailUserFromUser(self)
-        return eu.get_verified_addresses()
+        raise NotImplemented
 
     security.declareProtected(Perms.manage_properties,
       'get_preferredEmailAddresses')
@@ -602,8 +584,7 @@ class CustomUser(User, Folder):
           'gs.profile.email.base.emailuser.EmailUser.get_delivery_addresses '\
           'instead. Called from %s.' % self.REQUEST['PATH_INFO']
         log.debug(m)
-        eu = EmailUserFromUser(self)
-        return eu.get_delivery_addresses()
+        raise NotImplemented
 
     get_preferredEmailAddresses = get_defaultDeliveryEmailAddresses
 
@@ -620,26 +601,7 @@ class CustomUser(User, Folder):
           'gs.profile.email.base.emailuser.EmailUser.set_delivery '\
           'instead. Called from %s.' % self.REQUEST['PATH_INFO']
         log.debug(m)
-        email = self._validateAndNormalizeEmail(email)
-
-        user_email = self.get_emailAddresses()
-        eu = EmailUserFromUser(self)
-
-        # if we don't have the email address in the database yet, add it
-        # and set it as preferred
-        if email not in user_email:
-            eu.add_address(email, is_preferred=True)
-            m = u'add_defaultDeliveryEmailAddress: Added the preferred '\
-              u'address <%s> to the user %s (%s)' %\
-              (email, self.getProperty('fn', ''), self.getId())
-            log.info(m)
-        # otherwise just set it as preferred
-        else:
-            eu.set_delivery(email)
-            m = u'add_defaultDeliveryEmailAddress: Set the address <%s>' \
-              'as preferred to the user %s (%s)' %\
-              (email, self.getProperty('fn', ''), self.getId())
-            log.info(m)
+        raise NotImplemented
 
     add_preferredEmailAddress = add_defaultDeliveryEmailAddress
 
@@ -673,17 +635,7 @@ class CustomUser(User, Folder):
           'gs.profile.email.base.emailuser.EmailUser.drop_delivery '\
           'instead. Called from %s.' % self.REQUEST['PATH_INFO']
         log.debug(m)
-        uq = UserQuery(self)
-
-        email = self._validateAndNormalizeEmail(email)
-
-        user_email = self.get_emailAddresses()
-        eu = EmailUserFromUser(self)
-        eu.drop_delivery(email)
-
-        m = 'Added <%s> to the list of preferred email addresses for '\
-          '%s (%s)' % (email, self.getProperty('fn', ''), self.getId())
-        log.info(m)
+        raise NotImplemented
 
     remove_preferredEmailAddress = remove_defaultDeliveryEmailAddress
 

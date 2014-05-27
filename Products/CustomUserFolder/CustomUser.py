@@ -35,7 +35,6 @@ from Products.XWFCore import XWFUtils
 from Products.XWFCore.XWFUtils import locateDataDirectory
 from gs.image import GSImage
 from queries import UserQuery
-from gs.profile.notify.interfaces import IGSNotifyUser
 
 import logging
 log = logging.getLogger('CustomUser')
@@ -202,6 +201,7 @@ class CustomUser(User, Folder):
             groupsInfo.clear_groups_cache()
 
         try:
+            from gs.profile.notify.interfaces import IGSNotifyUser
             notify = IGSNotifyUser(self)
             notify.send_notification('add_group', group, n_dict)
         except:
@@ -298,6 +298,7 @@ class CustomUser(User, Folder):
             groupsInfo.clear_groups_cache()
 
         try:
+            from gs.profile.notify.interfaces import IGSNotifyUser
             notify = IGSNotifyUser(self)
             notify.send_notification('del_group', group, n_dict)
         except:

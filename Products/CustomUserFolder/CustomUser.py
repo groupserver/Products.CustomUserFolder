@@ -18,12 +18,19 @@
 # You MUST follow the rules in http://iopen.net/STYLE before checking in code
 # to the trunk. Code which does not follow the rules will be rejected.
 #
-import rfc822, re, os
+from __future__ import absolute_import
+import rfc822
+import re
+import os
 try:
     # zope 2.12+
-    from zope.container.interfaces import IObjectRemovedEvent,IObjectAddedEvent #@UnresolvedImport @UnusedImport
-except:
-    from zope.app.container.interfaces import IObjectRemovedEvent,IObjectAddedEvent #@Reimport
+    from zope.container.interfaces import (IObjectRemovedEvent,
+                                            IObjectAddedEvent)
+except ImportError:
+    #lint:disable
+    from zope.app.container.interfaces import (IObjectRemovedEvent,
+                                                IObjectAddedEvent)
+    #lint:enable
 from AccessControl import ClassSecurityInfo, Permissions as Perms, allow_class
 from AccessControl.User import User
 from App.class_init import InitializeClass
@@ -34,7 +41,7 @@ from Products.CustomUserFolder.interfaces import ICustomUser
 from Products.XWFCore import XWFUtils
 from Products.XWFCore.XWFUtils import locateDataDirectory
 from gs.image import GSImage
-from queries import UserQuery
+from .queries import UserQuery
 
 import logging
 log = logging.getLogger('CustomUser')

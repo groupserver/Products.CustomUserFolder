@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
 #
-# Copyright © 2013 OnlineGroups.net and Contributors.
+# Copyright © 2013, 2014 OnlineGroups.net and Contributors.
 # All Rights Reserved.
 #
 # This software is subject to the provisions of the Zope Public License,
@@ -28,6 +28,8 @@ setup(name='Products.CustomUserFolder',
       keywords='',
       author='Richard Waid',
       author_email='richard@iopen.net',
+      maintainer='Michael JasonSmith',
+      maintainer_email='mpj17@onlinegroups.net',
       url='http://groupserver.org',
       license='ZPL',
       packages=find_packages(exclude=['ez_setup']),
@@ -36,10 +38,18 @@ setup(name='Products.CustomUserFolder',
       zip_safe=False,
       install_requires=[
           'setuptools',
+          'sqlalchemy',
+          'zope.component',
+          'zope.interface',
+          'zope.schema'
+          'zope.sqlalchemy',
+          'AccessControl',
+          'Zope2',
           'gs.database',
-          'Products.NuxUserGroups',
           'gs.email',
-          # -*- Extra requirements: -*-
+          'gs.image',
+          'Products.NuxUserGroups',
+          'Products.XWFCore',
       ],
       entry_points="""
       # -*- Entry points: -*-

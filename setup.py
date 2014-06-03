@@ -12,16 +12,22 @@
 # FOR A PARTICULAR PURPOSE.
 #
 ##############################################################################
-from setuptools import setup, find_packages
+import codecs
 import os
-
+from setuptools import setup, find_packages
 from version import get_version
+
+version = get_version()
+
+with codecs.open('README.txt', encoding='utf-8') as f:
+    long_description = f.read()
+with codecs.open(os.path.join("docs", "HISTORY.txt"), encoding='utf-8') as f:
+    long_description += '\n' + f.read()
 
 setup(name='Products.CustomUserFolder',
       version=get_version(),
       description="",
-      long_description=open("README.txt").read() + "\n" +
-                       open(os.path.join("docs", "HISTORY.txt")).read(),
+      long_description=long_description,
       classifiers=[
         "Programming Language :: Python",
         ],
@@ -41,7 +47,7 @@ setup(name='Products.CustomUserFolder',
           'sqlalchemy',
           'zope.component',
           'zope.interface',
-          'zope.schema'
+          'zope.schema',
           'zope.sqlalchemy',
           'AccessControl',
           'Zope2',

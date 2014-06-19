@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <configure xmlns="http://namespaces.zope.org/zope"
-  xmlns:browser="http://namespaces.zope.org/browser"
-  xmlns:rdb="http://namespaces.zope.org/rdb"
-  xmlns:sqlos="http://namespaces.sqlobject.org/sqlos"
-  xmlns:five="http://namespaces.zope.org/five">
+           xmlns:browser="http://namespaces.zope.org/browser">
 
   <class class="OFS.Folder.Folder">
       <implements interface="zope.app.folder.interfaces.IFolder" />
@@ -12,17 +9,17 @@
   <class class=".CustomUser.CustomUser">
       <implements interface=".interfaces.ICustomUser" />
   </class>
-  
-  <interface 
+
+  <interface
     interface=".interfaces.ICustomUser" />
 
   <subscriber
     for="Products.CustomUserFolder.interfaces.ICustomUser
           zope.app.container.interfaces.IObjectMovedEvent"
     handler="Products.CustomUserFolder.CustomUser.movedCustomUser"
-    /> 
+    />
 
-  <interface 
+  <interface
     interface=".interfaces.IGSUserInfo" />
   <utility factory=".userinfo.GSUserInfoFromIDFactory"
     name="groupserver.UserFromId"
@@ -36,4 +33,3 @@
     permission="zope.Public"/>
 
 </configure>
-

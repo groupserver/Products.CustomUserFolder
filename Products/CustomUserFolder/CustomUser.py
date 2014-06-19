@@ -402,7 +402,7 @@ class CustomUser(User, Folder):
           'gs.profile.email.base.emailuser.EmailUser.get_addresses '\
           'instead. Called from %s.' % self.REQUEST['PATH_INFO']
         log.debug(m)
-        raise NotImplemented
+        raise NotImplemented('')
 
     security.declareProtected(Perms.manage_properties,
                                 'validate_emailAddresses')
@@ -457,7 +457,7 @@ class CustomUser(User, Folder):
           'gs.profile.email.base.emailuser.EmailUser.add_address '\
           'instead. Called from %s.' % self.REQUEST['PATH_INFO']
         log.debug(m)
-        raise NotImplemented
+        raise NotImplemented('')
 
     # Email verification methods. Most of these are deprecated and
     # have been moved to gs.profile.email.verify.
@@ -556,7 +556,7 @@ class CustomUser(User, Folder):
           'gs.profile.email.base.emailuser.EmailUser.remove_address '\
           'instead. Called from %s.' % self.REQUEST['PATH_INFO']
         log.debug(m)
-        raise NotImplemented
+        raise NotImplemented('')
 
     security.declareProtected(Perms.view,
       'get_verifiedEmailAddresses')
@@ -576,7 +576,7 @@ class CustomUser(User, Folder):
           'gs.profile.email.base.emailuser.EmailUser.get_verified_addresses '\
           'instead. Called from %s.' % self.REQUEST['PATH_INFO']
         log.debug(m)
-        raise NotImplemented
+        raise NotImplemented('')
 
     security.declareProtected(Perms.manage_properties,
       'get_preferredEmailAddresses')
@@ -592,7 +592,7 @@ class CustomUser(User, Folder):
           'gs.profile.email.base.emailuser.EmailUser.get_delivery_addresses '\
           'instead. Called from %s.' % self.REQUEST['PATH_INFO']
         log.debug(m)
-        raise NotImplemented
+        raise NotImplemented('')
 
     get_preferredEmailAddresses = get_defaultDeliveryEmailAddresses
 
@@ -609,7 +609,7 @@ class CustomUser(User, Folder):
           'gs.profile.email.base.emailuser.EmailUser.set_delivery '\
           'instead. Called from %s.' % self.REQUEST['PATH_INFO']
         log.debug(m)
-        raise NotImplemented
+        raise NotImplemented()
 
     add_preferredEmailAddress = add_defaultDeliveryEmailAddress
 
@@ -643,7 +643,7 @@ class CustomUser(User, Folder):
           'gs.profile.email.base.emailuser.EmailUser.drop_delivery '\
           'instead. Called from %s.' % self.REQUEST['PATH_INFO']
         log.debug(m)
-        raise NotImplemented
+        raise NotImplemented()
 
     remove_preferredEmailAddress = remove_defaultDeliveryEmailAddress
 
@@ -953,12 +953,6 @@ class CustomUser(User, Folder):
           (self.getProperty('fn', ''), self.getId())
         log.info(m)
 
-    def clear_addresses(self):
-        for email in self.get_emailAddresses():
-            self.remove_emailAddress(email)
-        m = 'clear_addresses: Cleared addresses from  %s (%s)' %\
-          (self.getProperty('fn', ''), self.getId())
-        log.info(m)
     #
     # Views and Workflow
     #
@@ -1003,13 +997,12 @@ def removedCustomUser(ob, event):
     assert ob
     uid = ob.getId()
     ob.clear_groups()
-    ob.clear_addresses()
     # FIX
     # ob.clear_userPasswordResetVerificationIds()
     ob.clear_nicknames()
     m = u'removedCustomUser: Deleted "%s"' % uid
     log.info(m)
-
+    # FIXME: Get the EmailUser to handle this event.
     return
 
 

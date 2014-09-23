@@ -231,10 +231,10 @@ class CustomUser(User, Folder):
             m = u'No group provided'
             raise ValueError(m)
         if type(group) not in (unicode, str):
-            m = 'Group ID is a "{0}", not a string'.format(type(group))
+            m = u'Group ID is a "{0}", not a string'.format(type(group))
             raise TypeError(m)
 
-        m = 'del_group: Removing {0} ({1}) from {2}'
+        m = u'del_group: Removing {0} ({1}) from {2}'
         msg = m.format(self.getProperty('fn', ''), self.getId(), group)
         log.info(msg)
 

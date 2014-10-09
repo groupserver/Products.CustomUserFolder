@@ -198,8 +198,8 @@ class CustomUser(User, Folder):
                                            only_smaller)
         return retval
 
-    # Email verification methods. Most of these are deprecated and
-    # have been moved to gs.profile.email.verify.
+    # Most of the "ByKey" methods can be removed. Just waiting on
+    # gs.group.member.invite.base to be updated
 
     security.declareProtected(Perms.manage_properties,
                               'set_disableDeliveryByKey')

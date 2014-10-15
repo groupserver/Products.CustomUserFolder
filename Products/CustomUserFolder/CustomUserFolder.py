@@ -27,7 +27,7 @@ from Products.NuxUserGroups import UserFolderWithGroups
 from zope.interface import implements
 from Products.CustomUserFolder.interfaces import ICustomUserFolder
 from AccessControl.User import readUserAccessFile
-
+from gs.core import (to_unicode_or_bust, to_ascii)
 from gs.database import getTable, getSession
 
 import logging
@@ -61,7 +61,9 @@ class CustomUserFolder(UserFolderWithGroups):
     def _encryptPassword(self, pw):
         # we need to override the default, because if we encrypt with SSHA
         # we have trouble when we do the wire protocol
-        return AuthEncoding.pw_encrypt(pw, 'SHA')
+        upw = to_unicode_or_bust(pw)
+        utf8pw = upw.encode('utf-8', 'ignore')
+        return AuthEncoding.pw_encrypt(utf8pw, 'SHA')
 
     security.declarePrivate('_getUserFolder')
 

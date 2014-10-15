@@ -32,7 +32,6 @@ from App.class_init import InitializeClass
 from OFS.Folder import Folder
 from zope.interface import implements
 from Products.CustomUserFolder.interfaces import ICustomUser
-from Products.XWFCore import XWFUtils
 from Products.XWFCore.XWFUtils import locateDataDirectory
 from gs.image import GSImage
 from .queries import UserQuery
@@ -407,42 +406,6 @@ class CustomUser(User, Folder):
           The password in clear-text.
         """
         return self._getPassword()
-
-    def reset_password(self):
-        """Resets the user password."""
-        m = 'CustomUser.reset_password is deprecated: it should ' \
-            'never be used. Called from %s' % self.REQUEST['PATH_INFO']
-        log.debug(m)
-
-        newPassword = XWFUtils.generate_password(8)
-        self.set_password(newPassword)
-
-        return newPassword
-
-    def set_password(self, newPassword, updateCookies=True):
-        """Sets the user's password"""
-        m = 'CustomUser.set_password is deprecated: it is replaced ' \
-            'by gs.profile.password.passworduser.set_password. Called '\
-            'from %s' % self.REQUEST['PATH_INFO']
-        log.debug(m)
-
-        site_root = self.site_root()
-        user = site_root.acl_users.getUser(self.getId())
-        roles = user.getRoles()
-        domains = user.getDomains()
-        userID = user.getId()
-
-        site_root.acl_users.userFolderEditUser(userID, newPassword,
-                                               roles, domains)
-
-        if updateCookies:
-            logged_in_user = self.REQUEST.AUTHENTICATED_USER.getId()
-            if (logged_in_user):
-                site_root.cookie_authentication.credentialsChanged(
-                    user, userID, newPassword)
-        m = 'set_password: Set password for %s (%s)' % \
-            (self.getProperty('fn', ''), self.getId())
-        log.info(m)
 
     # Nickname related methods.
 

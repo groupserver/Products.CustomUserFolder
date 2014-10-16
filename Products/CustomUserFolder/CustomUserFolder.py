@@ -27,7 +27,7 @@ from Products.NuxUserGroups import UserFolderWithGroups
 from zope.interface import implements
 from Products.CustomUserFolder.interfaces import ICustomUserFolder
 from AccessControl.User import readUserAccessFile
-from gs.core import (to_unicode_or_bust, to_ascii)
+from gs.core import (to_unicode_or_bust)
 from gs.database import getTable, getSession
 
 import logging
@@ -174,7 +174,8 @@ class CustomUserFolder(UserFolderWithGroups):
                       **kw):
         user = self.getUser(name)
         if password is not None:
-            if self.encrypt_passwords:
+            if (self.encrypt_passwords
+                    and (not self._isPasswordEncrypted(password))):
                 password = self._encryptPassword(password)
             user.__ = password
         user.roles = roles

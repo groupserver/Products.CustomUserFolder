@@ -121,7 +121,12 @@ class CustomUser(User, Folder):
         log.info(msg)
 
         acl_users = getattr(self, 'acl_users', None)
-        acl_users.delGroupsFromUser([group], self.getId())
+        try:
+            acl_users.delGroupsFromUser([group], self.getId())
+        except ValueError:
+            m = u'The group {0} not in the list of groups for {1}'
+            msg = m.format(group, self.getId())
+            log.warn(msg)
 
     security.declareProtected(Perms.manage_properties, 'refresh_properties')
 

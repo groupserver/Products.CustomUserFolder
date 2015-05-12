@@ -1,6 +1,12 @@
 Changelog
 =========
 
+11.2.2 (2015-05-12)
+-------------------
+
+* Fixing the case where the person being removed from a group is
+  not in a group
+
 11.2.1 (2014-10-16)
 -------------------
 

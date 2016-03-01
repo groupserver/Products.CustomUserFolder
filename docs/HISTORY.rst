@@ -1,6 +1,11 @@
 Changelog
 =========
 
+11.2.3 (2016-02-29)
+-------------------
+
+* Making the deletion of users more robust
+
 11.2.2 (2015-05-12)
 -------------------
 
@@ -400,3 +405,5 @@ Changelog
 ------------------
 
 * Initial release
+
+..  LocalWords:  Changelog

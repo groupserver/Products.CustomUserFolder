@@ -2,7 +2,7 @@
 ############################################################################
 #
 # Copyright © 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012,
-# 2013, 2014 OnlineGroups.net and Contributors.
+# 2013, 2014, 2016 OnlineGroups.net and Contributors.
 #
 # All Rights Reserved.
 #
@@ -42,8 +42,7 @@ log = logging.getLogger('CustomUser')
 
 def user_image_path(context, user_id):
         siteId = context.site_root().getId()
-        dataDir = locateDataDirectory("groupserver.user.image",
-                                      (siteId,))
+        dataDir = locateDataDirectory("groupserver.user.image", (siteId,))
         fileName = '%s.jpg' % user_id
         imagePath = os.path.join(dataDir, fileName)
 
@@ -441,7 +440,11 @@ class CustomUser(User, Folder):
         assert acl_users, 'Could not get acl_users'
         for groupname in self.getGroups():
             group = acl_users.getGroupById(groupname)
-            group._delUsers((self.getId(),))
+            try:
+                group._delUsers((self.getId(),))
+            except ValueError:
+                msg = 'Could not remove user "{0}" from the group "{1}": not in the group'
+                log.warn(msg)
         m = 'clear_groups: Cleared groups from  %s (%s)' %\
             (self.getProperty('fn', ''), self.getId())
         log.info(m)
@@ -492,7 +495,11 @@ def removedCustomUser(ob, event):
     ob.clear_groups()
     # FIX
     # ob.clear_userPasswordResetVerificationIds()
-    ob.clear_nicknames()
+    try:
+        ob.clear_nicknames()
+    except IndexError:
+        msg = 'Index error when clearing nicknames of "{0}". Ignoring.'.format(uid)
+        log.warn(msg)
     m = u'removedCustomUser: Deleted "%s"' % uid
     log.info(m)
     # FIXME: Get the EmailUser to handle this event.
